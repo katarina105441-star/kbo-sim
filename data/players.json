@@ -1,0 +1,312 @@
+{
+"KIA": {
+ "batters": [
+  {"name":"김도영","pos":"3B","age":23,"bats":"R","throws":"R","sal":5.0,"yrs":1,"bat":{"con":88,"pow":87,"eye":74,"spd":88,"fld":70,"arm":68},"basis":"2024 .347 38HR 40SB MVP, wRC+ 160대. 3루 송구 실책 다수로 arm 하향"},
+  {"name":"나성범","pos":"RF","age":37,"bats":"L","throws":"L","sal":20.0,"yrs":2,"bat":{"con":76,"pow":84,"eye":70,"spd":55,"fld":62,"arm":80},"basis":"2023-24 .290대/20HR+ 페이스, 부상 잦음. 투수 출신 강견"},
+  {"name":"최형우","pos":"DH","age":43,"bats":"L","throws":"R","sal":10.0,"yrs":1,"bat":{"con":78,"pow":78,"eye":82,"spd":28,"fld":35,"arm":40},"basis":"2024 .280 22HR 108타점, 통산 BB% 12%대"},
+  {"name":"김선빈","pos":"2B","age":37,"bats":"R","throws":"R","sal":7.0,"yrs":2,"bat":{"con":85,"pow":42,"eye":76,"spd":50,"fld":70,"arm":62},"basis":"2024 .329, 통산 3할 컨택 히터"},
+  {"name":"박찬호","pos":"SS","age":31,"bats":"R","throws":"R","sal":8.0,"yrs":4,"bat":{"con":76,"pow":45,"eye":66,"spd":82,"fld":86,"arm":82},"basis":"2024 .307 20SB, 유격 수비 정상급"},
+  {"name":"패트릭 위즈덤","pos":"1B","age":35,"bats":"R","throws":"R","sal":11.0,"yrs":1,"bat":{"con":48,"pow":90,"eye":58,"spd":55,"fld":66,"arm":70},"est":true,"basis":"MLB 통산 88HR/K% 34% → 파워 특화·컨택 불안 환산 추정"},
+  {"name":"김태군","pos":"C","age":37,"bats":"R","throws":"R","sal":5.0,"yrs":2,"bat":{"con":62,"pow":45,"eye":50,"spd":28,"fld":78,"arm":74},"basis":"수비형 포수, 2024 타율 .270대"},
+  {"name":"한준수","pos":"C","age":27,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":74,"pow":62,"eye":60,"spd":35,"fld":72,"arm":70},"basis":"2024 .307 브레이크아웃 공격형 포수"},
+  {"name":"최원준","pos":"CF","age":29,"bats":"L","throws":"R","sal":4.0,"yrs":2,"bat":{"con":72,"pow":50,"eye":68,"spd":78,"fld":76,"arm":60},"basis":"2024 .292 20SB급 리드오프형"},
+  {"name":"이우성","pos":"LF","age":32,"bats":"R","throws":"R","sal":3.0,"yrs":2,"bat":{"con":70,"pow":64,"eye":60,"spd":48,"fld":60,"arm":62},"basis":"2024 두자릿수 HR 중장거리"},
+  {"name":"서건창","pos":"2B","age":37,"bats":"L","throws":"R","sal":1.2,"yrs":1,"bat":{"con":72,"pow":38,"eye":70,"spd":48,"fld":64,"arm":55},"basis":"2024 부활 .310대, 파워·주루 하락"},
+  {"name":"변우혁","pos":"1B","age":26,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":58,"pow":70,"eye":45,"spd":42,"fld":62,"arm":62},"est":true,"basis":"1군 파트타임 파워 툴, 표본 적음"},
+  {"name":"김규성","pos":"SS","age":29,"bats":"L","throws":"R","sal":0.7,"yrs":1,"bat":{"con":55,"pow":35,"eye":50,"spd":70,"fld":74,"arm":66},"est":true,"basis":"수비/대주자 유틸, 표본 적음"},
+  {"name":"박정우","pos":"LF","age":25,"bats":"L","throws":"L","sal":0.6,"yrs":1,"bat":{"con":62,"pow":38,"eye":58,"spd":76,"fld":68,"arm":55},"est":true,"basis":"백업 외야 뎁스 추정"}
+ ],
+ "pitchers": [
+  {"name":"양현종","pos":"SP","age":38,"bats":"L","throws":"L","sal":10.0,"yrs":2,"pit":{"vel":52,"ctl":78,"stf":60,"sta":80,"brk":76},"basis":"2024 ERA 4.10대 170IP+, 구속 하락 기교파 전환"},
+  {"name":"제임스 네일","pos":"SP","age":33,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":70,"ctl":74,"stf":80,"sta":82,"brk":86},"basis":"2024 ERA 2.53 평균자책 1위 경쟁, 스위퍼 결정구"},
+  {"name":"애덤 올러","pos":"SP","age":31,"bats":"R","throws":"R","sal":9.0,"yrs":1,"pit":{"vel":72,"ctl":62,"stf":68,"sta":76,"brk":64},"est":true,"basis":"MLB/AAA 저니맨 → 평균급 선발 환산 추정"},
+  {"name":"이의리","pos":"SP","age":24,"bats":"L","throws":"L","sal":1.5,"yrs":1,"pit":{"vel":80,"ctl":44,"stf":74,"sta":70,"brk":68},"basis":"K/9 9+ BB/9 5대 좌완, 2024-25 팔꿈치 재활"},
+  {"name":"윤영철","pos":"SP","age":22,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":55,"ctl":74,"stf":58,"sta":70,"brk":68},"basis":"2023 8승 제구형 신인, 구속 140 초반"},
+  {"name":"정해영","pos":"CL","age":25,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":74,"ctl":68,"stf":74,"sta":35,"brk":66},"basis":"2024 31세이브, 통산 100SV 최연소급"},
+  {"name":"전상현","pos":"RP","age":30,"bats":"R","throws":"R","sal":2.5,"yrs":1,"pit":{"vel":72,"ctl":70,"stf":74,"sta":32,"brk":72},"basis":"필승조, K/9 9 안팎"},
+  {"name":"조상우","pos":"RP","age":32,"bats":"R","throws":"R","sal":4.0,"yrs":1,"pit":{"vel":82,"ctl":62,"stf":78,"sta":35,"brk":62},"basis":"트레이드 합류, 최고 155km/h 구위형"},
+  {"name":"곽도규","pos":"RP","age":22,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":76,"ctl":52,"stf":72,"sta":30,"brk":70},"basis":"2024 사이드 좌완 필승조 K/9 10+"},
+  {"name":"최지민","pos":"RP","age":23,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":74,"ctl":50,"stf":68,"sta":32,"brk":62},"basis":"2023 국대 좌완, 제구 기복"},
+  {"name":"김도현","pos":"RP","age":26,"bats":"R","throws":"R","sal":0.6,"yrs":1,"pit":{"vel":74,"ctl":55,"stf":62,"sta":40,"brk":58},"est":true,"basis":"스윙맨 뎁스, 표본 적음"}
+ ]
+},
+"LG": {
+ "batters": [
+  {"name":"홍창기","pos":"RF","age":33,"bats":"L","throws":"R","sal":6.0,"yrs":3,"bat":{"con":84,"pow":48,"eye":92,"spd":62,"fld":70,"arm":62},"basis":"2024 .336/OBP .447, 리그 최다 볼넷급 BB% 15%+"},
+  {"name":"박해민","pos":"CF","age":36,"bats":"L","throws":"R","sal":6.0,"yrs":2,"bat":{"con":68,"pow":36,"eye":62,"spd":88,"fld":90,"arm":60},"basis":"매년 30SB·CF 수비 리그 최상위"},
+  {"name":"김현수","pos":"LF","age":38,"bats":"L","throws":"R","sal":8.0,"yrs":2,"bat":{"con":80,"pow":64,"eye":74,"spd":38,"fld":55,"arm":55},"basis":"통산 .310대, 2024 .280대로 완만한 하락"},
+  {"name":"오스틴 딘","pos":"1B","age":32,"bats":"R","throws":"R","sal":13.0,"yrs":1,"bat":{"con":78,"pow":87,"eye":68,"spd":58,"fld":68,"arm":66},"basis":"2024 .319 32HR 132타점"},
+  {"name":"문보경","pos":"3B","age":26,"bats":"L","throws":"R","sal":4.0,"yrs":1,"bat":{"con":78,"pow":74,"eye":70,"spd":55,"fld":70,"arm":70},"basis":"2024 .300-22HR급 성장"},
+  {"name":"오지환","pos":"SS","age":36,"bats":"L","throws":"R","sal":12.0,"yrs":4,"bat":{"con":62,"pow":66,"eye":70,"spd":65,"fld":86,"arm":80},"basis":".260대 15HR, 유격 수비 골든글러브급"},
+  {"name":"박동원","pos":"C","age":36,"bats":"R","throws":"R","sal":8.0,"yrs":3,"bat":{"con":58,"pow":78,"eye":58,"spd":30,"fld":76,"arm":76},"basis":"매년 20HR 안팎 공격형 포수"},
+  {"name":"신민재","pos":"2B","age":30,"bats":"L","throws":"R","sal":2.0,"yrs":1,"bat":{"con":74,"pow":25,"eye":66,"spd":88,"fld":74,"arm":55},"basis":"2024 .297 32SB, 무파워"},
+  {"name":"문성주","pos":"LF","age":29,"bats":"L","throws":"R","sal":2.5,"yrs":1,"bat":{"con":78,"pow":42,"eye":76,"spd":65,"fld":64,"arm":52},"basis":"통산 .300/고출루 좌타 외야"},
+  {"name":"구본혁","pos":"SS","age":29,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":58,"pow":35,"eye":55,"spd":62,"fld":78,"arm":70},"basis":"수비형 내야 백업"},
+  {"name":"김범석","pos":"C","age":22,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":64,"pow":72,"eye":50,"spd":30,"fld":55,"arm":58},"est":true,"basis":"타격형 유망 포수, 1군 표본 적음"},
+  {"name":"김성우","pos":"C","age":24,"bats":"R","throws":"R","sal":0.5,"yrs":1,"bat":{"con":48,"pow":45,"eye":45,"spd":40,"fld":66,"arm":68},"est":true,"basis":"백업 포수 뎁스 추정"},
+  {"name":"이영빈","pos":"2B","age":24,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":56,"pow":42,"eye":50,"spd":62,"fld":62,"arm":58},"est":true,"basis":"내야 유틸 뎁스 추정"},
+  {"name":"최원영","pos":"CF","age":23,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":55,"pow":35,"eye":50,"spd":80,"fld":70,"arm":52},"est":true,"basis":"발 빠른 외야 유망주 추정"}
+ ],
+ "pitchers": [
+  {"name":"임찬규","pos":"SP","age":34,"bats":"R","throws":"R","sal":8.0,"yrs":3,"pit":{"vel":55,"ctl":72,"stf":66,"sta":78,"brk":80},"basis":"2024 14승, 체인지업 결정구 K/9 8 안팎"},
+  {"name":"손주영","pos":"SP","age":28,"bats":"L","throws":"L","sal":3.0,"yrs":1,"pit":{"vel":70,"ctl":58,"stf":66,"sta":74,"brk":62},"basis":"2024 ERA 3.7대 풀타임 선발 안착"},
+  {"name":"요니 치리노스","pos":"SP","age":33,"bats":"R","throws":"R","sal":13.0,"yrs":1,"pit":{"vel":66,"ctl":74,"stf":68,"sta":80,"brk":70},"est":true,"basis":"MLB 통산 ERA 4점대 백엔드 선발 환산"},
+  {"name":"앤더스 톨허스트","pos":"SP","age":30,"bats":"R","throws":"R","sal":10.0,"yrs":1,"pit":{"vel":72,"ctl":66,"stf":70,"sta":76,"brk":64},"est":true,"basis":"AAA 상위 로테이션 환산 추정"},
+  {"name":"김윤식","pos":"SP","age":26,"bats":"L","throws":"L","sal":1.2,"yrs":1,"pit":{"vel":58,"ctl":60,"stf":55,"sta":64,"brk":62},"basis":"5선발급 좌완, 기복"},
+  {"name":"유영찬","pos":"CL","age":29,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":76,"ctl":60,"stf":76,"sta":34,"brk":72},"basis":"2024 26세이브 K/9 9+"},
+  {"name":"김진성","pos":"RP","age":41,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":62,"ctl":74,"stf":64,"sta":30,"brk":70},"basis":"최고령 필승조, 제구·포크"},
+  {"name":"정우영","pos":"RP","age":27,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":80,"ctl":48,"stf":68,"sta":32,"brk":60},"basis":"사이드 투심 150km/h, 제구 기복"},
+  {"name":"함덕주","pos":"RP","age":31,"bats":"L","throws":"L","sal":3.0,"yrs":2,"pit":{"vel":64,"ctl":62,"stf":66,"sta":30,"brk":72},"basis":"좌완 필승조, 체인지업"},
+  {"name":"이정용","pos":"RP","age":30,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":74,"ctl":56,"stf":68,"sta":36,"brk":64},"basis":"군복귀 우완 셋업"},
+  {"name":"김영준","pos":"RP","age":25,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":68,"ctl":52,"stf":58,"sta":34,"brk":55},"est":true,"basis":"불펜 뎁스 추정"}
+ ]
+},
+"DSN": {
+ "batters": [
+  {"name":"양의지","pos":"C","age":39,"bats":"R","throws":"R","sal":15.0,"yrs":2,"bat":{"con":82,"pow":72,"eye":72,"spd":30,"fld":80,"arm":78},"basis":"2024 .314 17HR, 통산 최고 공격형 포수"},
+  {"name":"김재환","pos":"DH","age":38,"bats":"L","throws":"R","sal":7.0,"yrs":2,"bat":{"con":62,"pow":78,"eye":68,"spd":35,"fld":40,"arm":45},"basis":"2024 20HR대 반등, K% 높음"},
+  {"name":"양석환","pos":"1B","age":35,"bats":"R","throws":"R","sal":8.0,"yrs":4,"bat":{"con":60,"pow":80,"eye":52,"spd":40,"fld":68,"arm":64},"basis":"2024 34HR, 저출루 거포"},
+  {"name":"강승호","pos":"2B","age":32,"bats":"R","throws":"R","sal":3.0,"yrs":2,"bat":{"con":64,"pow":66,"eye":55,"spd":55,"fld":72,"arm":66},"basis":"2024 15HR대 공격형 2루"},
+  {"name":"정수빈","pos":"CF","age":36,"bats":"L","throws":"L","sal":6.0,"yrs":3,"bat":{"con":72,"pow":34,"eye":64,"spd":84,"fld":88,"arm":58},"basis":"2024 .280대 30SB대, CF 수비 최상위"},
+  {"name":"제이크 케이브","pos":"RF","age":33,"bats":"L","throws":"L","sal":12.0,"yrs":1,"bat":{"con":66,"pow":72,"eye":58,"spd":66,"fld":70,"arm":64},"est":true,"basis":"MLB 통산 .235 4th OF → KBO 환산 추정"},
+  {"name":"이유찬","pos":"SS","age":28,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":60,"pow":40,"eye":54,"spd":76,"fld":72,"arm":68},"basis":"대주자 겸 내야 유틸"},
+  {"name":"박준영","pos":"3B","age":29,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":52,"pow":68,"eye":48,"spd":55,"fld":70,"arm":72},"basis":"파워 툴, 컨택 불안"},
+  {"name":"조수행","pos":"LF","age":33,"bats":"L","throws":"L","sal":1.5,"yrs":1,"bat":{"con":62,"pow":25,"eye":58,"spd":92,"fld":74,"arm":50},"basis":"2024 64도루 도루왕"},
+  {"name":"안재석","pos":"SS","age":24,"bats":"L","throws":"R","sal":0.8,"yrs":1,"bat":{"con":56,"pow":48,"eye":52,"spd":64,"fld":70,"arm":68},"basis":"군복귀 내야 유망주"},
+  {"name":"김기연","pos":"C","age":29,"bats":"R","throws":"R","sal":0.6,"yrs":1,"bat":{"con":52,"pow":44,"eye":48,"spd":35,"fld":70,"arm":66},"est":true,"basis":"백업 포수, 표본 적음"},
+  {"name":"김대한","pos":"CF","age":26,"bats":"R","throws":"R","sal":0.5,"yrs":1,"bat":{"con":48,"pow":55,"eye":42,"spd":74,"fld":68,"arm":60},"est":true,"basis":"툴 유망주 미완, 추정"},
+  {"name":"전민재","pos":"2B","age":27,"bats":"R","throws":"R","sal":0.6,"yrs":1,"bat":{"con":58,"pow":36,"eye":50,"spd":66,"fld":68,"arm":60},"est":true,"basis":"내야 백업 뎁스"},
+  {"name":"임종성","pos":"3B","age":21,"bats":"R","throws":"R","sal":0.4,"yrs":1,"bat":{"con":48,"pow":58,"eye":42,"spd":52,"fld":58,"arm":62},"est":true,"basis":"2군 거포 유망주 추정"}
+ ],
+ "pitchers": [
+  {"name":"곽빈","pos":"SP","age":27,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":82,"ctl":50,"stf":76,"sta":72,"brk":70},"basis":"2024 15승, K/9 8+ BB/9 4+ 파워피처"},
+  {"name":"콜 어빈","pos":"SP","age":32,"bats":"L","throws":"L","sal":12.0,"yrs":1,"pit":{"vel":66,"ctl":72,"stf":64,"sta":78,"brk":62},"est":true,"basis":"MLB 통산 ERA 4점대 제구형 좌완 환산"},
+  {"name":"잭 로그","pos":"SP","age":31,"bats":"L","throws":"L","sal":11.0,"yrs":1,"pit":{"vel":64,"ctl":70,"stf":62,"sta":74,"brk":64},"est":true,"basis":"MLB 스윙맨 좌완 환산 추정"},
+  {"name":"최승용","pos":"SP","age":25,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":64,"ctl":58,"stf":58,"sta":62,"brk":58},"basis":"5선발 후보 장신 좌완"},
+  {"name":"최원준","pos":"SP","age":32,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":56,"ctl":64,"stf":54,"sta":70,"brk":56},"basis":"이닝 소화형 4-5선발"},
+  {"name":"김택연","pos":"CL","age":21,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":82,"ctl":58,"stf":80,"sta":33,"brk":62},"basis":"2024 신인왕 19SV, K/9 10+ 라이징 패스트볼"},
+  {"name":"홍건희","pos":"RP","age":34,"bats":"R","throws":"R","sal":2.5,"yrs":2,"pit":{"vel":70,"ctl":56,"stf":64,"sta":32,"brk":62},"basis":"필승조 경력, 최근 기복"},
+  {"name":"이영하","pos":"RP","age":29,"bats":"R","throws":"R","sal":2.5,"yrs":1,"pit":{"vel":76,"ctl":54,"stf":70,"sta":40,"brk":60},"basis":"2024 불펜 전환 후 홀드 다수, 150km/h"},
+  {"name":"박치국","pos":"RP","age":28,"bats":"R","throws":"R","sal":1.2,"yrs":1,"pit":{"vel":60,"ctl":64,"stf":58,"sta":32,"brk":64},"basis":"사이드암 중간"},
+  {"name":"이병헌","pos":"RP","age":23,"bats":"L","throws":"L","sal":0.7,"yrs":1,"pit":{"vel":72,"ctl":50,"stf":66,"sta":30,"brk":62},"est":true,"basis":"좌완 필승조 성장세, 표본 적음"},
+  {"name":"김명신","pos":"RP","age":32,"bats":"R","throws":"R","sal":1.0,"yrs":1,"pit":{"vel":58,"ctl":66,"stf":54,"sta":36,"brk":60},"est":true,"basis":"추격조 이닝 소화"}
+ ]
+},
+"SSG": {
+ "batters": [
+  {"name":"최정","pos":"3B","age":39,"bats":"R","throws":"R","sal":12.0,"yrs":3,"bat":{"con":66,"pow":88,"eye":70,"spd":42,"fld":74,"arm":72},"basis":"2024 37HR, KBO 통산 홈런 1위 현역"},
+  {"name":"기예르모 에레디아","pos":"LF","age":35,"bats":"R","throws":"R","sal":12.0,"yrs":1,"bat":{"con":88,"pow":66,"eye":58,"spd":58,"fld":68,"arm":66},"basis":"2024 .360 안타왕 경쟁, 순수 컨택 리그 최상위"},
+  {"name":"한유섬","pos":"RF","age":37,"bats":"L","throws":"R","sal":8.0,"yrs":2,"bat":{"con":54,"pow":76,"eye":58,"spd":36,"fld":62,"arm":68},"basis":".240대 20HR대 거포, 하락세"},
+  {"name":"최지훈","pos":"CF","age":29,"bats":"L","throws":"R","sal":3.0,"yrs":1,"bat":{"con":68,"pow":46,"eye":60,"spd":82,"fld":84,"arm":60},"basis":".270대 20SB대 CF"},
+  {"name":"박성한","pos":"SS","age":28,"bats":"L","throws":"R","sal":4.0,"yrs":1,"bat":{"con":76,"pow":52,"eye":70,"spd":62,"fld":80,"arm":74},"basis":"2024 .301 10HR 국대 유격수"},
+  {"name":"고명준","pos":"1B","age":24,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":60,"pow":74,"eye":52,"spd":42,"fld":64,"arm":60},"basis":"2024 두자릿수 HR 젊은 거포"},
+  {"name":"정준재","pos":"2B","age":22,"bats":"L","throws":"R","sal":0.8,"yrs":1,"bat":{"con":66,"pow":28,"eye":64,"spd":84,"fld":66,"arm":52},"basis":"2024 데뷔 .300 근접, 소형 스파크플러그"},
+  {"name":"이지영","pos":"C","age":40,"bats":"R","throws":"R","sal":2.0,"yrs":1,"bat":{"con":62,"pow":30,"eye":45,"spd":38,"fld":74,"arm":66},"basis":"수비·경기운영형 노장 포수"},
+  {"name":"김민식","pos":"C","age":37,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":48,"pow":40,"eye":52,"spd":32,"fld":72,"arm":68},"est":true,"basis":"수비 백업 포수"},
+  {"name":"오태곤","pos":"LF","age":35,"bats":"R","throws":"R","sal":2.0,"yrs":2,"bat":{"con":58,"pow":62,"eye":50,"spd":74,"fld":60,"arm":62},"basis":"파워+주루 유틸 외야"},
+  {"name":"김성현","pos":"2B","age":39,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":58,"pow":38,"eye":52,"spd":44,"fld":74,"arm":64},"basis":"내야 전포지션 백업 노장"},
+  {"name":"전의산","pos":"1B","age":26,"bats":"L","throws":"R","sal":0.8,"yrs":1,"bat":{"con":54,"pow":74,"eye":54,"spd":35,"fld":58,"arm":58},"est":true,"basis":"거포 유망주, 1군 기복"},
+  {"name":"최상민","pos":"CF","age":25,"bats":"L","throws":"L","sal":0.4,"yrs":1,"bat":{"con":45,"pow":30,"eye":42,"spd":84,"fld":68,"arm":50},"est":true,"basis":"대주자 스페셜리스트 추정"},
+  {"name":"안상현","pos":"2B","age":28,"bats":"R","throws":"R","sal":0.4,"yrs":1,"bat":{"con":52,"pow":34,"eye":48,"spd":60,"fld":66,"arm":58},"est":true,"basis":"내야 뎁스 추정"}
+ ],
+ "pitchers": [
+  {"name":"김광현","pos":"SP","age":38,"bats":"L","throws":"L","sal":11.0,"yrs":2,"pit":{"vel":66,"ctl":62,"stf":70,"sta":74,"brk":78},"basis":"2024 12승 ERA 4.93, 슬라이더 여전, 구속 하락"},
+  {"name":"드류 앤더슨","pos":"SP","age":32,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":82,"ctl":58,"stf":76,"sta":70,"brk":66},"est":true,"basis":"2024 합류 후 K/9 10+ 파이어볼러"},
+  {"name":"미치 화이트","pos":"SP","age":31,"bats":"R","throws":"R","sal":11.0,"yrs":1,"pit":{"vel":74,"ctl":56,"stf":68,"sta":68,"brk":64},"est":true,"basis":"MLB 스윙맨 환산 추정"},
+  {"name":"박종훈","pos":"SP","age":35,"bats":"R","throws":"R","sal":4.0,"yrs":2,"pit":{"vel":45,"ctl":52,"stf":58,"sta":66,"brk":74},"basis":"극단 잠수함, 낮은 구속 대비 땅볼 유도"},
+  {"name":"송영진","pos":"SP","age":22,"bats":"R","throws":"R","sal":0.8,"yrs":1,"pit":{"vel":64,"ctl":52,"stf":56,"sta":62,"brk":54},"basis":"영건 5선발 후보"},
+  {"name":"조병현","pos":"CL","age":24,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":78,"ctl":58,"stf":78,"sta":33,"brk":68},"basis":"2024 K/9 10+ 마무리 안착"},
+  {"name":"노경은","pos":"RP","age":42,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":60,"ctl":68,"stf":60,"sta":38,"brk":68},"basis":"2024 최고령 30홀드대"},
+  {"name":"이로운","pos":"RP","age":22,"bats":"R","throws":"R","sal":0.6,"yrs":1,"pit":{"vel":70,"ctl":48,"stf":62,"sta":32,"brk":56},"basis":"영건 불펜"},
+  {"name":"김민","pos":"RP","age":27,"bats":"R","throws":"R","sal":0.7,"yrs":1,"pit":{"vel":68,"ctl":54,"stf":60,"sta":34,"brk":58},"basis":"중간 불펜"},
+  {"name":"문승원","pos":"RP","age":37,"bats":"R","throws":"R","sal":4.0,"yrs":2,"pit":{"vel":62,"ctl":68,"stf":60,"sta":45,"brk":62},"basis":"선발 경력 스윙맨, 제구 안정"},
+  {"name":"서진용","pos":"RP","age":34,"bats":"R","throws":"R","sal":2.5,"yrs":1,"pit":{"vel":66,"ctl":56,"stf":64,"sta":32,"brk":70},"basis":"전 마무리, 스플리터"}
+ ]
+},
+"SAM": {
+ "batters": [
+  {"name":"구자욱","pos":"LF","age":33,"bats":"L","throws":"R","sal":12.0,"yrs":4,"bat":{"con":84,"pow":82,"eye":72,"spd":64,"fld":72,"arm":64},"basis":"2024 .343 33HR 115타점 MVP 경쟁"},
+  {"name":"김영웅","pos":"3B","age":23,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":58,"pow":82,"eye":52,"spd":58,"fld":72,"arm":74},"basis":"2024 28HR 젊은 거포, K% 높음"},
+  {"name":"이재현","pos":"SS","age":23,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":60,"pow":62,"eye":68,"spd":55,"fld":80,"arm":76},"basis":"2024 두자릿수 HR 유격수, 선구 우수"},
+  {"name":"김지찬","pos":"CF","age":25,"bats":"L","throws":"R","sal":2.0,"yrs":1,"bat":{"con":76,"pow":22,"eye":70,"spd":94,"fld":72,"arm":45},"basis":"2024 .316 42SB, 리그 최고 스피드"},
+  {"name":"강민호","pos":"C","age":41,"bats":"R","throws":"R","sal":6.0,"yrs":2,"bat":{"con":72,"pow":68,"eye":62,"spd":26,"fld":76,"arm":68},"basis":"2024 .303 19HR, 불혹 포수"},
+  {"name":"르윈 디아즈","pos":"1B","age":30,"bats":"L","throws":"L","sal":12.0,"yrs":1,"bat":{"con":62,"pow":92,"eye":52,"spd":40,"fld":66,"arm":60},"basis":"2024 시즌 중 합류 후 홈런 페이스 리그 1위급"},
+  {"name":"류지혁","pos":"2B","age":32,"bats":"L","throws":"R","sal":3.0,"yrs":2,"bat":{"con":64,"pow":42,"eye":62,"spd":62,"fld":72,"arm":62},"basis":"내야 멀티 준주전"},
+  {"name":"박병호","pos":"1B","age":40,"bats":"R","throws":"R","sal":5.0,"yrs":1,"bat":{"con":46,"pow":82,"eye":54,"spd":30,"fld":62,"arm":58},"basis":"2024 20HR, 통산 홈런왕 6회의 말년"},
+  {"name":"김헌곤","pos":"LF","age":38,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":60,"pow":48,"eye":48,"spd":48,"fld":58,"arm":55},"basis":"베테랑 백업 외야"},
+  {"name":"이병헌","pos":"C","age":26,"bats":"L","throws":"R","sal":0.6,"yrs":1,"bat":{"con":50,"pow":46,"eye":50,"spd":32,"fld":66,"arm":62},"est":true,"basis":"백업 포수 표본 적음"},
+  {"name":"김성윤","pos":"RF","age":27,"bats":"L","throws":"R","sal":1.0,"yrs":1,"bat":{"con":66,"pow":34,"eye":55,"spd":88,"fld":74,"arm":55},"basis":"단신 스피드 외야, 국대 경험"},
+  {"name":"안주형","pos":"2B","age":30,"bats":"L","throws":"R","sal":0.7,"yrs":1,"bat":{"con":58,"pow":34,"eye":52,"spd":58,"fld":64,"arm":56},"est":true,"basis":"내야 백업"},
+  {"name":"윤정빈","pos":"RF","age":27,"bats":"L","throws":"R","sal":0.7,"yrs":1,"bat":{"con":56,"pow":60,"eye":50,"spd":55,"fld":60,"arm":58},"est":true,"basis":"좌타 파워 백업 외야"},
+  {"name":"김재상","pos":"SS","age":22,"bats":"L","throws":"R","sal":0.4,"yrs":1,"bat":{"con":48,"pow":40,"eye":46,"spd":62,"fld":68,"arm":64},"est":true,"basis":"내야 유망 뎁스 추정"}
+ ],
+ "pitchers": [
+  {"name":"원태인","pos":"SP","age":26,"bats":"R","throws":"R","sal":6.0,"yrs":1,"pit":{"vel":68,"ctl":74,"stf":68,"sta":78,"brk":72},"basis":"2024 15승 공동 다승왕 ERA 3.66"},
+  {"name":"아리엘 후라도","pos":"SP","age":30,"bats":"R","throws":"R","sal":13.0,"yrs":1,"pit":{"vel":66,"ctl":82,"stf":66,"sta":88,"brk":66},"basis":"2024 190IP ERA 3.36 BB/9 1점대 이닝이터"},
+  {"name":"데니 레예스","pos":"SP","age":29,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":72,"ctl":64,"stf":68,"sta":76,"brk":64},"est":true,"basis":"2024 KBO ERA 3점대 후반 준수"},
+  {"name":"이승현","pos":"SP","age":24,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":66,"ctl":58,"stf":60,"sta":64,"brk":60},"basis":"좌완 영건 선발 전환"},
+  {"name":"최원태","pos":"SP","age":29,"bats":"R","throws":"R","sal":7.0,"yrs":4,"pit":{"vel":66,"ctl":60,"stf":62,"sta":70,"brk":62},"basis":"FA 이적, 통산 두자릿수 승수 다수·기복"},
+  {"name":"김재윤","pos":"CL","age":36,"bats":"R","throws":"R","sal":5.0,"yrs":3,"pit":{"vel":68,"ctl":64,"stf":66,"sta":32,"brk":70},"basis":"통산 세이브 상위권 마무리"},
+  {"name":"이승현우","pos":"RP","age":25,"bats":"R","throws":"R","sal":1.0,"yrs":1,"pit":{"vel":74,"ctl":56,"stf":66,"sta":33,"brk":60},"basis":"우완 필승조(동명이인 우투)"},
+  {"name":"배찬승","pos":"RP","age":20,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":72,"ctl":52,"stf":64,"sta":34,"brk":62},"est":true,"basis":"2025 1라운드 즉전감 좌완 추정"},
+  {"name":"김윤수","pos":"RP","age":27,"bats":"R","throws":"R","sal":0.7,"yrs":1,"pit":{"vel":80,"ctl":42,"stf":66,"sta":32,"brk":54},"basis":"150km/h+ 제구난"},
+  {"name":"임창민","pos":"RP","age":41,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":60,"ctl":64,"stf":58,"sta":30,"brk":66},"basis":"노장 셋업, 2024에도 필승조"},
+  {"name":"이호성","pos":"RP","age":24,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":68,"ctl":50,"stf":56,"sta":36,"brk":52},"est":true,"basis":"불펜 뎁스 추정"}
+ ]
+},
+"KT": {
+ "batters": [
+  {"name":"멜 로하스 주니어","pos":"RF","age":36,"bats":"S","throws":"R","sal":14.0,"yrs":1,"bat":{"con":74,"pow":84,"eye":72,"spd":52,"fld":62,"arm":66},"basis":"2024 .329 32HR 112타점, 스위치"},
+  {"name":"안현민","pos":"LF","age":23,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":78,"pow":78,"eye":72,"spd":66,"fld":64,"arm":66},"basis":"2025 브레이크아웃, OPS 리그 최상위권"},
+  {"name":"강백호","pos":"DH","age":27,"bats":"L","throws":"R","sal":5.0,"yrs":1,"bat":{"con":76,"pow":78,"eye":66,"spd":50,"fld":52,"arm":60},"basis":"통산 .300대 천재 타격, 최근 기복·수비 불안"},
+  {"name":"허경민","pos":"3B","age":36,"bats":"R","throws":"R","sal":7.0,"yrs":3,"bat":{"con":70,"pow":44,"eye":64,"spd":50,"fld":82,"arm":70},"basis":"정교·수비형 3루, FA 이적"},
+  {"name":"문상철","pos":"1B","age":35,"bats":"R","throws":"R","sal":2.5,"yrs":1,"bat":{"con":58,"pow":72,"eye":52,"spd":38,"fld":64,"arm":58},"basis":"2024 커리어하이 거포"},
+  {"name":"배정대","pos":"CF","age":31,"bats":"R","throws":"R","sal":3.0,"yrs":2,"bat":{"con":62,"pow":52,"eye":58,"spd":74,"fld":84,"arm":66},"basis":"CF 수비 우수, 타격 평균"},
+  {"name":"김상수","pos":"SS","age":36,"bats":"R","throws":"R","sal":3.0,"yrs":2,"bat":{"con":64,"pow":36,"eye":58,"spd":62,"fld":74,"arm":64},"basis":"베테랑 유격, 통산 200SB+"},
+  {"name":"장성우","pos":"C","age":36,"bats":"R","throws":"R","sal":5.0,"yrs":2,"bat":{"con":56,"pow":66,"eye":58,"spd":26,"fld":74,"arm":70},"basis":"매년 15HR 안팎 포수"},
+  {"name":"권동진","pos":"2B","age":26,"bats":"L","throws":"R","sal":0.7,"yrs":1,"bat":{"con":56,"pow":40,"eye":58,"spd":66,"fld":66,"arm":58},"est":true,"basis":"내야 준주전, 표본 적음"},
+  {"name":"천성호","pos":"2B","age":27,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":66,"pow":32,"eye":56,"spd":60,"fld":62,"arm":56},"basis":"2024 컨택형 준주전"},
+  {"name":"황재균","pos":"3B","age":39,"bats":"R","throws":"R","sal":4.0,"yrs":1,"bat":{"con":58,"pow":56,"eye":50,"spd":40,"fld":62,"arm":62},"basis":"노쇠 진행, 백업 전환"},
+  {"name":"강현우","pos":"C","age":23,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":52,"pow":50,"eye":50,"spd":32,"fld":62,"arm":60},"est":true,"basis":"유망 포수 뎁스"},
+  {"name":"오윤석","pos":"2B","age":34,"bats":"L","throws":"R","sal":0.6,"yrs":1,"bat":{"con":56,"pow":42,"eye":54,"spd":50,"fld":62,"arm":56},"est":true,"basis":"내야 백업"},
+  {"name":"장진혁","pos":"CF","age":33,"bats":"L","throws":"R","sal":0.6,"yrs":1,"bat":{"con":54,"pow":42,"eye":48,"spd":76,"fld":68,"arm":58},"est":true,"basis":"외야 백업, 소속 이동 이력 불확실"}
+ ],
+ "pitchers": [
+  {"name":"고영표","pos":"SP","age":35,"bats":"R","throws":"R","sal":10.0,"yrs":4,"pit":{"vel":48,"ctl":88,"stf":62,"sta":78,"brk":78},"basis":"통산 BB/9 1점대 잠수함, 체인지업 마스터"},
+  {"name":"윌리엄 쿠에바스","pos":"SP","age":35,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":70,"ctl":64,"stf":68,"sta":80,"brk":68},"basis":"KBO 장수 외인, 매년 150IP+"},
+  {"name":"소형준","pos":"SP","age":25,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":70,"ctl":68,"stf":66,"sta":72,"brk":70},"basis":"TJ 복귀, 투심 땅볼 유도형"},
+  {"name":"웨스 벤자민","pos":"SP","age":32,"bats":"L","throws":"L","sal":12.0,"yrs":1,"pit":{"vel":74,"ctl":62,"stf":72,"sta":76,"brk":66},"basis":"K/9 9 안팎 좌완 외인"},
+  {"name":"오원석","pos":"SP","age":25,"bats":"L","throws":"L","sal":1.5,"yrs":1,"pit":{"vel":68,"ctl":52,"stf":62,"sta":68,"brk":60},"basis":"트레이드 이적 좌완, 이닝 소화 가능"},
+  {"name":"박영현","pos":"CL","age":23,"bats":"R","throws":"R","sal":2.5,"yrs":1,"pit":{"vel":78,"ctl":66,"stf":82,"sta":35,"brk":70},"basis":"2024 25SV K/9 10+, 라이징 패스트볼 리그 최고 불펜"},
+  {"name":"김민수","pos":"RP","age":30,"bats":"R","throws":"R","sal":1.2,"yrs":1,"pit":{"vel":66,"ctl":58,"stf":60,"sta":34,"brk":62},"basis":"중간 필승조"},
+  {"name":"우규민","pos":"RP","age":41,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":52,"ctl":78,"stf":52,"sta":30,"brk":64},"basis":"최고령급 제구형 사이드"},
+  {"name":"손동현","pos":"RP","age":24,"bats":"R","throws":"R","sal":1.0,"yrs":1,"pit":{"vel":70,"ctl":58,"stf":64,"sta":36,"brk":60},"basis":"2024 홀드 다수 영건 셋업"},
+  {"name":"주권","pos":"RP","age":31,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":62,"ctl":66,"stf":58,"sta":34,"brk":62},"basis":"전 홀드왕, 제구형"},
+  {"name":"원상현","pos":"RP","age":22,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":72,"ctl":46,"stf":58,"sta":34,"brk":54},"est":true,"basis":"영건 불펜 뎁스"}
+ ]
+},
+"LTE": {
+ "batters": [
+  {"name":"빅터 레이예스","pos":"RF","age":32,"bats":"S","throws":"R","sal":13.0,"yrs":1,"bat":{"con":88,"pow":60,"eye":58,"spd":62,"fld":64,"arm":64},"basis":"2024 202안타 .352 안타왕, 스위치"},
+  {"name":"윤동희","pos":"CF","age":23,"bats":"R","throws":"R","sal":2.0,"yrs":1,"bat":{"con":70,"pow":54,"eye":60,"spd":68,"fld":70,"arm":66},"basis":"국대 발탁 젊은 외야, .290대"},
+  {"name":"황성빈","pos":"LF","age":29,"bats":"L","throws":"L","sal":2.0,"yrs":1,"bat":{"con":72,"pow":28,"eye":58,"spd":92,"fld":70,"arm":52},"basis":"2024 51SB, 몸쪽 붙는 허슬 플레이"},
+  {"name":"전준우","pos":"DH","age":40,"bats":"R","throws":"R","sal":8.0,"yrs":2,"bat":{"con":70,"pow":64,"eye":60,"spd":34,"fld":45,"arm":50},"basis":"통산 .300대 중장거리 노장"},
+  {"name":"나승엽","pos":"1B","age":24,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":70,"pow":66,"eye":78,"spd":50,"fld":66,"arm":62},"basis":"2024 OBP .380+ 고선구 신성"},
+  {"name":"고승민","pos":"2B","age":26,"bats":"L","throws":"R","sal":2.0,"yrs":1,"bat":{"con":74,"pow":62,"eye":62,"spd":60,"fld":66,"arm":62},"basis":"2024 .308 14HR"},
+  {"name":"손호영","pos":"3B","age":32,"bats":"R","throws":"R","sal":2.0,"yrs":1,"bat":{"con":70,"pow":66,"eye":54,"spd":64,"fld":66,"arm":66},"basis":"2024 트레이드 후 .290-18HR급 폭발"},
+  {"name":"유강남","pos":"C","age":34,"bats":"R","throws":"R","sal":8.0,"yrs":2,"bat":{"con":52,"pow":58,"eye":54,"spd":28,"fld":72,"arm":68},"basis":"FA 이후 타격 부진, 프레이밍 강점"},
+  {"name":"박승욱","pos":"SS","age":33,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":58,"pow":42,"eye":56,"spd":60,"fld":72,"arm":68},"basis":"주전 대체 유격"},
+  {"name":"정훈","pos":"1B","age":39,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":62,"pow":52,"eye":58,"spd":36,"fld":58,"arm":52},"basis":"베테랑 대타 자원"},
+  {"name":"김민석","pos":"CF","age":22,"bats":"L","throws":"R","sal":0.8,"yrs":1,"bat":{"con":62,"pow":36,"eye":48,"spd":74,"fld":62,"arm":54},"basis":"고졸 컨택 유망주, 성장 중"},
+  {"name":"정보근","pos":"C","age":27,"bats":"R","throws":"R","sal":0.6,"yrs":1,"bat":{"con":46,"pow":30,"eye":44,"spd":38,"fld":70,"arm":66},"est":true,"basis":"수비 백업 포수"},
+  {"name":"노진혁","pos":"SS","age":37,"bats":"L","throws":"R","sal":3.0,"yrs":1,"bat":{"con":54,"pow":52,"eye":60,"spd":42,"fld":66,"arm":64},"basis":"FA 계약 말년, 하락세"},
+  {"name":"장두성","pos":"LF","age":26,"bats":"L","throws":"L","sal":0.4,"yrs":1,"bat":{"con":44,"pow":25,"eye":42,"spd":88,"fld":64,"arm":48},"est":true,"basis":"대주자 스페셜리스트"}
+ ],
+ "pitchers": [
+  {"name":"찰리 반즈","pos":"SP","age":30,"bats":"L","throws":"L","sal":13.0,"yrs":1,"pit":{"vel":70,"ctl":68,"stf":74,"sta":78,"brk":74},"basis":"2024 ERA 3.35 170IP 에이스 좌완"},
+  {"name":"애런 윌커슨","pos":"SP","age":37,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":58,"ctl":84,"stf":62,"sta":84,"brk":68},"basis":"2024 196.2IP 12승 BB/9 1.5 이닝이터"},
+  {"name":"박세웅","pos":"SP","age":31,"bats":"R","throws":"R","sal":9.0,"yrs":4,"pit":{"vel":70,"ctl":62,"stf":66,"sta":76,"brk":68},"basis":"매년 150IP+ 안방 토종 에이스"},
+  {"name":"김진욱","pos":"SP","age":24,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":72,"ctl":46,"stf":68,"sta":62,"brk":66},"basis":"K 많고 BB 많은 좌완, 불펜↔선발"},
+  {"name":"이민석","pos":"SP","age":23,"bats":"R","throws":"R","sal":0.8,"yrs":1,"pit":{"vel":74,"ctl":48,"stf":64,"sta":58,"brk":58},"est":true,"basis":"1라운드 출신 영건, 표본 적음"},
+  {"name":"김원중","pos":"CL","age":33,"bats":"R","throws":"R","sal":8.0,"yrs":3,"pit":{"vel":76,"ctl":56,"stf":72,"sta":34,"brk":72},"basis":"2024 25SV, 포크볼 마무리"},
+  {"name":"구승민","pos":"RP","age":36,"bats":"R","throws":"R","sal":4.0,"yrs":2,"pit":{"vel":68,"ctl":56,"stf":62,"sta":32,"brk":66},"basis":"통산 홀드 상위권 셋업"},
+  {"name":"최준용","pos":"RP","age":25,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":76,"ctl":54,"stf":70,"sta":33,"brk":60},"basis":"어깨 수술 이력 파이어볼러"},
+  {"name":"정철원","pos":"RP","age":27,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":70,"ctl":52,"stf":62,"sta":36,"brk":58},"basis":"2022 신인왕 출신, 트레이드 이적"},
+  {"name":"박진","pos":"RP","age":27,"bats":"R","throws":"R","sal":0.7,"yrs":1,"pit":{"vel":66,"ctl":56,"stf":56,"sta":40,"brk":56},"est":true,"basis":"추격조 뎁스"},
+  {"name":"전미르","pos":"RP","age":21,"bats":"R","throws":"R","sal":0.6,"yrs":1,"pit":{"vel":72,"ctl":48,"stf":60,"sta":32,"brk":60},"est":true,"basis":"2024 신인 초반 활약 후 조정"}
+ ]
+},
+"HWE": {
+ "batters": [
+  {"name":"노시환","pos":"3B","age":26,"bats":"R","throws":"R","sal":5.0,"yrs":1,"bat":{"con":64,"pow":84,"eye":64,"spd":50,"fld":70,"arm":74},"basis":"2023 31HR 홈런왕, 2024 24HR"},
+  {"name":"문현빈","pos":"2B","age":22,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":72,"pow":56,"eye":58,"spd":62,"fld":64,"arm":60},"basis":"고졸 컨택 내야, 꾸준한 성장"},
+  {"name":"채은성","pos":"1B","age":36,"bats":"R","throws":"R","sal":9.0,"yrs":2,"bat":{"con":68,"pow":68,"eye":58,"spd":42,"fld":66,"arm":62},"basis":"매년 20HR 안팎 중심타자"},
+  {"name":"에스테반 플로리얼","pos":"CF","age":29,"bats":"L","throws":"R","sal":11.0,"yrs":1,"bat":{"con":56,"pow":72,"eye":52,"spd":82,"fld":78,"arm":70},"est":true,"basis":"AAA 20-20 툴몬스터, 컨택 불안 환산"},
+  {"name":"이진영","pos":"LF","age":29,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":60,"pow":58,"eye":50,"spd":62,"fld":62,"arm":58},"basis":"중거리 외야 준주전"},
+  {"name":"최재훈","pos":"C","age":37,"bats":"R","throws":"R","sal":5.0,"yrs":2,"bat":{"con":60,"pow":32,"eye":76,"spd":30,"fld":78,"arm":70},"basis":"통산 BB%>K% 출루형 수비 포수"},
+  {"name":"심우준","pos":"SS","age":31,"bats":"R","throws":"R","sal":6.0,"yrs":4,"bat":{"con":56,"pow":32,"eye":48,"spd":82,"fld":76,"arm":66},"basis":"FA 이적, 수비·주루 특화"},
+  {"name":"하주석","pos":"SS","age":32,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":56,"pow":52,"eye":46,"spd":62,"fld":68,"arm":70},"basis":"내야 백업 복귀"},
+  {"name":"김태연","pos":"RF","age":28,"bats":"R","throws":"R","sal":1.2,"yrs":1,"bat":{"con":62,"pow":56,"eye":58,"spd":52,"fld":60,"arm":60},"basis":"멀티 포지션 준주전"},
+  {"name":"최인호","pos":"LF","age":26,"bats":"L","throws":"R","sal":0.8,"yrs":1,"bat":{"con":62,"pow":44,"eye":52,"spd":60,"fld":60,"arm":54},"basis":"백업 외야"},
+  {"name":"황영묵","pos":"2B","age":26,"bats":"L","throws":"R","sal":1.0,"yrs":1,"bat":{"con":68,"pow":36,"eye":56,"spd":68,"fld":62,"arm":58},"basis":"2024 신인 컨택 내야"},
+  {"name":"이도윤","pos":"SS","age":30,"bats":"L","throws":"R","sal":0.7,"yrs":1,"bat":{"con":54,"pow":30,"eye":48,"spd":60,"fld":74,"arm":64},"est":true,"basis":"수비 백업"},
+  {"name":"이재원","pos":"C","age":38,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":46,"pow":42,"eye":44,"spd":26,"fld":66,"arm":60},"est":true,"basis":"베테랑 백업 포수, 이적 이력 불확실"},
+  {"name":"임종찬","pos":"RF","age":25,"bats":"L","throws":"R","sal":0.4,"yrs":1,"bat":{"con":50,"pow":52,"eye":46,"spd":58,"fld":58,"arm":60},"est":true,"basis":"외야 뎁스 추정"}
+ ],
+ "pitchers": [
+  {"name":"코디 폰세","pos":"SP","age":32,"bats":"R","throws":"R","sal":15.0,"yrs":1,"pit":{"vel":88,"ctl":74,"stf":88,"sta":80,"brk":80},"basis":"2025 ERA 1점대·200K급 압도적 시즌"},
+  {"name":"라이언 와이스","pos":"SP","age":29,"bats":"R","throws":"R","sal":12.0,"yrs":1,"pit":{"vel":80,"ctl":60,"stf":78,"sta":72,"brk":70},"basis":"2024 합류 후 K/9 10 안팎"},
+  {"name":"류현진","pos":"SP","age":39,"bats":"L","throws":"L","sal":25.0,"yrs":2,"pit":{"vel":56,"ctl":82,"stf":62,"sta":72,"brk":80},"basis":"2024 ERA 3.87, 커맨드·체인지업 장인"},
+  {"name":"문동주","pos":"SP","age":23,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":88,"ctl":54,"stf":74,"sta":70,"brk":60},"basis":"최고 160.1km/h, 제구 성장 중"},
+  {"name":"황준서","pos":"SP","age":21,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":68,"ctl":52,"stf":60,"sta":60,"brk":62},"basis":"2024 1라운드 좌완"},
+  {"name":"주현상","pos":"CL","age":33,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":70,"ctl":82,"stf":68,"sta":34,"brk":66},"basis":"2024 23SV BB/9 1.5 마무리"},
+  {"name":"김서현","pos":"RP","age":22,"bats":"R","throws":"R","sal":1.2,"yrs":1,"pit":{"vel":90,"ctl":46,"stf":74,"sta":32,"brk":58},"basis":"최고 160km/h 셋업, 제구 과제"},
+  {"name":"박상원","pos":"RP","age":32,"bats":"R","throws":"R","sal":1.5,"yrs":1,"pit":{"vel":70,"ctl":54,"stf":62,"sta":33,"brk":58},"basis":"기합 셋업맨"},
+  {"name":"김범수","pos":"RP","age":31,"bats":"L","throws":"L","sal":1.2,"yrs":1,"pit":{"vel":68,"ctl":48,"stf":60,"sta":32,"brk":62},"basis":"좌완 불펜"},
+  {"name":"한승혁","pos":"RP","age":33,"bats":"R","throws":"R","sal":0.8,"yrs":1,"pit":{"vel":74,"ctl":44,"stf":58,"sta":32,"brk":52},"est":true,"basis":"강속구 제구난 저니맨"},
+  {"name":"조동욱","pos":"RP","age":24,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":68,"ctl":50,"stf":56,"sta":38,"brk":54},"est":true,"basis":"영건 불펜 뎁스 추정"}
+ ]
+},
+"NC": {
+ "batters": [
+  {"name":"박건우","pos":"CF","age":36,"bats":"R","throws":"R","sal":10.0,"yrs":4,"bat":{"con":80,"pow":64,"eye":66,"spd":54,"fld":72,"arm":66},"basis":"통산 .326, 2024에도 3할 정교함 유지"},
+  {"name":"손아섭","pos":"DH","age":38,"bats":"L","throws":"R","sal":6.0,"yrs":2,"bat":{"con":78,"pow":50,"eye":64,"spd":44,"fld":45,"arm":50},"basis":"2023 타격왕 .339, KBO 통산 최다안타"},
+  {"name":"박민우","pos":"2B","age":33,"bats":"L","throws":"R","sal":9.0,"yrs":4,"bat":{"con":82,"pow":40,"eye":70,"spd":74,"fld":74,"arm":58},"basis":"2024 .328, 통산 .320대 2루수"},
+  {"name":"김주원","pos":"SS","age":24,"bats":"S","throws":"R","sal":2.0,"yrs":1,"bat":{"con":62,"pow":60,"eye":62,"spd":72,"fld":78,"arm":76},"basis":"2024 15HR 스위치 유격수, 국대"},
+  {"name":"서호철","pos":"3B","age":30,"bats":"R","throws":"R","sal":1.5,"yrs":1,"bat":{"con":66,"pow":50,"eye":56,"spd":56,"fld":68,"arm":64},"basis":".280대 준주전 3루"},
+  {"name":"맷 데이비슨","pos":"1B","age":35,"bats":"R","throws":"R","sal":13.0,"yrs":1,"bat":{"con":54,"pow":94,"eye":56,"spd":36,"fld":62,"arm":62},"basis":"2024 46HR 홈런왕"},
+  {"name":"권희동","pos":"LF","age":36,"bats":"R","throws":"R","sal":2.5,"yrs":1,"bat":{"con":62,"pow":56,"eye":68,"spd":44,"fld":60,"arm":58},"basis":"출루형 베테랑 외야"},
+  {"name":"김형준","pos":"C","age":27,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":46,"pow":68,"eye":54,"spd":32,"fld":74,"arm":74},"basis":"국대 포수, 파워 있으나 컨택 난조"},
+  {"name":"천재환","pos":"RF","age":28,"bats":"R","throws":"R","sal":0.7,"yrs":1,"bat":{"con":56,"pow":48,"eye":48,"spd":58,"fld":60,"arm":60},"est":true,"basis":"외야 백업"},
+  {"name":"김휘집","pos":"SS","age":24,"bats":"R","throws":"R","sal":1.2,"yrs":1,"bat":{"con":56,"pow":58,"eye":56,"spd":52,"fld":68,"arm":70},"basis":"트레이드 합류 내야, 파워 잠재력"},
+  {"name":"오영수","pos":"1B","age":27,"bats":"L","throws":"R","sal":0.6,"yrs":1,"bat":{"con":56,"pow":54,"eye":50,"spd":48,"fld":58,"arm":54},"est":true,"basis":"1루 백업"},
+  {"name":"안중열","pos":"C","age":31,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":48,"pow":38,"eye":50,"spd":34,"fld":70,"arm":66},"est":true,"basis":"백업 포수"},
+  {"name":"최정원","pos":"2B","age":26,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":56,"pow":30,"eye":48,"spd":72,"fld":66,"arm":58},"est":true,"basis":"대주자 겸 내야 유틸"},
+  {"name":"박영빈","pos":"CF","age":24,"bats":"L","throws":"L","sal":0.4,"yrs":1,"bat":{"con":48,"pow":26,"eye":44,"spd":82,"fld":66,"arm":50},"est":true,"basis":"발 빠른 외야 뎁스"}
+ ],
+ "pitchers": [
+  {"name":"구창모","pos":"SP","age":29,"bats":"L","throws":"L","sal":8.0,"yrs":4,"pit":{"vel":76,"ctl":60,"stf":78,"sta":62,"brk":76},"basis":"건강 시 ERA 1~2점대 좌완, 잦은 부상으로 sta 하향"},
+  {"name":"로건 앨런","pos":"SP","age":29,"bats":"L","throws":"L","sal":12.0,"yrs":1,"pit":{"vel":72,"ctl":60,"stf":70,"sta":74,"brk":64},"est":true,"basis":"MLB 백엔드 좌완 환산"},
+  {"name":"라일리 톰슨","pos":"SP","age":29,"bats":"R","throws":"R","sal":11.0,"yrs":1,"pit":{"vel":76,"ctl":56,"stf":70,"sta":70,"brk":62},"est":true,"basis":"AAA 파워암 환산 추정"},
+  {"name":"신민혁","pos":"SP","age":27,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":58,"ctl":74,"stf":56,"sta":70,"brk":62},"basis":"제구형 4선발, BB/9 2점대"},
+  {"name":"최성영","pos":"SP","age":29,"bats":"L","throws":"L","sal":1.0,"yrs":1,"pit":{"vel":58,"ctl":62,"stf":52,"sta":62,"brk":58},"basis":"좌완 스윙맨"},
+  {"name":"이용찬","pos":"CL","age":37,"bats":"R","throws":"R","sal":4.0,"yrs":2,"pit":{"vel":64,"ctl":66,"stf":60,"sta":32,"brk":66},"basis":"베테랑 마무리, 통산 세이브 상위"},
+  {"name":"류진욱","pos":"RP","age":30,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":72,"ctl":58,"stf":68,"sta":33,"brk":64},"basis":"2023-24 홀드 상위 셋업"},
+  {"name":"김영규","pos":"RP","age":26,"bats":"L","throws":"L","sal":1.5,"yrs":1,"pit":{"vel":68,"ctl":62,"stf":62,"sta":34,"brk":60},"basis":"좌완 필승조"},
+  {"name":"임정호","pos":"RP","age":36,"bats":"L","throws":"L","sal":1.5,"yrs":1,"pit":{"vel":56,"ctl":58,"stf":54,"sta":30,"brk":66},"basis":"좌완 원포인트 베테랑"},
+  {"name":"김시훈","pos":"RP","age":27,"bats":"R","throws":"R","sal":0.8,"yrs":1,"pit":{"vel":72,"ctl":50,"stf":62,"sta":40,"brk":58},"est":true,"basis":"스윙맨 뎁스"},
+  {"name":"이준호","pos":"RP","age":25,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":68,"ctl":50,"stf":56,"sta":36,"brk":54},"est":true,"basis":"불펜 뎁스 추정"}
+ ]
+},
+"KWM": {
+ "batters": [
+  {"name":"송성문","pos":"3B","age":30,"bats":"L","throws":"R","sal":5.0,"yrs":1,"bat":{"con":80,"pow":70,"eye":68,"spd":62,"fld":72,"arm":68},"basis":"2024 .340 19HR 104타점 브레이크아웃"},
+  {"name":"이주형","pos":"CF","age":25,"bats":"L","throws":"R","sal":1.5,"yrs":1,"bat":{"con":68,"pow":60,"eye":58,"spd":68,"fld":68,"arm":60},"basis":"트레이드 핵심 영건 외야"},
+  {"name":"루벤 카디네스","pos":"RF","age":28,"bats":"L","throws":"R","sal":10.0,"yrs":1,"bat":{"con":58,"pow":76,"eye":54,"spd":58,"fld":60,"arm":64},"est":true,"basis":"AAA 파워 히터 환산 추정"},
+  {"name":"최주환","pos":"1B","age":38,"bats":"L","throws":"R","sal":3.0,"yrs":1,"bat":{"con":62,"pow":58,"eye":62,"spd":36,"fld":60,"arm":54},"basis":"2차 드래프트 이적 베테랑, 중장거리"},
+  {"name":"김건희","pos":"C","age":22,"bats":"R","throws":"R","sal":1.0,"yrs":1,"bat":{"con":60,"pow":66,"eye":52,"spd":40,"fld":58,"arm":62},"est":true,"basis":"타격형 유망 포수, 투타겸업 이력"},
+  {"name":"임지열","pos":"LF","age":30,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":54,"pow":62,"eye":48,"spd":50,"fld":56,"arm":56},"est":true,"basis":"파워 백업 외야"},
+  {"name":"김태진","pos":"2B","age":31,"bats":"L","throws":"R","sal":1.0,"yrs":1,"bat":{"con":62,"pow":34,"eye":50,"spd":58,"fld":64,"arm":56},"basis":"컨택형 유틸 내야"},
+  {"name":"이재상","pos":"SS","age":21,"bats":"R","throws":"R","sal":0.6,"yrs":1,"bat":{"con":50,"pow":44,"eye":44,"spd":58,"fld":70,"arm":68},"est":true,"basis":"주전 낙점 유망 유격수"},
+  {"name":"박수종","pos":"RF","age":26,"bats":"R","throws":"R","sal":0.7,"yrs":1,"bat":{"con":66,"pow":30,"eye":56,"spd":76,"fld":68,"arm":54},"est":true,"basis":"2024 준주전 컨택 외야"},
+  {"name":"김병휘","pos":"3B","age":25,"bats":"R","throws":"R","sal":0.5,"yrs":1,"bat":{"con":52,"pow":48,"eye":48,"spd":54,"fld":62,"arm":60},"est":true,"basis":"내야 뎁스"},
+  {"name":"김동헌","pos":"C","age":22,"bats":"R","throws":"R","sal":0.8,"yrs":1,"bat":{"con":52,"pow":46,"eye":50,"spd":36,"fld":70,"arm":66},"basis":"2023 신인 주전급 포수, 군/부상 복귀"},
+  {"name":"어준서","pos":"SS","age":24,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":52,"pow":34,"eye":50,"spd":64,"fld":66,"arm":60},"est":true,"basis":"내야 백업"},
+  {"name":"변상권","pos":"CF","age":27,"bats":"L","throws":"R","sal":0.5,"yrs":1,"bat":{"con":56,"pow":42,"eye":46,"spd":62,"fld":60,"arm":54},"est":true,"basis":"외야 뎁스"},
+  {"name":"고영우","pos":"2B","age":24,"bats":"R","throws":"R","sal":0.6,"yrs":1,"bat":{"con":58,"pow":44,"eye":52,"spd":56,"fld":64,"arm":60},"est":true,"basis":"2024 데뷔 준수 내야"}
+ ],
+ "pitchers": [
+  {"name":"안우진","pos":"SP","age":27,"bats":"R","throws":"R","sal":3.0,"yrs":1,"pit":{"vel":92,"ctl":64,"stf":88,"sta":78,"brk":78},"basis":"2022 ERA 2.11 224K 탈삼진왕, 군복무 후 복귀"},
+  {"name":"케니 로젠버그","pos":"SP","age":30,"bats":"L","throws":"L","sal":9.0,"yrs":1,"pit":{"vel":68,"ctl":60,"stf":64,"sta":70,"brk":62},"est":true,"basis":"MLB/AAA 좌완 환산"},
+  {"name":"하영민","pos":"SP","age":31,"bats":"R","throws":"R","sal":2.0,"yrs":1,"pit":{"vel":66,"ctl":58,"stf":60,"sta":66,"brk":60},"basis":"2024 로테이션 복귀 성공"},
+  {"name":"정현우","pos":"SP","age":20,"bats":"L","throws":"L","sal":1.1,"yrs":1,"pit":{"vel":70,"ctl":56,"stf":62,"sta":58,"brk":62},"est":true,"basis":"2025 전체 1순위 고졸 좌완"},
+  {"name":"김윤하","pos":"SP","age":21,"bats":"R","throws":"R","sal":0.8,"yrs":1,"pit":{"vel":68,"ctl":50,"stf":58,"sta":60,"brk":56},"est":true,"basis":"고졸 상위픽 영건"},
+  {"name":"주승우","pos":"CL","age":26,"bats":"R","throws":"R","sal":1.0,"yrs":1,"pit":{"vel":72,"ctl":58,"stf":64,"sta":34,"brk":60},"est":true,"basis":"2024 마무리 전환"},
+  {"name":"김재웅","pos":"RP","age":28,"bats":"L","throws":"L","sal":1.2,"yrs":1,"pit":{"vel":62,"ctl":56,"stf":60,"sta":32,"brk":64},"basis":"단신 좌완 투지, 하이 패스트볼"},
+  {"name":"이강준","pos":"RP","age":25,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":82,"ctl":42,"stf":62,"sta":32,"brk":50},"est":true,"basis":"155km/h 원석, 제구 과제"},
+  {"name":"김성민","pos":"RP","age":32,"bats":"L","throws":"L","sal":0.8,"yrs":1,"pit":{"vel":60,"ctl":58,"stf":54,"sta":34,"brk":58},"est":true,"basis":"좌완 불펜"},
+  {"name":"김선기","pos":"RP","age":33,"bats":"R","throws":"R","sal":0.7,"yrs":1,"pit":{"vel":62,"ctl":56,"stf":52,"sta":48,"brk":54},"est":true,"basis":"스윙맨 이닝 소화"},
+  {"name":"박승주","pos":"RP","age":27,"bats":"R","throws":"R","sal":0.5,"yrs":1,"pit":{"vel":66,"ctl":52,"stf":54,"sta":32,"brk":54},"est":true,"basis":"불펜 뎁스 추정"}
+ ]
+}
+}

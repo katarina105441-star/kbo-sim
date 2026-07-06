@@ -1,0 +1,12 @@
+{
+  "KIA": {"name": "KIA 타이거즈", "city": "광주", "stadium": "광주-기아 챔피언스 필드", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 210},
+  "LG":  {"name": "LG 트윈스", "city": "서울", "stadium": "잠실야구장", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 220},
+  "DSN": {"name": "두산 베어스", "city": "서울", "stadium": "잠실야구장", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 200},
+  "SSG": {"name": "SSG 랜더스", "city": "인천", "stadium": "인천 SSG 랜더스필드", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 190},
+  "SAM": {"name": "삼성 라이온즈", "city": "대구", "stadium": "대구 삼성 라이온즈 파크", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 210},
+  "KT":  {"name": "KT 위즈", "city": "수원", "stadium": "수원 KT 위즈 파크", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 180},
+  "LTE": {"name": "롯데 자이언츠", "city": "부산", "stadium": "사직야구장", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 200},
+  "HWE": {"name": "한화 이글스", "city": "대전", "stadium": "대전 한화생명 볼파크", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 210},
+  "NC":  {"name": "NC 다이노스", "city": "창원", "stadium": "창원 NC 파크", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 170},
+  "KWM": {"name": "키움 히어로즈", "city": "서울", "stadium": "고척 스카이돔", "park": {"hr": 1.0, "xbh": 1.0}, "budget": 130}
+}

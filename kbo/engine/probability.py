@@ -177,12 +177,26 @@ TUNE = {
         "retire_age_soft": (36, 55.0),       # 36세+ & OVR<55 → 은퇴
         "retire_age_coin": 41,               # 41세+ 매년 50%
         "retire_age_hard": 44,               # 44세 강제
-        # 스텁 신인 (드리프트 검증으로 rookie_mean_* 조정)
+        # 신인 풀 생성 (스텁 = 정식 드래프트 전 임시. generate_prospect 프리미티브)
         # 성장 기대 +11 반영 시 피크가 리그 평균 근처. 투수는 쇠퇴가 빨라
         # 평형 유지에 더 높은 시작점 필요 (franchise_check 드리프트 진단 결과)
         "rookie_age": (19, 23),
-        "rookie_mean_bat": 52.0, "rookie_mean_pit": 56.0, "rookie_sd": 6.0,
+        "rookie_mean_bat": 51.0, "rookie_mean_pit": 55.0, "rookie_sd": 6.0,
         "rookie_lo": 25.0, "rookie_hi": 68.0,
+        # 아키타입 3티어: 극단 재능 꼬리를 확률적으로 재생산 (엘리트 고갈 방지)
+        # DESIGN_AGING.md §4. 원툴 특화형은 시그니처만 극단 → OVR 평균 → 드리프트 중립.
+        "archetype": {
+            # 티어 확률 (일반 / 특화형 / 특급). 나머지가 일반.
+            "spec_prob": 0.18, "elite_prob": 0.05,
+            # 특화형: 시그니처 gauss(sig_mean, sig_sd) 상한 sig_hi,
+            #         비시그니처 base+off_spec (출전 위해 -1로 완화, 관찰2)
+            "sig_mean": 86.0, "sig_sd": 5.0, "sig_hi": 95.0, "off_spec": -1.0,
+            # 특급: 전 능력치 base+elite_off 상한 elite_hi + 성장재능 g 상단
+            "elite_off": 9.0, "elite_hi": 90.0, "elite_g": (1.45, 0.15, 1.0, 1.7),
+            # 포지션별 시그니처 능력치 묶음 (한 아키타입 = 1~2개 극단)
+            "bat_sigs": [["speed"], ["power"], ["contact", "eye"], ["fielding", "arm"]],
+            "pit_sigs": [["velocity", "stuff"], ["breaking"], ["control"]],
+        },
     },
 }
 

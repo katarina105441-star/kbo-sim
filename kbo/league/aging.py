@@ -56,14 +56,24 @@ def expected_delta(p: Player, name: str, age: int) -> float:
 
 
 # ---------- 재능 추첨 ----------
-def draw_talents(rng: random.Random, p: Player, stub: bool = False) -> None:
+def roll_talents(rng: random.Random, stub: bool = False,
+                 elite: bool = False) -> tuple[float, float]:
+    """(성장 g, 노쇠내성 d) 추첨. stub=고분산, elite=성장재능 상단 밴드."""
     a = TUNE["aging"]
-    mu, sd, lo, hi = a["talent_g"]
-    if stub:
-        sd = a["stub_g_sd"]  # 스텁 신인: 스타 유망주와 bust 공존
-    p.tal_g = clamp(rng.gauss(mu, sd), lo, hi)
+    if elite:
+        mu, sd, lo, hi = a["archetype"]["elite_g"]
+    else:
+        mu, sd, lo, hi = a["talent_g"]
+        if stub:
+            sd = a["stub_g_sd"]  # 스텁 신인: 스타 유망주와 bust 공존
+    g = clamp(rng.gauss(mu, sd), lo, hi)
     mu, sd, lo, hi = a["talent_d"]
-    p.tal_d = clamp(rng.gauss(mu, sd), lo, hi)
+    d = clamp(rng.gauss(mu, sd), lo, hi)
+    return g, d
+
+
+def draw_talents(rng: random.Random, p: Player, stub: bool = False) -> None:
+    p.tal_g, p.tal_d = roll_talents(rng, stub=stub)
 
 
 def ensure_talents(rng: random.Random, players) -> None:
@@ -120,25 +130,65 @@ def should_retire(rng: random.Random, p: Player) -> bool:
     return False
 
 
-# ---------- 스텁 신인 (정식 드래프트 전 임시 유입) ----------
-def make_rookie(rng: random.Random, tid: str, pos: str, seq: str) -> Player:
+# ---------- 신인 풀 생성 (정식 드래프트 재사용 프리미티브) ----------
+def generate_prospect(rng: random.Random, is_pitcher: bool, pos: str = ""):
+    """아키타입 3티어 신인 능력치 + 재능 + 티어 라벨 생성 (DESIGN_AGING.md §4).
+
+    티어: 일반(대다수) / 특화형(시그니처만 극단, 원툴 → OVR 평균 → 드리프트 중립)
+          / 특급(전반 상향 + 성장재능 상단). 반환 (ratings, tal_g, tal_d, tier).
+    로스터/은퇴 플러밍과 무관 → 정식 드래프트가 신인 풀 생성에 그대로 재사용.
+    pos: 향후 포지션별 아키타입(예: 포수 특화) 확장용 예약 인자.
+    """
     a = TUNE["aging"]
+    ar = a["archetype"]
+    base = a["rookie_mean_pit"] if is_pitcher else a["rookie_mean_bat"]
+    names = list(PIT_W if is_pitcher else BAT_W)
+
+    def draw(mean: float, hi: float) -> float:
+        return clamp(rng.gauss(mean, a["rookie_sd"]), a["rookie_lo"], hi)
+
+    r = rng.random()
+    if r < ar["elite_prob"]:                      # 특급 (극소수)
+        tier = "elite"
+        vals = {n: draw(base + ar["elite_off"], ar["elite_hi"]) for n in names}
+        g, d = roll_talents(rng, elite=True)
+    elif r < ar["elite_prob"] + ar["spec_prob"]:  # 특화형 (원툴)
+        tier = "spec"
+        sigs = rng.choice(ar["pit_sigs" if is_pitcher else "bat_sigs"])
+        vals = {}
+        for n in names:
+            if n in sigs:
+                vals[n] = clamp(rng.gauss(ar["sig_mean"], ar["sig_sd"]),
+                                a["rookie_lo"], ar["sig_hi"])
+            else:
+                vals[n] = draw(base + ar["off_spec"], a["rookie_hi"])
+        g, d = roll_talents(rng, stub=True)
+    else:                                         # 일반 유망주
+        tier = "common"
+        vals = {n: draw(base, a["rookie_hi"]) for n in names}
+        g, d = roll_talents(rng, stub=True)
+
+    if is_pitcher:
+        ratings = PitcherRatings(vals["velocity"], vals["control"], vals["stuff"],
+                                 vals["stamina"], vals["breaking"])
+    else:
+        ratings = BatterRatings(vals["contact"], vals["power"], vals["eye"],
+                                vals["speed"], vals["fielding"], vals["arm"])
+    return ratings, g, d, tier
+
+
+def make_rookie(rng: random.Random, tid: str, pos: str, seq: str) -> Player:
+    """generate_prospect를 스텁 신인 Player로 포장 (1:1 은퇴 대체용)."""
     is_pit = pos in ("SP", "RP", "CL")
-    mean = a["rookie_mean_pit"] if is_pit else a["rookie_mean_bat"]
-
-    def roll() -> float:
-        return clamp(rng.gauss(mean, a["rookie_sd"]), a["rookie_lo"], a["rookie_hi"])
-
+    ratings, g, d, _tier = generate_prospect(rng, is_pit, pos)
     bats = "S" if (r := rng.random()) < 0.05 else ("L" if r < 0.35 else "R")
     p = Player(
         pid=f"{tid}-{seq}", name=f"신인{seq}", team_id=tid, pos=pos,
-        age=rng.randint(*a["rookie_age"]),
+        age=rng.randint(*TUNE["aging"]["rookie_age"]),
         bats=bats, throws="L" if rng.random() < 0.25 else "R",
         contract=Contract(0.3, 1), stub=True,
-        pit=PitcherRatings(roll(), roll(), roll(), roll(), roll()) if is_pit else None,
-        bat=None if is_pit else BatterRatings(roll(), roll(), roll(),
-                                              roll(), roll(), roll()))
-    draw_talents(rng, p, stub=True)
+        pit=ratings if is_pit else None, bat=None if is_pit else ratings)
+    p.tal_g, p.tal_d = g, d
     return p
 
 

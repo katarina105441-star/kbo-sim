@@ -198,6 +198,36 @@ TUNE = {
             "pit_sigs": [["velocity", "stuff"], ["breaking"], ["control"]],
         },
     },
+
+    # 연봉/계약·재정 (시즌 간 전용. 설계: DESIGN_CONTRACTS.md)
+    "contract": {
+        # 가치평가: WAR = k·(OVR − repl)·role·scarcity, 금액 = WAR × $/WAR
+        "war_k_bat": 0.15, "war_k_pit": 0.15,
+        # 연봉 대체선수 OVR — 은퇴 대체(42)와 별개 개념(자유롭게 구할 수 있는
+        # 선수 수준). 로스터 평균≈58 대비 55로 잡아야 리그 총연봉≈캡 (economy_check
+        # 캘리브레이션: 최고연봉 24억·중앙 2.7억·캡초과 2/10팀).
+        "ovr_repl": 55.0,
+        "horizon": 6, "discount": 0.10,   # 미래가치 투영 연수·연 할인율
+        "cap_to_war_ratio": 0.040,        # $/WAR(억) = 리그캡 × 이 비율
+        "min_salary": 0.3,                # 최저연봉(억) — 신인 계약금과 정합
+        "signing_bonus_frac": 0.20,       # 계약금 = 총액의 20% (AAV 산정)
+        # 출전 기대(역할) 배율 — 로스터 OVR 순위로 추정
+        "role_reg": 1.0, "role_sub": 0.6, "role_bench": 0.3,
+        "role_sp": 1.0, "role_rp": 0.4,
+        # 포지션 희소성 (C·SS·CF 프리미엄, 1B·DH 할인)
+        "scarcity": {"C": 1.15, "SS": 1.12, "CF": 1.10, "2B": 1.05, "3B": 1.00,
+                     "RF": 0.98, "LF": 0.96, "1B": 0.92, "DH": 0.88,
+                     "SP": 1.05, "RP": 0.90, "CL": 1.00},
+        # 경쟁균형세(소프트캡) + 하한
+        "cap_year0": 137.0, "cap_growth": 0.05,   # 2025 137억, +5%/yr
+        "luxury_rate": 0.50,                       # 초과분 제재금 비율
+        "floor_frac": 0.50,                        # 하한 = 캡 × 이 비율
+        # 동적 예산: EMA + 변동폭 클램프 + 시장/성적 배분 (런어웨이 3중 차단)
+        "ema_alpha": 0.30, "max_swing": 0.15,
+        "budget_base_share": 0.60,   # 시장 기반 (market_size에 곱)
+        "budget_win_share": 0.50,    # 성적 기반 ((wins−72)/72에 곱) — 동적 지배
+        "fa_svc_max_missed": 45,     # 서비스타임 인정 결장 상한 (145일 상당 근사)
+    },
 }
 
 

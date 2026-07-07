@@ -15,6 +15,19 @@ class ParkFactor:
 
 
 @dataclass
+class DraftPick:
+    """드래프트 지명권 자산 (DESIGN_CONTRACTS.md §6 훅).
+
+    지금은 예약 필드만 — 평가/트레이드는 드래프트 단계. value_of() 디스패치가
+    선수와 동일 통화(WAR/억원)로 지명권을 평가할 인터페이스를 위해 존재.
+    """
+    year: int
+    round: int
+    original_tid: str          # 원 소유 구단 (역순지명·트레이드 추적)
+    penalty: bool = False      # 경쟁균형세 초과 페널티 지명권 여부
+
+
+@dataclass
 class Team:
     tid: str
     name: str
@@ -22,6 +35,11 @@ class Team:
     stadium: str
     park: ParkFactor
     budget: float
+    # 재정 (DESIGN_CONTRACTS.md §4). market_size = 시장 크기 고정 오프셋
+    # (1.0 = 리그 평균, 완만한 20~30% 격차). revenue = 전 시즌 수입(억).
+    market_size: float = 1.0
+    revenue: float = 0.0
+    draft_picks: list = field(default_factory=list)   # DraftPick 자산 (§6 훅)
     roster: list[Player] = field(default_factory=list)
     # 라인업: 타순 9명. 각 항목 (선수, 수비 슬롯 or "DH")
     lineup: list[tuple[Player, str]] = field(default_factory=list)

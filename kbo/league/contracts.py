@@ -52,20 +52,22 @@ def asset_war(p: Player, role_pt: float) -> float:
     return total
 
 
-def dollar_per_war(cap: float) -> float:
-    """$/WAR(억) = 리그캡 × 비율. 캡 성장이 연봉에 자동 전파."""
-    return cap * TUNE["contract"]["cap_to_war_ratio"]
+def dollar_per_war(cap: float, year: int = 0) -> float:
+    """$/WAR(억) = 리그캡 × 비율 × 감쇠. 캡 성장이 연봉에 전파되되, 리그 WAR
+    총량이 대체로 일정하므로 연 damp만큼 완화해 실질 인플레를 캡에 정렬한다."""
+    c = TUNE["contract"]
+    return cap * c["cap_to_war_ratio"] * (1.0 - c["war_growth_damp"]) ** year
 
 
-def fair_salary(p: Player, cap: float, role_pt: float) -> float:
+def fair_salary(p: Player, cap: float, role_pt: float, year: int = 0) -> float:
     """올해 적정 연봉(억) = max(최저연봉, war_now × $/WAR)."""
     c = TUNE["contract"]
-    return max(c["min_salary"], war_now(p, role_pt) * dollar_per_war(cap))
+    return max(c["min_salary"], war_now(p, role_pt) * dollar_per_war(cap, year))
 
 
-def contract_value(p: Player, cap: float, role_pt: float) -> float:
+def contract_value(p: Player, cap: float, role_pt: float, year: int = 0) -> float:
     """자산가치(억) = asset_war × $/WAR (다년계약·트레이드 비교 통화)."""
-    return asset_war(p, role_pt) * dollar_per_war(cap)
+    return asset_war(p, role_pt) * dollar_per_war(cap, year)
 
 
 def team_roles(team: Team) -> dict:

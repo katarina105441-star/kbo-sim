@@ -112,7 +112,7 @@ def offseason_finance_tick(rng: random.Random, teams: list[Team],
     for t in teams:
         roles = team_roles(t)
         for p in t.roster:
-            p.contract.salary = round(fair_salary(p, cap, roles[p.pid]), 2)
+            p.contract.salary = round(fair_salary(p, cap, roles[p.pid], year), 2)
             p.contract.years = max(1, p.contract.years)
             active = ((p.season_bat.pa > 0 or p.season_pit.outs > 0)
                       and p.missed <= c["fa_svc_max_missed"])

@@ -54,8 +54,8 @@ def main():
             p, t = byname[nm]
             r = C.team_roles(t)[p.pid]
             sample_rows.append((nm, p.age, overall(p), C.war_now(p, r),
-                                C.asset_war(p, r), C.fair_salary(p, cap0, r),
-                                C.contract_value(p, cap0, r)))
+                                C.asset_war(p, r), C.fair_salary(p, cap0, r, 1),
+                                C.contract_value(p, cap0, r, 1)))
 
     budget_hist = defaultdict(list)   # tid -> [budget/시즌]
     wins_hist = defaultdict(list)

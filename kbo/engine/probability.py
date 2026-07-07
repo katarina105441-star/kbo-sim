@@ -209,6 +209,10 @@ TUNE = {
         "ovr_repl": 55.0,
         "horizon": 6, "discount": 0.10,   # 미래가치 투영 연수·연 할인율
         "cap_to_war_ratio": 0.040,        # $/WAR(억) = 리그캡 × 이 비율
+        # $/WAR 연동 완화 — 캡은 +5%/yr지만 리그 WAR 총량은 대체로 일정.
+        # 로스터 OVR 드리프트가 연봉으로 새어 인플레가 캡 상승률을 소폭 초과
+        # (검증: median 5.4%/yr vs 캡 5%/yr) → $/WAR을 연 0.7% 감쇠해 캡에 정렬.
+        "war_growth_damp": 0.007,
         "min_salary": 0.3,                # 최저연봉(억) — 신인 계약금과 정합
         "signing_bonus_frac": 0.20,       # 계약금 = 총액의 20% (AAV 산정)
         # 출전 기대(역할) 배율 — 로스터 OVR 순위로 추정

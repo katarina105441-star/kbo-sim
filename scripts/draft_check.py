@@ -41,8 +41,17 @@ def main():
 
     rank_hist = defaultdict(list)          # tid -> [순위/시즌]
     val_by_rank = defaultdict(list)        # 지명팀 전시즌순위 -> [지명 true_val]
+    from kbo.engine.probability import TUNE
+    _ms, _ls = TUNE["draft"]["round_mid_start"], TUNE["draft"]["round_late_start"]
+    B_HI = f"상위(1~{_ms-1}R)" if _ms > 2 else "상위(1R)"
+    B_MID = f"중위({_ms}~{_ls-1}R)"
+    B_LO = f"하위({_ls}R~)"
+
     need_fill, bpa_cases = 0, 0
     n_picks = 0
+    band_picks = {B_HI: [0, 0], B_MID: [0, 0], B_LO: [0, 0]}   # [약점픽, 총]
+    band_age = {B_HI: [], B_MID: [], B_LO: []}                  # 실링(젊음) 확인
+    bpa_samples = []                       # 상위R 특급 Need무시 샘플
     order_val = []                         # (overall_pick_idx, true_val) 스카우팅용
     bust_steal = []                        # 샘플 (라운드, scouted, true)
     rebound_samples = []
@@ -70,10 +79,19 @@ def main():
             n_picks += 1
             val_by_rank[rank[pk.tid]].append(pk.true_val)
             order_val.append((idx, pk.true_val))
-            if pk.need > 0.5:
+            weak = pk.need > 0.5                     # 약점 포지션 지명 여부(원 Need)
+            if weak:
                 need_fill += 1
-            if pk.need < 0.5 and pk.scouted > 20:   # 니드 낮은데 뽑은 고가치 = BPA
+            band = (B_HI if pk.round < _ms else B_MID if pk.round < _ls else B_LO)
+            band_picks[band][1] += 1
+            band_age[band].append(pk.player.age)
+            if weak:
+                band_picks[band][0] += 1
+            if pk.need < 0.5 and pk.scouted > 22:    # 니드 낮은데 뽑은 고가치 = BPA
                 bpa_cases += 1
+                if pk.round < _ms and len(bpa_samples) < 3:
+                    bpa_samples.append((pk.tid, pk.round, pk.player.pos,
+                                        round(pk.scouted, 1)))
             if pk.round <= 2 and pk.true_val < 8:    # 상위픽 bust
                 bust_steal.append(("bust", pk.round, pk.scouted, pk.true_val))
             elif pk.round >= 6 and pk.true_val > 22:  # 늦뽑 대박
@@ -103,9 +121,17 @@ def main():
     print(f"  꼴찌권(8~10위) {band(8,10):.1f} vs 상위권(1~3위) {band(1,3):.1f}"
           f"  (차이 {band(8,10)-band(1,3):+.1f})")
 
-    print("\n[Need/BPA] 지명 결정")
-    print(f"  약점 포지션(need>0) 지명 {need_fill}/{n_picks} ({need_fill/n_picks:.0%})"
-          f" · 니드낮은 고가치(BPA 예외) {bpa_cases}회")
+    print("\n[Need/BPA] 라운드 구간별 약점포지션 지명률 (상위 낮음 / 중위 높음 / 하위 낮음+젊음)")
+    for band, (w, tot) in band_picks.items():
+        age = band_age[band]
+        avg_age = f" · 평균나이 {sum(age)/len(age):.1f}" if age else ""
+        print(f"  {band:<11} 약점포지션 {w}/{tot} ({w/tot:.0%}){avg_age}"
+              if tot else f"  {band:<11} -")
+    print(f"  전체 약점포지션 지명 {need_fill}/{n_picks} ({need_fill/n_picks:.0%})"
+          f" · BPA 예외(니드낮은 고가치) {bpa_cases}회")
+    if bpa_samples:
+        print(f"  BPA 샘플(상위R 특급 Need무시): "
+              + ", ".join(f"{tid} {r}R {pos} 가치{v}" for tid, r, pos, v in bpa_samples))
 
     print("\n[스카우팅 불확실성] 지명순서 ↔ 실제가치")
     idxs = [i for i, _ in order_val]

@@ -249,6 +249,13 @@ TUNE = {
         "retire_blend": 0.15,
         # Need = clamp((ref − depth)/span, 0, 1) × max_bonus (WAR 환산 보너스)
         "need_ref": 62.0, "need_span": 15.0, "need_max_bonus": 6.0,
+        # 라운드별 Need 가중치 (실제 KBO 단장 패턴: 상위 BPA / 중위 Need / 하위 실링).
+        # ※ 우리 드래프트는 은퇴 구멍만 refill(팀당 ~2픽)이라 KBO 11라운드 클래스보다
+        # 얕다 — 픽이 대부분 1~3R. KBO의 1-2/3-7/8+ 매핑을 실제 깊이에 맞춰 축소:
+        # 1R = 프리미엄 픽 BPA / 2~3R = Need 피크(니즈픽) / 4R~ = 실링(원석).
+        "round_mid_start": 2, "round_late_start": 4,
+        "need_mult_early": 0.3, "need_mult_mid": 1.4, "need_mult_late": 0.4,
+        "ceiling_bonus": 3.0,        # 하위 라운드 실링(젊음) 가중 (WAR 환산)
         "scout_noise": 0.35,         # 스카우팅 로그정규 σ (지명 bust/대박의 축)
         # 로스터 구성 보장 — 14야수/11투수. 부족한 타입만 지명 후보로 제한해
         # 투수편중 풀이 야수를 고갈시켜 라인업 불가가 되는 것을 막는다.

@@ -110,10 +110,34 @@ def _depth(team: Team, pos: str) -> float:
 
 
 def need_bonus(team: Team, pos: str) -> float:
-    """Need = clamp((ref − depth)/span, 0, 1) × max_bonus (WAR 환산)."""
+    """Need = clamp((ref − depth)/span, 0, 1) × max_bonus (WAR 환산, 라운드 무관 원값)."""
     d = TUNE["draft"]
     n = clamp((d["need_ref"] - _depth(team, pos)) / d["need_span"], 0.0, 1.0)
     return n * d["need_max_bonus"]
+
+
+def round_need_mult(rnd: int) -> float:
+    """라운드별 Need 가중치 배율 (상위 BPA / 중위 Need / 하위 실링)."""
+    d = TUNE["draft"]
+    if rnd < d["round_mid_start"]:
+        return d["need_mult_early"]
+    if rnd < d["round_late_start"]:
+        return d["need_mult_mid"]
+    return d["need_mult_late"]
+
+
+def ceiling_bonus(p: Player, rnd: int) -> float:
+    """하위 라운드 실링 베팅 — 젊을수록↑ (관측 가능한 업사이드 프록시).
+
+    진짜 재능 g는 숨김이라 팀이 직접 못 본다(스카우팅 불확실성 유지). 젊음은
+    관측 가능한 업사이드 상관치 — 하위 라운드에서 즉전감 대신 원석에 베팅.
+    """
+    d = TUNE["draft"]
+    if rnd < d["round_late_start"]:
+        return 0.0
+    lo, hi = TUNE["aging"]["rookie_age"]
+    youth = clamp((hi - p.age) / (hi - lo), 0.0, 1.0) if hi > lo else 0.0
+    return d["ceiling_bonus"] * youth
 
 
 def _sign(p: Player, team: Team) -> None:
@@ -144,15 +168,16 @@ def run_draft(rng: random.Random, teams: list[Team], standings: list[Team],
                      if (need_bat and not p.is_pitcher) or (need_pit and p.is_pitcher)]
             if not cands:                     # 한 타입이 풀에서 소진된 극단 상황
                 cands = pool
-            best, best_score, best_need = None, -1e9, 0.0
+            mult = round_need_mult(rnd)
+            best, best_score, best_raw_need = None, -1e9, 0.0
             for p in cands:
-                nb = need_bonus(t, p.pos)
-                score = board[p.pid][0] + nb
+                raw_need = need_bonus(t, p.pos)   # 원 Need(포지션 약점 신호)
+                score = board[p.pid][0] + raw_need * mult + ceiling_bonus(p, rnd)
                 if score > best_score:
-                    best, best_score, best_need = p, score, nb
+                    best, best_score, best_raw_need = p, score, raw_need
             pool.remove(best)
             sc, tv = board[best.pid]
             _sign(best, t)
-            results.append(DraftPickResult(year, rnd, t.tid, best, sc, tv, best_need))
+            results.append(DraftPickResult(year, rnd, t.tid, best, sc, tv, best_raw_need))
     precompute_all(p for t in teams for p in t.roster)   # 신규 편입 시프트 계산
     return results

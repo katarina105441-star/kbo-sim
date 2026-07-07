@@ -123,12 +123,20 @@ def offseason_finance_tick(rng: random.Random, teams: list[Team],
         t.budget = round(update_budget(t.budget, target, cap), 2)
 
         payroll = team_payroll(t)
+        floor = cap * c["floor_frac"]
+        if payroll < floor and payroll > 0:    # 하한 강제집행 (DESIGN_DRAFT.md §5)
+            # 남는 예산으로 잔류 선수 재계약가 상향 → 하한 충족. 최저연봉자는 제외,
+            # 배율은 bounded(과잉 인플레 방지). 실제 지출 AI는 FA 단계.
+            scale = min(c["floor_topup_max"], floor / payroll)
+            for p in t.roster:
+                if p.contract.salary > c["min_salary"]:
+                    p.contract.salary = round(p.contract.salary * scale, 2)
+            payroll = team_payroll(t)
+            rep.below_floor.append(t.tid)
         if payroll > cap:                      # 소프트캡 초과 → 제재금 + 지명권 페널티 훅
             tax = (payroll - cap) * c["luxury_rate"]
             t.revenue = round(t.revenue - tax, 2)
             for pk in t.draft_picks:           # §6 훅: 지명권 있으면 페널티 플래그
                 pk.penalty = True
             rep.tax_payers.append((t.tid, round(payroll, 1), round(tax, 1)))
-        if payroll < cap * c["floor_frac"]:    # 하한 미달
-            rep.below_floor.append(t.tid)
     return rep

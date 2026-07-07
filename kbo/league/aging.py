@@ -158,7 +158,8 @@ def generate_prospect(rng: random.Random, is_pitcher: bool, pos: str = ""):
         vals = {}
         for n in names:
             if n in sigs:
-                vals[n] = clamp(rng.gauss(ar["sig_mean"], ar["sig_sd"]),
+                mean = ar.get("sig_mean_override", {}).get(n, ar["sig_mean"])
+                vals[n] = clamp(rng.gauss(mean, ar["sig_sd"]),
                                 a["rookie_lo"], ar["sig_hi"])
             else:
                 vals[n] = draw(base + ar["off_spec"], a["rookie_hi"])
@@ -199,11 +200,14 @@ class OffseasonReport:
     rookies: list = field(default_factory=list)   # [(Team, Player)]
 
 
-def offseason_tick(rng: random.Random, teams: list[Team], year: int = 0) -> OffseasonReport:
-    """시즌 종료 후 1회: 재능 추첨(최초) → 에이징 → 은퇴 → 1:1 스텁 신인.
+def offseason_tick(rng: random.Random, teams: list[Team], year: int = 0,
+                   draft_mode: bool = False) -> OffseasonReport:
+    """시즌 종료 후 1회: 재능 추첨(최초) → 에이징 → 은퇴 → (스텁 대체).
 
-    로스터 인원/포지션 구성이 보존된다. 라인업/로테이션은 다음 시즌
-    시작(SeasonRunner.run)에서 재구성되므로 여기서 건드리지 않는다.
+    draft_mode=False(기본): 은퇴자마다 1:1 스텁 신인으로 즉시 대체 (로스터 보존).
+    draft_mode=True: 은퇴자는 로스터에서 빠지고 '구멍'만 남긴다 → 이후 드래프트가
+      역순+Need로 refill (DESIGN_DRAFT.md). rep.retired로 구멍을 알린다.
+    라인업/로테이션은 다음 시즌 시작에서 재구성되므로 여기서 건드리지 않는다.
     """
     ensure_talents(rng, (p for t in teams for p in t.roster))
     rep = OffseasonReport()
@@ -214,10 +218,11 @@ def offseason_tick(rng: random.Random, teams: list[Team], year: int = 0) -> Offs
         for p in t.roster:
             if should_retire(rng, p):
                 rep.retired.append((t, p))
-                rookie = make_rookie(rng, t.tid, p.pos, f"Y{year}N{n_new}")
-                n_new += 1
-                rep.rookies.append((t, rookie))
-                keep.append(rookie)
+                if not draft_mode:
+                    rookie = make_rookie(rng, t.tid, p.pos, f"Y{year}N{n_new}")
+                    n_new += 1
+                    rep.rookies.append((t, rookie))
+                    keep.append(rookie)
             else:
                 keep.append(p)
         t.roster = keep

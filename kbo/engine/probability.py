@@ -191,6 +191,10 @@ TUNE = {
             # 특화형: 시그니처 gauss(sig_mean, sig_sd) 상한 sig_hi,
             #         비시그니처 base+off_spec (출전 위해 -1로 완화, 관찰2)
             "sig_mean": 86.0, "sig_sd": 5.0, "sig_hi": 95.0, "off_spec": -1.0,
+            # 시그니처별 평균 오버라이드 — 컨택+선구 특화형이 OVR 68로 상시 출전+
+            # 성장해 장기 타율왕 .390+ 상시화(README 미결). contact/eye만 하향해
+            # .40+ 타자 상시생성을 억제 (도루·홈런 특화 재생산은 유지). 4시드+ 튜닝.
+            "sig_mean_override": {"contact": 79.0, "eye": 79.0},
             # 특급: 전 능력치 base+elite_off 상한 elite_hi + 성장재능 g 상단
             "elite_off": 9.0, "elite_hi": 90.0, "elite_g": (1.45, 0.15, 1.0, 1.7),
             # 포지션별 시그니처 능력치 묶음 (한 아키타입 = 1~2개 극단)
@@ -226,11 +230,29 @@ TUNE = {
         "cap_year0": 137.0, "cap_growth": 0.05,   # 2025 137억, +5%/yr
         "luxury_rate": 0.50,                       # 초과분 제재금 비율
         "floor_frac": 0.50,                        # 하한 = 캡 × 이 비율
+        "floor_topup_max": 1.6,                    # 하한 톱업 배율 상한 (과잉 방지)
         # 동적 예산: EMA + 변동폭 클램프 + 시장/성적 배분 (런어웨이 3중 차단)
         "ema_alpha": 0.30, "max_swing": 0.15,
         "budget_base_share": 0.60,   # 시장 기반 (market_size에 곱)
         "budget_win_share": 0.50,    # 성적 기반 ((wins−72)/72에 곱) — 동적 지배
         "fa_svc_max_missed": 45,     # 서비스타임 인정 결장 상한 (145일 상당 근사)
+    },
+
+    # 신인 드래프트 (시즌 간 전용. 설계: DESIGN_DRAFT.md)
+    "draft": {
+        "rounds": 11,                # 팀당 최대 지명 (Z자, 매 라운드 동일 역순)
+        "pool_factor": 1.5,          # 풀 크기 = 총 구멍 × 이 값, [pool_min,max] 클램프
+        "pool_min": 150, "pool_max": 200,
+        "pitcher_frac": 0.62,        # 모집단 투수 편중 (60~65%)
+        # 은퇴 구멍 분포를 소폭만 섞는다 (기본 투수편중 유지 — 구멍은 야수 편중이라
+        # 크게 섞으면 투수편중이 무너짐). 0.15면 투수 ~58% 유지.
+        "retire_blend": 0.15,
+        # Need = clamp((ref − depth)/span, 0, 1) × max_bonus (WAR 환산 보너스)
+        "need_ref": 62.0, "need_span": 15.0, "need_max_bonus": 6.0,
+        "scout_noise": 0.35,         # 스카우팅 로그정규 σ (지명 bust/대박의 축)
+        # 로스터 구성 보장 — 14야수/11투수. 부족한 타입만 지명 후보로 제한해
+        # 투수편중 풀이 야수를 고갈시켜 라인업 불가가 되는 것을 막는다.
+        "roster_bat": 14, "roster_pit": 11,
     },
 }
 

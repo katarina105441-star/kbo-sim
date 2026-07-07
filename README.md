@@ -20,6 +20,9 @@ python scripts/calibrate.py --seasons 20 --seed 1
 python scripts/tail_check.py --seasons 20
 python scripts/ps_check.py --seasons 200
 
+# 프랜차이즈 검증 — N시즌 연속 + 오프시즌 에이징 (드리프트/나이곡선/샘플 궤적)
+python scripts/franchise_check.py --seasons 12
+
 # 테스트
 python -m unittest discover -s tests
 ```
@@ -58,7 +61,14 @@ WC(4위 1승 어드밴티지) → 준PO(5전3선승) → PO(5전3선승) → KS(
 검증(350시즌): 1위 우승률 57.5~58.7% (실제 ~50-60%) · 5위 언더독 KS 진출 5.5~7.3% ·
 중3일 선발 승률 열세·연투 불펜 22% 투입 확인.
 
+## 에이징 커브 (3단계 선행, 설계: [DESIGN_AGING.md](DESIGN_AGING.md))
+
+시즌 간(오프시즌) 능력치 변화: 능력치별 4구간 곡선(성장→피크→완만→급락, 포수 -1년)
++ 숨김 재능 g/d + 연간 노이즈. 은퇴 3단 규칙 → 1:1 스텁 신인(정식 드래프트 전 임시).
+검증(12시즌 연속): 리그 타율 +0.002 / ERA +0.19 드리프트 — 횡보 OK ·
+나이별 OVR 산 모양 · 극단 사례 0건. `python scripts/franchise_check.py`
+
 ## 다음 단계
 
-**2단계 완료** (실책 ✔ 부상 ✔ 등판간격/컨디션 ✔ 포스트시즌 ✔)
-이후 3단계: 구단 운영(FA/트레이드/성장) → 4단계: 웹 UI
+**2단계 완료** (실책 ✔ 부상 ✔ 등판간격/컨디션 ✔ 포스트시즌 ✔) + 에이징 커브 ✔
+이후 3단계 나머지: 구단 운영(FA/트레이드/연봉/드래프트·2군) → 4단계: 웹 UI

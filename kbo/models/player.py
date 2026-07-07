@@ -52,6 +52,11 @@ class Player:
     pit: Optional[PitcherRatings] = None
     est: bool = False        # 능력치가 추정치인지
     basis: str = ""          # 능력치 산정 근거 (실제 성적)
+    stub: bool = False       # 스텁 신인 (정식 드래프트 도입 시 교체 대상)
+    # 숨김 재능 (에이징 커브 개인차, DESIGN_AGING.md §2). 0.0 = 미추첨.
+    # UI/리포트 비노출 — 이후 스카우팅 불확실성의 기초.
+    tal_g: float = 0.0       # 성장 재능 [0.3~1.7]
+    tal_d: float = 0.0       # 노쇠 내성 [0.5~1.6]
     form_season: float = 0.0  # 시즌 폼 편차 (시즌 시작 시 추첨, gauss(0,1) 클램프)
     form_day: float = 0.0     # 일일 핫/콜드 (OU 프로세스, 정상상태 sd≈1)
     inj_days: int = 0        # 잔여 결장일 (0 = 건강)

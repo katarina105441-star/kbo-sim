@@ -112,8 +112,12 @@ def offseason_finance_tick(rng: random.Random, teams: list[Team],
     for t in teams:
         roles = team_roles(t)
         for p in t.roster:
-            p.contract.salary = round(fair_salary(p, cap, roles[p.pid], year), 2)
-            p.contract.years = max(1, p.contract.years)
+            if p.contract.years > 1:       # 다년계약(FA 등) 존속: 연봉 고정, 잔여만 감소
+                p.contract.years -= 1
+            else:                          # 만료 → 적정가 재계약 (중재/연봉조정 프록시)
+                p.contract.salary = round(fair_salary(p, cap, roles[p.pid], year), 2)
+                p.contract.years = 1
+                p.contract.signing_bonus = 0.0
             active = ((p.season_bat.pa > 0 or p.season_pit.outs > 0)
                       and p.missed <= c["fa_svc_max_missed"])
             p.service_years += 1.0 if active else 0.5

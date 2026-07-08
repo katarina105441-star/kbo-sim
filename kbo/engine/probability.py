@@ -261,6 +261,28 @@ TUNE = {
         # 투수편중 풀이 야수를 고갈시켜 라인업 불가가 되는 것을 막는다.
         "roster_bat": 14, "roster_pit": 11,
     },
+
+    # FA 자유계약 (시즌 간 전용. 설계: DESIGN_FA.md)
+    "fa": {
+        "service_req": 8.0,          # 자격 서비스 시즌 (고졸8/대졸7 → 단일 근사)
+        "reelig": 4.0,               # FA 계약 후 재자격까지 추가 서비스
+        # 등급별 보상금 (전년연봉 배수) — 이동 브레이크. A 특급 신중, C 활발.
+        "comp": {"A": 3.0, "B": 2.0, "C": 1.5},
+        # 선수 오퍼 판단 appeal = w_money·money + w_play·play + w_win·win
+        "w_base": (0.50, 0.25, 0.25),     # (money, play, win)
+        "vet_age": 32, "young_age": 28,   # 노장 +win −play / 젊은FA +play −money
+        "tilt": 0.12,                     # 성향 편향 크기 (약하게 — 가치 역전 금지)
+        "w_noise": 0.05,                  # 선수별 가중 노이즈
+        "loyalty": 0.08,                  # 원소속 잔류 오퍼 appeal 가산 (대다수 잔류)
+        "choice_noise": 0.03,             # 선택 노이즈
+        # 구단 입찰: bid = fair_aav × (1 + need·overpay_need + contention·overpay_win)
+        "overpay_need": 0.25, "overpay_win": 0.15, "overpay_cap": 0.35,
+        "need_min": 0.15,            # 이 미만 약점엔 입찰 안 함
+        "spend_frac": 0.40,          # 시장당 누적 FA 지출(AAV+보상금) ≤ 예산 × 이 비율
+        "comp_tolerance": 1.0,       # 보상금 > 계약총가치×이 값이면 입찰 포기(합리성)
+        "contract_years": ((30, 4), (33, 3), (36, 2), (99, 1)),  # (나이 상한, 연수)
+        "max_signings_divisor": 10,  # 팀당 한도 = max(1, 신청자수 // 이 값)
+    },
 }
 
 

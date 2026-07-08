@@ -64,9 +64,11 @@ class Player:
     # UI/리포트 비노출 — 이후 스카우팅 불확실성의 기초.
     tal_g: float = 0.0       # 성장 재능 [0.3~1.7]
     tal_d: float = 0.0       # 노쇠 내성 [0.5~1.6]
-    # FA 서비스타임 훅 (DESIGN_CONTRACTS.md §8). 오프시즌에 활성시즌(1군 등록
-    # ≥145일 상당) 1시즌당 +1 적립. 실제 FA 취득 판정은 FA 단계.
+    # FA 서비스타임 (DESIGN_CONTRACTS.md §8 / DESIGN_FA.md). 오프시즌에 활성시즌
+    # (1군 등록 ≥145일 상당) 1시즌당 +1 적립.
     service_years: float = 0.0
+    fa_eligible_at: float = 0.0   # 재자격 서비스 임계 (FA 계약 시 +reelig로 미룸)
+    fa_grade: str = ""            # 직전 FA 시장 등급 A/B/C (검증·표시용)
     form_season: float = 0.0  # 시즌 폼 편차 (시즌 시작 시 추첨, gauss(0,1) 클램프)
     form_day: float = 0.0     # 일일 핫/콜드 (OU 프로세스, 정상상태 sd≈1)
     inj_days: int = 0        # 잔여 결장일 (0 = 건강)

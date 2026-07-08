@@ -147,16 +147,25 @@ def _sign(p: Player, team: Team) -> None:
 
 def run_draft(rng: random.Random, teams: list[Team], standings: list[Team],
               year: int) -> list[DraftPickResult]:
-    """역순(Z자) 11라운드 지명. standings: 전 시즌 순위(우승→꼴찌)."""
+    """역순(Z자) 11라운드 지명. standings: 전 시즌 순위(우승→꼴찌).
+
+    지명권 트레이드 반영: 슬롯 순서는 원소유팀의 역순 위치를 유지하되,
+    민팅된 라운드(1~3R)는 그 슬롯 지명권의 현 보유팀이 행사한다.
+    """
     d = TUNE["draft"]
     pool = build_pool(rng, teams, year)
     board = scout(rng, pool)
     order = list(reversed(standings))          # 꼴찌 먼저
     target = {t.tid: 25 for t in teams}
+    by_tid = {t.tid: t for t in teams}
+    # (라운드, 원소유 tid) → 보유팀. 민팅 안 된 라운드는 슬롯팀이 행사.
+    owner = {(pk.round, pk.original_tid): t.tid
+             for t in teams for pk in t.draft_picks if pk.year == year}
     results: list[DraftPickResult] = []
 
     for rnd in range(1, d["rounds"] + 1):
-        for t in order:
+        for slot in order:
+            t = by_tid[owner.get((rnd, slot.tid), slot.tid)]
             if len(t.roster) >= target[t.tid] or not pool:
                 continue
             # 로스터 구성 보장: 부족한 타입만 후보로 (14야수/11투수 유지)

@@ -42,10 +42,14 @@ def war_now(p: Player, role_pt: float) -> float:
     return _war_from_ovr(p, overall(p), role_pt)
 
 
-def asset_war(p: Player, role_pt: float) -> float:
-    """미래가치: 현재 + 향후 horizon년 기대 WAR을 할인 합산."""
+def asset_war(p: Player, role_pt: float, discount: float | None = None) -> float:
+    """미래가치: 현재 + 향후 horizon년 기대 WAR을 할인 합산.
+
+    discount 오버라이드 = 시간 선호 (트레이드 GM 관점: 윈나우는 미래를 강하게
+    할인해 즉전을 선호, 리빌딩은 약하게 할인해 유망주를 선호 — DESIGN_TRADE.md §3).
+    """
     c = TUNE["contract"]
-    disc = c["discount"]
+    disc = c["discount"] if discount is None else discount
     total = _war_from_ovr(p, overall(p), role_pt)  # t=0 (현재)
     for t, ovr in enumerate(_future_ovr(p, c["horizon"]), start=1):
         total += _war_from_ovr(p, ovr, role_pt) / (1.0 + disc) ** t
@@ -65,9 +69,10 @@ def fair_salary(p: Player, cap: float, role_pt: float, year: int = 0) -> float:
     return max(c["min_salary"], war_now(p, role_pt) * dollar_per_war(cap, year))
 
 
-def contract_value(p: Player, cap: float, role_pt: float, year: int = 0) -> float:
+def contract_value(p: Player, cap: float, role_pt: float, year: int = 0,
+                   discount: float | None = None) -> float:
     """자산가치(억) = asset_war × $/WAR (다년계약·트레이드 비교 통화)."""
-    return asset_war(p, role_pt) * dollar_per_war(cap, year)
+    return asset_war(p, role_pt, discount) * dollar_per_war(cap, year)
 
 
 def team_roles(team: Team) -> dict:
@@ -83,14 +88,20 @@ def team_roles(team: Team) -> dict:
     return roles
 
 
-def value_of(asset, cap: float, role_pt: float = 1.0) -> float:
-    """자산 통일 평가 디스패치 (DESIGN_CONTRACTS.md §6 훅).
+def value_of(asset, cap: float, role_pt: float = 1.0, year: int = 0,
+             discount: float | None = None, pick_mult: float = 1.0) -> float:
+    """자산 통일 평가 디스패치 (DESIGN_CONTRACTS.md §6) — 선수·지명권 같은 통화(억원).
 
-    선수는 §1 자산가치. DraftPick 평가는 드래프트 단계 구현 — 지금은
-    인터페이스만 열어두고 미구현임을 명시한다 (역순지명 곡선 × 기대 신인 WAR).
+    선수 = §1 자산가치 (discount = 시간 선호 오버라이드). 지명권 = 라운드별
+    기대 신인 WAR(시뮬 실측 역산, DESIGN_TRADE.md §4) × $/WAR × pick_mult
+    (시간 선호: 미래 자산이라 윈나우 할인/리빌딩 프리미엄), 페널티 지명권 할인.
     """
     if isinstance(asset, Player):
-        return contract_value(asset, cap, role_pt)
+        return contract_value(asset, cap, role_pt, year, discount)
     if isinstance(asset, DraftPick):
-        raise NotImplementedError("지명권 평가는 드래프트 단계에서 구현 (§6 훅)")
+        tr = TUNE["trade"]
+        war = tr["pick_war"].get(asset.round, 2.0)
+        if asset.penalty:
+            war *= tr["pick_penalty_mult"]
+        return war * dollar_per_war(cap, year) * pick_mult
     raise TypeError(f"평가 불가 자산: {type(asset).__name__}")

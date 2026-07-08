@@ -51,8 +51,12 @@ class TestValuation(unittest.TestCase):
         teams = _prep()
         p = teams[0].roster[0]
         self.assertGreater(C.value_of(p, 137.0, 1.0), 0)
-        with self.assertRaises(NotImplementedError):
-            C.value_of(DraftPick(2026, 1, "KIA"), 137.0)
+        # 지명권: 라운드 높을수록 가치↑, 페널티 지명권 할인 (트레이드 단계 구현)
+        r1 = C.value_of(DraftPick(2026, 1, "KIA"), 137.0)
+        r3 = C.value_of(DraftPick(2026, 3, "KIA"), 137.0)
+        pen = C.value_of(DraftPick(2026, 1, "KIA", penalty=True), 137.0)
+        self.assertGreater(r1, r3)
+        self.assertLess(pen, r1)
 
 
 class TestBudgetDynamics(unittest.TestCase):

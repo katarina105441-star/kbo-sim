@@ -1,9 +1,26 @@
 # KBO 매니저 — 1단계: 데이터 모델 + 경기 시뮬레이션 엔진
 
-Python 3.10+ / 표준 라이브러리만 사용. 설계 문서: [DESIGN.md](DESIGN.md) ·
+Python 3.10+ / 엔진은 표준 라이브러리만 사용. 설계 문서: [DESIGN.md](DESIGN.md) ·
 능력치 산정 근거: [data/RATINGS_METHOD.md](data/RATINGS_METHOD.md)
 
-## 실행
+## 웹 UI 실행 — 단장 모드 (4단계 MVP-1, 설계: [DESIGN_UI.md](DESIGN_UI.md))
+
+아래 두 줄을 순서대로 터미널에 복사해 실행하면 됩니다 (최초 1회 첫 줄, 이후엔 둘째 줄만):
+
+```bash
+pip install fastapi uvicorn
+python -m uvicorn web.backend.main:app --port 8000
+```
+
+브라우저에서 **http://localhost:8000** 접속 → 구단 선택 → 시즌 진행.
+(프론트엔드는 빌드본이 저장소에 포함돼 있어 별도 설치가 필요 없습니다.
+화면을 고치는 개발자용: `cd web/frontend && npm install && npm run build`)
+
+MVP-1 "관전하는 단장": 팀 선택 → 시즌 진행(하루/시리즈/월/끝까지) → 대시보드·
+순위표·일정/결과(박스스코어)·로스터·선수 상세 열람 + 오프시즌 자동 통과(요약
+리포트) + 저장/이어하기. 오프시즌 개입(트레이드/FA/드래프트)과 라인업 편집은 MVP-2.
+
+## 콘솔 실행
 
 ```bash
 # 단일 경기 (박스스코어)          팀 ID: KIA LG DSN SSG SAM KT LTE HWE NC KWM

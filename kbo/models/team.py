@@ -50,6 +50,7 @@ class Team:
     wins: int = 0
     losses: int = 0
     ties: int = 0
+    user_managed: bool = False   # 유저 팀: 유저가 짠 타순/로테이션 유지 (UI 훅)
 
     @property
     def batters(self) -> list[Player]:
@@ -98,6 +99,18 @@ class Team:
         order.append(pick(lambda t: b(t).power))                              # 4번
         order.extend(sorted(nine, key=lambda t: t[0].bat_overall, reverse=True))
         self.lineup = order
+
+    def refresh_lineup(self) -> None:
+        """경기 전 라인업 갱신. 유저 팀은 짜둔 타순 유지 — 부상자만 최고 백업 대체."""
+        if not (self.user_managed and self.lineup):
+            self.build_default_lineup()
+            return
+        used = {p.pid for p, _ in self.lineup}
+        subs = sorted([p for p in self.batters
+                       if p.inj_days == 0 and p.pid not in used],
+                      key=lambda p: p.bat_overall, reverse=True)
+        self.lineup = [(p, s) if p.inj_days == 0 or not subs
+                       else (subs.pop(0), s) for p, s in self.lineup]
 
     def build_default_pitching(self) -> None:
         sps = sorted([p for p in self.pitchers if p.pos == "SP"],

@@ -170,6 +170,14 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
   const anim = (outcomeShown && !jumped && ev.ball_type)
     ? { key: ev.seed, outcome: ev.outcome, ballType: ev.ball_type, seed: ev.seed }
     : null
+  const POP = { K: '삼진!', HR: '홈런!!', DP: '병살타!', '3B': '3루타!',
+                '2B': '2루타!', '1B': '안타!', E: '실책!', SF: '희생플라이',
+                BB: '볼넷', HBP: '사구', GO: '아웃', FO: '아웃', LO: '아웃' }
+  const pop = (outcomeShown && !jumped)
+    ? { key: ev.seed, text: POP[ev.outcome] || ev.outcome } : null
+  const fieldBatter = isPa && !outcomeShown
+    ? { name: ev.batter.name, bats: ev.batter.bats, throws: ev.pitcher.throws }
+    : null
 
   const jumpTo = (pred) => {
     setJumped(true)
@@ -194,7 +202,8 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
                 after={outcomeShown} />
       <div className="watch-body">
         <div className="watch-left">
-          <Field runners={runners} anim={anim} />
+          <Field runners={runners} anim={anim} batter={fieldBatter}
+                 pitcherName={isPa ? ev.pitcher.name : null} pop={pop} />
           {isPa && (
             <div className="matchup">
               <div className="pcard">

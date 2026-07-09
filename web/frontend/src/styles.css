@@ -159,3 +159,25 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
                          color: #e8edf6; border-radius: 8px; padding: 8px 14px; }
 .watch-controls button:hover { background: #223a63; }
 .watch-controls button.on { background: #e8542f; border-color: #e8542f; font-weight: 700; }
+
+/* 플레이 강조 연출 */
+.pop { animation: pop-in 1.7s ease-out forwards; pointer-events: none; }
+.pop.big { animation: pop-in-big 1.9s ease-out forwards; }
+@keyframes pop-in {
+  0% { opacity: 0; transform: translateY(8px) scale(.6); }
+  12% { opacity: 1; transform: translateY(0) scale(1.05); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px) scale(1); }
+}
+@keyframes pop-in-big {
+  0% { opacity: 0; transform: scale(.4); }
+  14% { opacity: 1; transform: scale(1.25); }
+  26% { transform: scale(1); }
+  78% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.05) translateY(-12px); }
+}
+.runner-score { animation: score-flash 0.9s ease-out 2; }
+@keyframes score-flash {
+  0%, 100% { filter: none; }
+  50% { filter: drop-shadow(0 0 8px #ffd21e) brightness(1.5); }
+}

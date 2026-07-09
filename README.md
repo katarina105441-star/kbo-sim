@@ -16,6 +16,36 @@ python -m uvicorn web.backend.main:app --port 8000
 (프론트엔드는 빌드본이 저장소에 포함돼 있어 별도 설치가 필요 없습니다.
 화면을 고치는 개발자용: `cd web/frontend && npm install && npm run build`)
 
+### 윈도우 처음 설치 가이드 (코딩 몰라도 됨)
+
+1. **파이썬 설치**: https://www.python.org/downloads/ → 노란 "Download Python" 버튼
+   → 받은 파일 실행 → **맨 아래 "Add python.exe to PATH" 체크박스를 반드시 체크**
+   → Install Now. ("Setup was successful" 화면이 뜨면 성공)
+2. **게임 코드 받기**: 이 저장소 GitHub 페이지에서 초록 **[Code] 버튼 → Download ZIP**
+   → 받은 ZIP을 우클릭 → "압축 풀기" → 문서 폴더 등에 풀기.
+3. **명령창 열기**: 압축 푼 폴더(README.md가 보이는 폴더)를 탐색기로 연 뒤,
+   **주소창에 `cmd` 라고 치고 엔터** → 검은 명령창이 그 폴더 위치로 열림.
+4. **설치 (최초 1회)**: 명령창에 아래를 붙여넣고 엔터
+   ```
+   pip install fastapi uvicorn
+   ```
+   ("Successfully installed ..." 이 뜨면 성공)
+5. **게임 실행**: 아래를 붙여넣고 엔터
+   ```
+   python -m uvicorn web.backend.main:app --port 8000
+   ```
+   ("Uvicorn running on http://127.0.0.1:8000" 이 뜨면 성공. 이 창은 켜둔 채로 둘 것)
+6. **브라우저에서 접속**: 크롬/엣지 주소창에 `localhost:8000` 입력 → 구단 선택 화면.
+7. **끝낼 때**: 게임 화면에서 [저장] 누르고, 명령창에서 `Ctrl+C` (다음엔 3→5→6만).
+
+**막힐 때**:
+- `'python'은(는) ... 인식할 수 없습니다` → 1번에서 PATH 체크를 안 한 것.
+  파이썬 설치 파일을 다시 실행해 체크하고 재설치.
+- `'pip'은(는) ... 인식할 수 없습니다` → `python -m pip install fastapi uvicorn` 으로 시도.
+- `Address already in use` → 이미 켜져 있음. 열린 명령창을 닫거나 `--port 8001`로
+  바꿔 실행하고 브라우저도 `localhost:8001`.
+- 브라우저에 "게임이 없습니다" → 정상. 팀을 선택해 새 게임을 시작하면 됨.
+
 MVP-1 "관전하는 단장": 팀 선택 → 시즌 진행(하루/시리즈/월/끝까지) → 대시보드·
 순위표·일정/결과(박스스코어)·로스터·선수 상세 열람 + 오프시즌 자동 통과(요약
 리포트) + 저장/이어하기. 오프시즌 개입(트레이드/FA/드래프트)과 라인업 편집은 MVP-2.

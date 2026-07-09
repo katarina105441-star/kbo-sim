@@ -148,6 +148,18 @@ def offseason_report():
     return sess().offseason_reports
 
 
+@app.get("/api/watch/{day}/{game_idx}")
+def watch(day: int, game_idx: int):
+    s = sess()
+    try:
+        res = s.results_by_day[day - 1][game_idx]
+    except IndexError:
+        raise HTTPException(404, "경기 없음")
+    if not res.struct_events:
+        raise HTTPException(404, "관전 불가 — 내 팀 경기만 관전할 수 있습니다.")
+    return ser.watch_stream(res)
+
+
 # 빌드된 프론트 정적 서빙 (web/frontend/dist)
 _dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 if os.path.isdir(_dist):

@@ -41,6 +41,7 @@ class GameSession:
     # ---------- 시즌 ----------
     def _new_season(self):
         self.season = SeasonRunner(self.teams, self.rng)
+        self.season.record_watch = {self.user_tid}   # 내 경기만 관전 스트림 기록
         self.season.start(keep_results=False)
         self.results_by_day: list[list] = []   # [day][GameResult]
 

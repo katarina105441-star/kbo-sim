@@ -132,4 +132,84 @@ def boxscore(res: GameResult) -> dict:
 
 def game_row(res: GameResult) -> dict:
     return {"away": res.away.tid, "home": res.home.tid,
-            "score": list(res.score), "tie": res.tie}
+            "score": list(res.score), "tie": res.tie,
+            "watchable": bool(res.struct_events)}
+
+
+# ---------- 관전 스트림 (DESIGN_WATCH.md) ----------
+OUTCOME_KO = {"K": "삼진", "BB": "볼넷", "HBP": "사구", "1B": "안타",
+              "2B": "2루타", "3B": "3루타", "HR": "홈런", "GO": "땅볼 아웃",
+              "FO": "뜬공 아웃", "LO": "직선타 아웃", "DP": "병살타",
+              "SF": "희생플라이", "E": "실책 출루"}
+
+
+def _count_seq(rng, outcome: str, n_pitches: int) -> list[str]:
+    """결과·투구수에 정합하는 볼카운트 연출 재구성 (B/S/F/X).
+
+    엔진 밖 독립 rng — 엔진 난수 스트림 무접촉 (시드 결과 불변, DESIGN_WATCH §2).
+    """
+    n = max(1, n_pitches)
+    if outcome == "BB":
+        final, balls, strikes = "B", 3, min(2, max(0, n - 4))
+    elif outcome == "K":
+        final, strikes = "S", 2
+        balls = min(3, max(0, n - 3))
+    elif outcome == "HBP":
+        final = "H"
+        balls = min(3, max(0, n - 2)); strikes = 0
+    else:                       # 인플레이
+        final = "X"
+        balls = min(3, n - 1); strikes = min(2, max(0, n - 1 - min(3, n - 1)))
+    fouls = max(0, n - 1 - balls - strikes)
+    priors = ["B"] * balls + ["S"] * strikes + ["F"] * fouls
+    rng.shuffle(priors)
+    # 파울은 2스트라이크 후에만 의미가 자연스러움 — 순서 보정 없이도 연출로 충분
+    return priors[:n - 1] + [final]
+
+
+def _pa_text(ev: dict) -> str:
+    txt = f"{ev['inning']}회{ev['half']} {ev['batter']['name']}: " \
+          f"{OUTCOME_KO.get(ev['outcome'], ev['outcome'])}"
+    if ev["scored"]:
+        a, h = ev["score"]                    # 타석 시작 시점 스코어
+        if ev["half"] == "초":
+            a += len(ev["scored"])
+        else:
+            h += len(ev["scored"])
+        txt += f" — {', '.join(s['name'] for s in ev['scored'])} 홈인 ({a}:{h})"
+    return txt
+
+
+def watch_stream(res: GameResult) -> dict:
+    """관전 스트림 직렬화. count_seq·text는 표현 편의 (Unity는 무시 가능)."""
+    import random as _r
+    names = {}
+    for s in ("away", "home"):
+        for p, _slot, _bl in res.box_bat[s]:
+            names[p.pid] = p.name
+        for st in res.stints[s]:
+            names[st.player.pid] = st.player.name
+    events = []
+    for ev in res.struct_events:
+        e = dict(ev)
+        if e["t"] == "pa":
+            e["count_seq"] = _count_seq(_r.Random(e["seed"]),
+                                        e["outcome"], e["pitches"])
+            e["text"] = _pa_text(e)
+        elif e["t"] == "steal":
+            e["text"] = (f"{e['inning']}회{e['half']} {e['runner']['name']} "
+                         f"2루 도루 {'성공' if e['success'] else '실패'}")
+        elif e["t"] == "pitch_change":
+            e["text"] = f"{e['inning']}회{e['half']} {e['team']} 투수 교체: " \
+                        f"{e['in']['name']}"
+        events.append(e)
+    return {
+        "meta": {
+            "away": {"tid": res.away.tid, "name": res.away.name},
+            "home": {"tid": res.home.tid, "name": res.home.name},
+            "names": names,
+            "final": {"score": list(res.score), "innings": res.innings,
+                      "tie": res.tie},
+        },
+        "events": events,
+    }

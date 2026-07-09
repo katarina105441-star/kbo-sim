@@ -44,6 +44,8 @@ class SeasonRunner:
         self.tracker = PitcherUsageTracker()
         self.day = 0                  # 진행 위치 (step_day 훅)
         self.keep_results = False
+        # 관전 스트림 기록 대상 팀 tid 집합 (기록은 순수 관측 — 결과 무영향)
+        self.record_watch: set[str] = set()
 
     @property
     def days_played(self) -> int:
@@ -78,7 +80,9 @@ class SeasonRunner:
                 home_unavailable=self.tracker.unavailable(home, self.day),
                 away_unavailable=self.tracker.unavailable(away, self.day),
                 home_pitcher_ctx=self.tracker.ctx(home, self.day),
-                away_pitcher_ctx=self.tracker.ctx(away, self.day))
+                away_pitcher_ctx=self.tracker.ctx(away, self.day),
+                record_struct=(home.tid in self.record_watch
+                               or away.tid in self.record_watch))
             res = sim.run()
             self.tracker.track(res, self.day)
             for side in ("home", "away"):

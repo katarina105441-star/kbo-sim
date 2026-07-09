@@ -7,6 +7,7 @@ import Results from './screens/Results.jsx'
 import Roster from './screens/Roster.jsx'
 import Offseason from './screens/Offseason.jsx'
 import PlayerModal from './screens/PlayerModal.jsx'
+import Watch from './screens/Watch.jsx'
 
 const TABS = [
   ['dashboard', '대시보드'], ['standings', '순위표'], ['results', '일정·결과'],
@@ -19,6 +20,7 @@ export default function App() {
   const [playerPid, setPlayerPid] = useState(null)
   const [busy, setBusy] = useState(false)
   const [flash, setFlash] = useState('')
+  const [watch, setWatch] = useState(null)      // {day, idx} = 관전 중
 
   useEffect(() => { api.state().then(setState).catch(() => {}) }, [])
 
@@ -56,11 +58,14 @@ export default function App() {
       <main>
         {tab === 'dashboard' && <Dashboard state={state} busy={busy} onAdvance={advance} />}
         {tab === 'standings' && <Standings userTid={state.user_tid} onTeam={() => setTab('roster')} />}
-        {tab === 'results' && <Results userTid={state.user_tid} stateDay={state.day} />}
+        {tab === 'results' && <Results userTid={state.user_tid}
+                                       onWatch={(day, idx) => setWatch({ day, idx })} />}
         {tab === 'roster' && <Roster userTid={state.user_tid} onPlayer={setPlayerPid} />}
         {tab === 'offseason' && <Offseason state={state} />}
       </main>
       {playerPid && <PlayerModal pid={playerPid} onClose={() => setPlayerPid(null)} />}
+      {watch && <Watch day={watch.day} gameIdx={watch.idx} userTid={state.user_tid}
+                       onClose={() => setWatch(null)} />}
     </div>
   )
 }

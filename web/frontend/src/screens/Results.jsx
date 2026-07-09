@@ -50,7 +50,7 @@ function Boxscore({ box }) {
   )
 }
 
-export default function Results({ userTid }) {
+export default function Results({ userTid, onWatch }) {
   const [data, setData] = useState(null)
   const [box, setBox] = useState(null)
 
@@ -73,12 +73,19 @@ export default function Results({ userTid }) {
       </h2>
       <div className="game-list">
         {data.games.map((g, i) => (
-          <button key={i}
-                  className={'game-row' + ((g.away === userTid || g.home === userTid) ? ' me' : '')}
+          <div key={i}
+               className={'game-row' + ((g.away === userTid || g.home === userTid) ? ' me' : '')}>
+            <span className="game-score"
                   onClick={() => api.boxscore(data.day, i).then(setBox)}>
-            {g.away} <b>{g.score[0]}</b> : <b>{g.score[1]}</b> {g.home}{g.tie ? ' 무' : ''}
-            <span className="muted"> 박스스코어 ▸</span>
-          </button>
+              {g.away} <b>{g.score[0]}</b> : <b>{g.score[1]}</b> {g.home}{g.tie ? ' 무' : ''}
+            </span>
+            <span className="spacer" />
+            {g.watchable &&
+              <button className="watch-btn" onClick={() => onWatch(data.day, i)}>
+                ▶ 관전</button>}
+            <button className="ghost2"
+                    onClick={() => api.boxscore(data.day, i).then(setBox)}>결과</button>
+          </div>
         ))}
       </div>
       {box && <Boxscore box={box} />}

@@ -88,7 +88,12 @@ function ScoreBug({ meta, ev, count, outs, score, after }) {
 }
 
 export default function Watch({ day, gameIdx, userTid, onClose }) {
-  const [stream, setStream] = useState(null)
+  // 스트림은 청크로 받는다 — 재생 시점 너머(남은 이닝·최종 결과)를 미리 모름
+  const [meta, setMeta] = useState(null)
+  const [events, setEvents] = useState([])
+  const [nextFrom, setNextFrom] = useState(0)
+  const [done, setDone] = useState(false)
+  const fetching = useRef(false)
   const [si, setSi] = useState(0)          // 스텝 커서
   const [playing, setPlaying] = useState(true)
   const [speed, setSpeed] = useState(1)
@@ -96,12 +101,25 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
   const [cards, setCards] = useState({})
   const logRef = useRef(null)
 
-  useEffect(() => { api.results(day) && null }, [])
-  useEffect(() => {
-    fetch(`/api/watch/${day}/${gameIdx}`).then(r => r.json()).then(setStream)
-  }, [day, gameIdx])
+  const fetchChunk = (frm) => {
+    if (fetching.current) return
+    fetching.current = true
+    fetch(`/api/watch/${day}/${gameIdx}?frm=${frm}`).then(r => r.json()).then(d => {
+      setMeta(m => m?.final ? m : d.meta)
+      setEvents(e => [...e, ...d.events])
+      setNextFrom(d.next)
+      setDone(d.done)
+      fetching.current = false
+    })
+  }
+  useEffect(() => { fetchChunk(0) }, [day, gameIdx])
 
-  const steps = useMemo(() => stream ? buildSteps(stream.events) : [], [stream])
+  const steps = useMemo(() => buildSteps(events), [events])
+
+  // 버퍼가 얕아지면 다음 청크 선요청
+  useEffect(() => {
+    if (!done && steps.length - si < 60) fetchChunk(nextFrom)
+  }, [si, steps.length, done])
   const step = steps[si]
 
   // 자동 재생 타이머
@@ -118,12 +136,11 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
     for (const pid of [step.ev.batter.pid, step.ev.pitcher.pid]) {
       if (!cards[pid]) api.player(pid).then(d => setCards(c => ({ ...c, [pid]: d })))
     }
-  }, [si, stream])
+  }, [si, events])
 
   useEffect(() => { logRef.current?.scrollTo(0, 1e9) }, [si])
 
-  if (!stream) return <div className="modal-bg"><div className="modal">로딩…</div></div>
-  const meta = stream.meta
+  if (!meta) return <div className="modal-bg"><div className="modal">로딩…</div></div>
 
   // ---- 현재 표시 상태 도출 (완료된 이벤트 폴드) ----
   const ev = step?.ev
@@ -178,12 +195,31 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
   const fieldBatter = isPa && !outcomeShown
     ? { name: ev.batter.name, bats: ev.batter.bats, throws: ev.pitcher.throws }
     : null
+  const pitchAnim = (isPa && step.kind === 'pitch' && !jumped)
+    ? { key: `${ev.seed}-${step.pitch}`, result: ev.count_seq[step.pitch],
+        seed: (ev.seed + step.pitch * 7919) & 0x7fffffff }
+    : null
 
   const jumpTo = (pred) => {
     setJumped(true)
     for (let i = si + 1; i < steps.length; i++)
       if (pred(steps[i])) { setSi(i); return }
     setSi(steps.length - 1)
+  }
+  const skipToEnd = () => {
+    if (!window.confirm('정말 결과를 볼까요? 남은 경기가 모두 공개됩니다.')) return
+    setJumped(true)
+    setPlaying(false)
+    fetch(`/api/watch/${day}/${gameIdx}/skip?frm=${nextFrom}`, { method: 'POST' })
+      .then(r => r.json()).then(d => {
+        setMeta(d.meta)
+        setEvents(e => {
+          const all = [...e, ...d.events]
+          setTimeout(() => setSi(buildSteps(all).length - 1), 0)
+          return all
+        })
+        setDone(true)
+      })
   }
   const card = (pid) => cards[pid]
   const ratingsLine = (pid) => card(pid)
@@ -202,7 +238,7 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
                 after={outcomeShown} />
       <div className="watch-body">
         <div className="watch-left">
-          <Field runners={runners} anim={anim} batter={fieldBatter}
+          <Field runners={runners} anim={anim} pitch={pitchAnim} batter={fieldBatter}
                  pitcherName={isPa ? ev.pitcher.name : null} pop={pop} />
           {isPa && (
             <div className="matchup">
@@ -236,7 +272,7 @@ export default function Watch({ day, gameIdx, userTid, onClose }) {
                   onClick={() => setSpeed(x)}>{x}x</button>))}
         <button onClick={() => jumpTo(s => s.kind === 'outcome')}>다음 타석 ⏭</button>
         <button onClick={() => jumpTo(s => s.kind === 'half')}>다음 이닝 ⏭⏭</button>
-        <button onClick={() => { setJumped(true); setSi(steps.length - 1) }}>결과로 ⏭⏭⏭</button>
+        <button onClick={skipToEnd}>결과로 ⏭⏭⏭</button>
       </footer>
     </div>
   )

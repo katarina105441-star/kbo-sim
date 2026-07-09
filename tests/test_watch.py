@@ -125,5 +125,75 @@ class TestStreamConsistency(unittest.TestCase):
                 self.assertEqual(seq[-1], "X")
 
 
+class TestSpoilerControl(unittest.TestCase):
+    """스포일러 통제 — 관전 전엔 결과가 화면 어디에도 새지 않는다.
+
+    시뮬은 그대로 한 번에 진행 (난수 안전) — 노출만 통제.
+    """
+
+    def _client(self):
+        from fastapi.testclient import TestClient
+        import web.backend.main as m
+        m.SESSION = None
+        c = TestClient(m.app)
+        c.post("/api/game/new", json={"tid": "KIA", "seed": 42})
+        c.post("/api/sim/advance", json={"unit": "day"})
+        return c
+
+    def test_results_hidden_until_revealed(self):
+        c = self._client()
+        games = c.get("/api/results").json()["games"]
+        mine = next(g for g in games if g["watchable"])
+        self.assertTrue(mine["hidden"])
+        self.assertIsNone(mine["score"])          # 스코어 은닉
+        others = [g for g in games if not g["watchable"]]
+        self.assertTrue(all(g["score"] is not None for g in others))
+
+    def test_news_and_standings_no_leak(self):
+        c = self._client()
+        state = c.get("/api/game/state").json()
+        self.assertTrue(any("관전하세요" in n for n in state["news"]))
+        self.assertFalse(any(":" in n and "경기:" not in n for n in state["news"]))
+        # 순위표/내 기록은 경기 전 스냅샷 (0경기 상태)
+        self.assertEqual(state["my_team"]["games"], 0)
+        rows = c.get("/api/standings").json()
+        self.assertTrue(all(r["games"] == 0 for r in rows))
+
+    def test_stream_chunked_hides_final(self):
+        c = self._client()
+        games = c.get("/api/results").json()["games"]
+        gi = next(i for i, g in enumerate(games) if g["watchable"])
+        first = c.get(f"/api/watch/1/{gi}?frm=0").json()
+        self.assertFalse(first["done"])
+        self.assertNotIn("final", first["meta"])   # 최종 결과 은닉
+        # 아직 미공개 유지
+        self.assertTrue(c.get("/api/results").json()["games"][gi]["hidden"])
+        # 끝까지 받으면 공개
+        frm = first["next"]
+        while True:
+            ch = c.get(f"/api/watch/1/{gi}?frm={frm}").json()
+            frm = ch["next"]
+            if ch["done"]:
+                break
+        self.assertFalse(c.get("/api/results").json()["games"][gi].get("hidden"))
+        self.assertEqual(c.get("/api/game/state").json()["my_team"]["games"], 1)
+
+    def test_boxscore_click_reveals(self):
+        c = self._client()
+        games = c.get("/api/results").json()["games"]
+        gi = next(i for i, g in enumerate(games) if g["watchable"])
+        c.get(f"/api/results/1/{gi}")              # 결과 보기 = 공개 동의
+        self.assertFalse(c.get("/api/results").json()["games"][gi].get("hidden"))
+
+    def test_skip_reveals_and_returns_final(self):
+        c = self._client()
+        games = c.get("/api/results").json()["games"]
+        gi = next(i for i, g in enumerate(games) if g["watchable"])
+        d = c.post(f"/api/watch/1/{gi}/skip?frm=0").json()
+        self.assertTrue(d["done"])
+        self.assertIn("final", d["meta"])
+        self.assertFalse(c.get("/api/results").json()["games"][gi].get("hidden"))
+
+
 if __name__ == "__main__":
     unittest.main()

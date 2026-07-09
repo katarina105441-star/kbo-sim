@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 // ---- 좌표계: 내야가 주인공 (viewBox 0 0 440 400) ----
 export const HOME = { x: 220, y: 330 }
@@ -28,24 +28,73 @@ function ballPath(outcome, ballType, seed) {
   return `M ${HOME.x} ${HOME.y - 20} ${arc}${to.x} ${to.y}`
 }
 
-function Ball({ anim }) {
-  if (!anim) return null
-  const path = ballPath(anim.outcome, anim.ballType, anim.seed)
-  const dur = anim.ballType === 'GB' ? '0.55s' : anim.ballType === 'LD' ? '0.5s' : '1.1s'
+// rAF 기반 비행 훅 — SMIL은 React 마운트 시점에 타임라인이 이미 지나가
+// 애니메이션이 안 보이는 문제가 있어 JS로 직접 구동한다.
+function useFlight(d, durMs, key) {
+  const pathRef = useRef(null)
+  const [st, setSt] = useState({ pt: null, p: 0, done: false })
+  useEffect(() => {
+    const el = pathRef.current
+    if (!el) return
+    const len = el.getTotalLength()
+    const t0 = performance.now()
+    let raf
+    const tick = (now) => {
+      const p = Math.min(1, (now - t0) / durMs)
+      const pos = el.getPointAtLength(len * p)
+      setSt({ pt: { x: pos.x, y: pos.y }, p, done: p >= 1 })
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [key])
+  return { pathRef, ...st }
+}
+
+const OUT_TYPES = ['GO', 'FO', 'LO', 'DP', 'SF']
+
+function BattedBall({ anim }) {
+  const d = ballPath(anim.outcome, anim.ballType, anim.seed)
+  const dur = anim.ballType === 'GB' ? 550 : anim.ballType === 'LD' ? 500 : 1050
+  const { pathRef, pt, p, done } = useFlight(d, dur, anim.key)
+  const isOut = OUT_TYPES.includes(anim.outcome)
+  const fade = anim.outcome === 'HR' && p > 0.88
   return (
-    <g key={anim.key}>
-      {/* 궤적 잔상: 그렸다가 서서히 사라짐 */}
-      <path d={path} fill="none" stroke="#ffe9a8" strokeWidth="2"
-            strokeDasharray="4 5" opacity="0.75">
-        <animate attributeName="opacity" from="0.75" to="0" begin="0.5s"
-                 dur="1.4s" fill="freeze" />
-      </path>
-      <circle r="4.5" fill="#fff" stroke="#c33" strokeWidth="1.2">
-        <animateMotion dur={dur} fill="freeze" path={path} />
-        {anim.outcome === 'HR' &&
-          <animate attributeName="opacity" from="1" to="0" begin="0.95s"
-                   dur="0.3s" fill="freeze" />}
-      </circle>
+    <g>
+      <path ref={pathRef} d={d} fill="none" stroke="none" />
+      {/* 궤적 잔상: 진행만큼 그려지고, 도착 후 서서히 사라짐 */}
+      <path d={d} fill="none" stroke="#ffe9a8" strokeWidth="2"
+            strokeDasharray="4 5" className={done ? 'trail-fade' : ''}
+            style={{ opacity: done ? undefined : 0.35 + p * 0.4 }} />
+      {pt && !fade && (
+        <circle cx={pt.x} cy={pt.y} r="4.5" fill="#fff" stroke="#c33"
+                strokeWidth="1.2" />)}
+      {/* 포구/낙구 표시 */}
+      {done && pt && anim.outcome !== 'HR' && (
+        <circle cx={pt.x} cy={pt.y} r="8" className="catch-ring"
+                fill="none" stroke={isOut ? '#ffd21e' : '#fff'} strokeWidth="2.5" />)}
+      {done && anim.outcome === 'HR' && (
+        <text x={pt?.x ?? 220} y={pt?.y ?? 60} textAnchor="middle" fontSize="16"
+              className="trail-fade">💥</text>)}
+    </g>
+  )
+}
+
+// 투구: 마운드 → 홈플레이트. 볼은 코스가 빠지고 스트라이크는 존 가운데.
+function PitchBall({ pitch }) {
+  const r = srand(pitch.seed)
+  const off = pitch.result === 'B' ? (r() > 0.5 ? 1 : -1) * (9 + r() * 6)
+            : pitch.result === 'S' ? (r() - 0.5) * 6 : (r() - 0.5) * 12
+  const d = `M ${MOUND.x} ${MOUND.y - 8} L ${HOME.x + off} ${HOME.y + 2}`
+  const { pathRef, pt, done } = useFlight(d, 240, pitch.key)
+  return (
+    <g>
+      <path ref={pathRef} d={d} fill="none" stroke="none" />
+      {pt && !done && <circle cx={pt.x} cy={pt.y} r="3.5" fill="#fff" />}
+      {done && pt && <circle cx={pt.x} cy={pt.y} r="6" className="catch-ring"
+                             fill="none"
+                             stroke={pitch.result === 'B' ? '#4caf50' : '#ffb02e'}
+                             strokeWidth="2" />}
     </g>
   )
 }
@@ -83,7 +132,7 @@ function PopText({ pop }) {
   )
 }
 
-export default function Field({ runners, anim, batter, pitcherName, pop }) {
+export default function Field({ runners, anim, pitch, batter, pitcherName, pop }) {
   // 타석: 우타=3루쪽 박스, 좌타=1루쪽. 스위치는 투수 반대손
   let batSide = null
   if (batter) {
@@ -151,9 +200,10 @@ export default function Field({ runners, anim, batter, pitcherName, pop }) {
                 fontSize="10.5" fill="#ffd977" fontWeight="800">{batter.name}</text>
         </g>)}
 
-      {/* 주자 + 타구 + 결과 팝업 */}
+      {/* 주자 + 투구/타구 + 결과 팝업 */}
       {runners.map(t => <Runner key={t.key} token={t} />)}
-      <Ball anim={anim} />
+      {pitch && <PitchBall key={pitch.key} pitch={pitch} />}
+      {anim && <BattedBall key={anim.key} anim={anim} />}
       <PopText pop={pop} />
     </svg>
   )

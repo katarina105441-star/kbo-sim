@@ -54,8 +54,11 @@ export default function Results({ userTid, onWatch }) {
   const [data, setData] = useState(null)
   const [box, setBox] = useState(null)
 
-  const loadDay = (d) => api.results(d).then(r => { setData(r); setBox(null) })
+  const loadDay = (d, keepBox) =>
+    api.results(d).then(r => { setData(r); if (!keepBox) setBox(null) })
   useEffect(() => { loadDay() }, [])
+  const openBox = (i) => api.boxscore(data.day, i)
+    .then(b => { setBox(b); loadDay(data.day, true) })   // 결과 보기 = 공개 → 목록 갱신
 
   if (!data) return null
   if (data.games.length === 0)
@@ -75,16 +78,22 @@ export default function Results({ userTid, onWatch }) {
         {data.games.map((g, i) => (
           <div key={i}
                className={'game-row' + ((g.away === userTid || g.home === userTid) ? ' me' : '')}>
-            <span className="game-score"
-                  onClick={() => api.boxscore(data.day, i).then(setBox)}>
-              {g.away} <b>{g.score[0]}</b> : <b>{g.score[1]}</b> {g.home}{g.tie ? ' 무' : ''}
-            </span>
+            {g.hidden ? (
+              <span className="game-score hidden-score">
+                {g.away} <b>?</b> : <b>?</b> {g.home}
+                <span className="muted"> 결과 미공개</span>
+              </span>
+            ) : (
+              <span className="game-score" onClick={() => openBox(i)}>
+                {g.away} <b>{g.score[0]}</b> : <b>{g.score[1]}</b> {g.home}{g.tie ? ' 무' : ''}
+              </span>
+            )}
             <span className="spacer" />
             {g.watchable &&
               <button className="watch-btn" onClick={() => onWatch(data.day, i)}>
                 ▶ 관전</button>}
-            <button className="ghost2"
-                    onClick={() => api.boxscore(data.day, i).then(setBox)}>결과</button>
+            <button className="ghost2" onClick={() => openBox(i)}>
+              {g.hidden ? '결과 보기' : '결과'}</button>
           </div>
         ))}
       </div>

@@ -44,34 +44,73 @@ class GameSession:
         self.season.record_watch = {self.user_tid}   # 내 경기만 관전 스트림 기록
         self.season.start(keep_results=False)
         self.results_by_day: list[list] = []   # [day][GameResult]
+        # 스포일러 통제: 결과는 이미 확정돼 있지만 사용자에겐 숨긴다.
+        # 최신 내 경기 1개만 숨김 유지 (이전 미관전 경기는 진행 시 자동 공개).
+        self.hidden: tuple | None = None       # (day, idx)
+        self.pre_snapshot: dict | None = None  # 숨김 경기 직전 순위/기록 스냅샷
 
-    def _collect_news(self, day_results):
-        self.news = []
-        for res in day_results:
-            if self.user_tid in (res.home.tid, res.away.tid):
-                a, h = res.score
-                self.news.append(f"{res.away.tid} {a} : {h} {res.home.tid}"
-                                 + (" (무승부)" if res.tie else ""))
-                side = "home" if res.home.tid == self.user_tid else "away"
-                for p, _slot, bl in res.box_bat[side]:
-                    if bl.hr >= 1 or bl.h >= 3:
-                        self.news.append(f"{p.name}: {bl.h}안타 {bl.hr}홈런 "
-                                         f"{bl.rbi}타점")
+    def _records_snapshot(self) -> dict:
+        return {t.tid: (t.wins, t.ties, t.losses) for t in self.teams}
+
+    def reveal(self, day: int, idx: int) -> None:
+        if self.hidden == (day, idx):
+            self.hidden = None
+            self.pre_snapshot = None
+
+    def is_hidden(self, day: int, idx: int) -> bool:
+        return self.hidden == (day, idx)
+
+    def visible_records(self) -> dict | None:
+        """숨김 경기가 있으면 그 직전 기록 (순위표/대시보드 스포일러 방지)."""
+        return self.pre_snapshot if self.hidden else None
+
+    def current_news(self) -> list[str]:
+        """대시보드 알림 — 숨김(미관전) 경기는 결과·활약을 노출하지 않는다."""
+        news = []
+        if not self.results_by_day:
+            return news
+        day_no = len(self.results_by_day)
+        for idx, res in enumerate(self.results_by_day[-1]):
+            if self.user_tid not in (res.home.tid, res.away.tid):
+                continue
+            if self.is_hidden(day_no, idx):
+                news.append(f"오늘 경기: {res.away.tid} @ {res.home.tid} — "
+                            f"일정·결과에서 관전하세요")
+                return news          # 결과·활약·부상 힌트 전부 숨김
+            a, h = res.score
+            news.append(f"{res.away.tid} {a} : {h} {res.home.tid}"
+                        + (" (무승부)" if res.tie else ""))
+            side = "home" if res.home.tid == self.user_tid else "away"
+            for p, _slot, bl in res.box_bat[side]:
+                if bl.hr >= 1 or bl.h >= 3:
+                    news.append(f"{p.name}: {bl.h}안타 {bl.hr}홈런 {bl.rbi}타점")
         hurt = [p for p in self.user_team.roster if 0 < p.inj_days]
         for p in sorted(hurt, key=lambda x: -x.inj_days)[:3]:
-            self.news.append(f"부상: {p.name} (잔여 {p.inj_days}일)")
+            news.append(f"부상: {p.name} (잔여 {p.inj_days}일)")
+        return news
 
     def advance(self, unit: str) -> dict:
-        """진행. 시즌이 끝나면 포스트시즌+오프시즌 자동 통과 후 새 시즌."""
+        """진행. 시즌이 끝나면 포스트시즌+오프시즌 자동 통과 후 새 시즌.
+
+        스포일러 통제: 매일 스텝 직전 기록 스냅샷 → 그날 내 경기를 숨김으로
+        지정 (이전 미관전 경기는 자동 공개 — 최신 1개만 유지).
+        """
         days = {"day": 1, "series": SERIES_DAYS, "month": MONTH_DAYS,
                 "season_end": 10 ** 6}[unit]
         played = 0
         while played < days and not self.season.finished:
+            snap = self._records_snapshot()
             res = self.season.step_day()
             self.results_by_day.append(res)
+            day_no = len(self.results_by_day)
+            for idx, r in enumerate(res):
+                if self.user_tid in (r.home.tid, r.away.tid):
+                    self.hidden = (day_no, idx)
+                    self.pre_snapshot = snap
             played += 1
-        self._collect_news(self.results_by_day[-1] if self.results_by_day else [])
         if self.season.finished:
+            self.hidden = None       # 시즌 종료 = 전 경기 공개
+            self.pre_snapshot = None
             self._season_end()
         return {"played_days": played}
 

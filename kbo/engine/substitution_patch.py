@@ -13,8 +13,20 @@ from .game import GameSimulator
 from .substitutions import SubstitutionManager
 
 
+def _ensure_substitutions(sim) -> None:
+    """Part 2A 저장 파일처럼 ``subs``가 없는 진행 중 경기를 보정한다."""
+    if hasattr(sim, "subs"):
+        return
+    sim.subs = SubstitutionManager(sim.home, sim.away, sim.box)
+    sim.defense = {
+        "home": compute_defense(sim.home, sim.subs.lineup("home")),
+        "away": compute_defense(sim.away, sim.subs.lineup("away")),
+    }
+
+
 @contextmanager
 def _active_lineups(sim):
+    _ensure_substitutions(sim)
     saved_home = sim.home.lineup
     saved_away = sim.away.lineup
     sim.home.lineup = sim.subs.lineup("home")
@@ -39,11 +51,7 @@ def apply_substitution_patch() -> None:
 
     def patched_init(self, *args, **kwargs):
         original_init(self, *args, **kwargs)
-        self.subs = SubstitutionManager(self.home, self.away, self.box)
-        self.defense = {
-            "home": compute_defense(self.home, self.subs.lineup("home")),
-            "away": compute_defense(self.away, self.subs.lineup("away")),
-        }
+        _ensure_substitutions(self)
 
     def patched_begin_half(self):
         with _active_lineups(self):
@@ -102,6 +110,7 @@ def apply_substitution_patch() -> None:
 
     def force_pinch_hitter(self, side: str, player_pid: str) -> dict:
         self.start()
+        _ensure_substitutions(self)
         if self.done:
             raise ValueError("이미 종료된 경기입니다.")
         if not self.at_decision:
@@ -115,6 +124,7 @@ def apply_substitution_patch() -> None:
 
     def force_pinch_runner(self, side: str, base: int, player_pid: str) -> dict:
         self.start()
+        _ensure_substitutions(self)
         if self.done:
             raise ValueError("이미 종료된 경기입니다.")
         if not self.at_decision:
@@ -127,6 +137,7 @@ def apply_substitution_patch() -> None:
 
     def force_defensive_sub(self, side: str, out_pid: str, in_pid: str) -> dict:
         self.start()
+        _ensure_substitutions(self)
         if self.done:
             raise ValueError("이미 종료된 경기입니다.")
         if not self.at_decision:

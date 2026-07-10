@@ -3,6 +3,7 @@ import random
 import unittest
 
 from kbo.engine.baserunning import Runner
+from kbo.engine.defense import compute_defense
 from kbo.engine.game import GameSimulator
 from kbo.engine.substitution_patch import apply_substitution_patch
 from kbo.io.loader import load_league
@@ -65,7 +66,6 @@ class TestSubstitutions(unittest.TestCase):
     def test_defensive_sub_recalculates_defense_and_keeps_batting_order(self):
         home, _away, sim = self.make(13)
         before_order = [p.pid for p, _ in sim.subs.lineup("home")]
-        before_def = sim.defense["home"]
         bench = sim.subs.bench("home")
         target = None
         for i, (old, slot) in enumerate(sim.subs.lineup("home")):
@@ -82,7 +82,7 @@ class TestSubstitutions(unittest.TestCase):
         after = sim.subs.lineup("home")
         self.assertEqual(after[idx][0].pid, replacement.pid)
         self.assertEqual(after[idx][1], slot)
-        self.assertNotEqual(sim.defense["home"], before_def)
+        self.assertEqual(sim.defense["home"], compute_defense(home, after))
         expected = before_order[:]
         expected[idx] = replacement.pid
         self.assertEqual([p.pid for p, _ in after], expected)
@@ -109,9 +109,10 @@ class TestSubstitutions(unittest.TestCase):
 
     def test_no_substitution_keeps_seed_result_and_team_lineups(self):
         home1, away1 = pair()
+        sim1 = GameSimulator(home1, away1, random.Random(2026),
+                             record=False, record_struct=True)
         before1 = {t.tid: [(p.pid, s) for p, s in t.lineup] for t in (home1, away1)}
-        r1 = GameSimulator(home1, away1, random.Random(2026),
-                           record=False, record_struct=True).run()
+        r1 = sim1.run()
         home2, away2 = pair()
         r2 = GameSimulator(home2, away2, random.Random(2026),
                            record=False, record_struct=True).run()

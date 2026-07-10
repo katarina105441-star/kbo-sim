@@ -1,0 +1,86 @@
+name: Finalize trade management assets
+
+on:
+  push:
+    branches:
+      - feat/mvp3-trade-management
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mvp3-trade-management
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+
+      - name: Apply final trade fixes and documentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          backend = Path('web/backend/draft_management.py')
+          text = backend.read_text(encoding='utf-8')
+          anchor = 'from kbo.league.trade_session import InteractiveTradeMarket\n\n\ndef _trade_report'
+          replacement = '''from kbo.league.trade_session import InteractiveTradeMarket\n\n\ndef _trade_asset_name(asset) -> str:\n    return asset.name if hasattr(asset, "name") else f"{asset.round}R 지명권"\n\n\ndef _trade_report'''
+          if anchor not in text:
+              raise SystemExit('trade report helper anchor not found')
+          text = text.replace(anchor, replacement, 1)
+          text = text.replace(
+              'getattr(asset, "name", f"{asset.round}R 지명권")',
+              '_trade_asset_name(asset)')
+          old = '''            "trade_complete": True,\n            "fa_active": self.fa_session is not None,\n        }'''
+          new = '''            "trade_complete": True,\n            "fa_active": self.fa_session is not None,\n            "draft_active": self.draft_session is not None,\n        }'''
+          if old not in text:
+              raise SystemExit('trade transition payload anchor not found')
+          backend.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          off = Path('web/frontend/src/screens/Offseason.jsx')
+          jsx = off.read_text(encoding='utf-8')
+          old = '''    if (result.fa_active) {\n      const faState = await api.faState().catch(() => null)\n      setFa(faState?.active ? faState : null)\n    } else {\n      onState(result.game_state || await api.state())\n    }'''
+          new = '''    if (result.fa_active) {\n      const faState = await api.faState().catch(() => null)\n      setFa(faState?.active ? faState : null)\n    } else if (result.draft_active) {\n      const draftState = await api.draftState().catch(() => null)\n      setDraft(draftState?.active ? draftState : null)\n    } else {\n      onState(result.game_state || await api.state())\n    }'''
+          if old not in jsx:
+              raise SystemExit('offseason trade transition anchor not found')
+          off.write_text(jsx.replace(old, new, 1), encoding='utf-8')
+
+          readme = Path('README.md')
+          doc = readme.read_text(encoding='utf-8')
+          doc = doc.replace(
+              '- 오프시즌 FA 직접 입찰: 선수별 AAV 제안·패스·AI 판단, 예산·보상금·영입 한도 반영\n',
+              '- 오프시즌 트레이드 직접 협상: 선수·지명권 패키지 제안, AI 수락·역제안·거절\n- 오프시즌 FA 직접 입찰: 선수별 AAV 제안·패스·AI 판단, 예산·보상금·영입 한도 반영\n')
+          doc = doc.replace(
+              '- 후속 범위: 트레이드 제안·수락, 2군/육성',
+              '- 후속 범위: 2군/육성, 보상선수, 구단별 운영 성향')
+          doc = doc.replace(
+              '남은 확장: 트레이드 직접 협상·2군/육성·보상선수·구단 개성.',
+              '남은 확장: 2군/육성·보상선수·구단 개성.')
+          readme.write_text(doc, encoding='utf-8')
+          PY
+
+      - name: Build frontend dist
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Commit finalized files
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/backend/draft_management.py web/frontend/src/screens/Offseason.jsx README.md web/frontend/dist
+          if git diff --cached --quiet; then
+            echo 'No finalization changes.'
+          else
+            git commit -m 'Finalize trade management flow and assets'
+            git push origin HEAD:feat/mvp3-trade-management
+          fi

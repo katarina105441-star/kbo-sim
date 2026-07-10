@@ -143,10 +143,10 @@ class TestCareerLegacy(unittest.TestCase):
         self.assertLess(legacy_score(fired), legacy_score(stable))
 
     def test_legacy_tiers_are_ordered(self):
-        self.assertEqual(legacy_tier(140)["key"], "legend")
-        self.assertEqual(legacy_tier(100)["key"], "hall_of_fame")
-        self.assertEqual(legacy_tier(70)["key"], "master")
-        self.assertEqual(legacy_tier(45)["key"], "veteran")
+        self.assertEqual(legacy_tier(180)["key"], "legend")
+        self.assertEqual(legacy_tier(120)["key"], "hall_of_fame")
+        self.assertEqual(legacy_tier(85)["key"], "master")
+        self.assertEqual(legacy_tier(55)["key"], "veteran")
         self.assertEqual(legacy_tier(10)["key"], "career")
 
     def test_payload_contains_preview_and_final_summary(self):

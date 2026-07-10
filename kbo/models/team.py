@@ -46,6 +46,7 @@ class Team:
     rotation: list[Player] = field(default_factory=list)   # 선발 5명 (순환)
     bullpen: list[Player] = field(default_factory=list)    # RP들
     closer: Optional[Player] = None
+    setup: list[Player] = field(default_factory=list)      # 필승조 (불펜 부분집합)
     rot_idx: int = 0
     wins: int = 0
     losses: int = 0
@@ -109,17 +110,37 @@ class Team:
         subs = sorted([p for p in self.batters
                        if p.inj_days == 0 and p.pid not in used],
                       key=lambda p: p.bat_overall, reverse=True)
-        self.lineup = [(p, s) if p.inj_days == 0 or not subs
-                       else (subs.pop(0), s) for p, s in self.lineup]
+        refreshed = []
+        for p, slot in self.lineup:
+            if p.inj_days == 0 or not subs:
+                refreshed.append((p, slot))
+                continue
+            # 타순과 슬롯은 그대로 두고, 가능하면 같은 주포지션 백업을 우선한다.
+            idx = next((i for i, sub in enumerate(subs) if sub.pos == slot), 0)
+            refreshed.append((subs.pop(idx), slot))
+        self.lineup = refreshed
 
     def build_default_pitching(self) -> None:
-        sps = sorted([p for p in self.pitchers if p.pos == "SP"],
+        healthy = [p for p in self.pitchers if p.inj_days == 0]
+        sps = sorted([p for p in healthy if p.pos == "SP"],
                      key=lambda p: p.pit_overall, reverse=True)
-        self.rotation = sps[:5]
-        self.closer = next((p for p in self.pitchers if p.pos == "CL"), None)
+        # 건강한 선발이 5명 미만이면 스태미나 높은 불펜을 스윙맨으로 추천한다.
+        swing = sorted([p for p in healthy if p not in sps],
+                       key=lambda p: (p.pit.stamina, p.pit_overall), reverse=True)
+        self.rotation = (sps + swing)[:5]
+        self.closer = next((p for p in healthy
+                            if p.pos == "CL" and p not in self.rotation), None)
+        if self.closer is None:
+            self.closer = next((p for p in sorted(healthy,
+                                                  key=lambda x: x.pit_overall,
+                                                  reverse=True)
+                                if p not in self.rotation), None)
         self.bullpen = sorted(
             [p for p in self.pitchers if p is not self.closer and p not in self.rotation],
             key=lambda p: p.pit_overall, reverse=True)
+        # 기본 추천은 기존 OVR 순서의 상위 2명이라 공유 모드의 투수 선택 결과를
+        # 바꾸지 않는다. 유저가 편집한 경우에만 다른 필승조 힌트가 적용된다.
+        self.setup = [p for p in self.bullpen if p.inj_days == 0][:2]
 
     def next_starter(self, advance: bool = True) -> Player:
         """로테이션 순서 고정. 예정 선발이 부상이면 불펜 스윙맨이 땜빵 선발.

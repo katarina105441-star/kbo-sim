@@ -1,0 +1,19 @@
+/* ---- MVP-3 Part 3D 2군·육성 ---- */
+.development-header { display:flex; justify-content:space-between; align-items:center; gap:16px;
+  border-bottom:1px solid #e4e9f1; padding-bottom:12px; }
+.development-header button, .development-row button { border:1px solid #c7d1e0; border-radius:8px;
+  padding:7px 11px; background:#fff; }
+.development-toolbar { display:flex; justify-content:space-between; gap:12px; margin:14px 0; flex-wrap:wrap; }
+.development-table-wrap { overflow-x:auto; }
+.development-table { min-width:980px; }
+.development-row select { min-width:110px; border:1px solid #c7d1e0; border-radius:6px; padding:6px; }
+.development-row td { vertical-align:middle; }
+.development-guide { margin-top:14px; border:1px solid #dce5f1; border-radius:10px; background:#f7f9fc;
+  padding:12px; display:flex; flex-direction:column; gap:5px; }
+.development-guide span { color:#69778e; font-size:13px; }
+@media (max-width:760px) {
+  .development-header { align-items:flex-start; flex-direction:column; }
+  .development-header button { width:100%; }
+  .development-toolbar { flex-direction:column; }
+  .development-toolbar .btn-row { width:100%; display:grid; grid-auto-flow:column; grid-auto-columns:1fr; }
+}

@@ -159,7 +159,7 @@ def team_roster(tid: str):
 @app.get("/api/players/{pid}")
 def player(pid: str):
     for t in sess().teams:
-        for p in t.roster:
+        for p in t.roster + getattr(t, "minors", []):
             if p.pid == pid:
                 return ser.player_detail(p)
     raise HTTPException(404, f"선수 없음: {pid}")

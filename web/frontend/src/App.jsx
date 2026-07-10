@@ -4,12 +4,14 @@ import './live.css'
 import './draft.css'
 import './fa.css'
 import './trade.css'
+import './development.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
 import Results from './screens/Results.jsx'
 import Roster from './screens/Roster.jsx'
 import Lineup from './screens/Lineup.jsx'
+import Development from './screens/Development.jsx'
 import Offseason from './screens/Offseason.jsx'
 import PlayerModal from './screens/PlayerModal.jsx'
 import Watch from './screens/Watch.jsx'
@@ -17,7 +19,8 @@ import LiveGame from './screens/LiveGame.jsx'
 
 const TABS = [
   ['dashboard', '대시보드'], ['standings', '순위표'], ['results', '일정·결과'],
-  ['roster', '로스터'], ['lineup', '라인업 관리'], ['offseason', '오프시즌'],
+  ['roster', '로스터'], ['lineup', '라인업 관리'], ['development', '2군·육성'],
+  ['offseason', '오프시즌'],
 ]
 
 export default function App() {
@@ -110,6 +113,7 @@ export default function App() {
                                        onWatch={(day, idx) => setWatch({ day, idx })} />}
         {tab === 'roster' && <Roster userTid={state.user_tid} onPlayer={setPlayerPid} />}
         {tab === 'lineup' && <Lineup />}
+        {tab === 'development' && <Development onPlayer={setPlayerPid} />}
         {tab === 'offseason' && <Offseason state={state} onState={setState} />}
       </main>
       {playerPid && <PlayerModal pid={playerPid} onClose={() => setPlayerPid(null)} />}

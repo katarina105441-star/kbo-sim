@@ -1,0 +1,38 @@
+/* ---- MVP-3 Part 3B 사용자 참여 FA 시장 ---- */
+.fa-board { background: #fff; border: 1px solid #d8dfeb; border-radius: 12px;
+            padding: 18px; box-shadow: 0 8px 24px rgba(16, 33, 63, .08); }
+.fa-header { display: flex; justify-content: space-between; align-items: center; gap: 16px;
+             border-bottom: 1px solid #e7ebf1; padding-bottom: 12px; }
+.fa-header button { border: 1px solid #c6d0e0; border-radius: 8px; padding: 8px 12px; background: #fff; }
+.fa-player-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; margin: 14px 0; }
+.fa-player-card, .fa-market-card { border: 1px solid #dfe5ee; border-radius: 10px; background: #f8faff; padding: 14px; }
+.fa-player-card { display: flex; align-items: center; gap: 14px; }
+.fa-player-card h3 { font-size: 20px; margin-bottom: 5px; }
+.fa-player-card h3 span { color: #6d7890; font-size: 13px; font-weight: 500; }
+.fa-grade { width: 54px; height: 54px; border-radius: 50%; background: #e8542f; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; }
+.fa-market-card { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fa-market-card > div { background: #fff; border-radius: 8px; padding: 9px; display: flex; flex-direction: column; }
+.fa-market-card span { color: #7c8aa0; font-size: 12px; }
+.fa-market-card b { margin-top: 3px; font-size: 16px; }
+.fa-offer-box { border: 1px solid #efc78e; border-radius: 10px; background: #fff8ed; padding: 14px; }
+.fa-budget-line { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+.fa-offer-box label { display: flex; align-items: center; gap: 8px; font-weight: 800; }
+.fa-offer-box input { width: 120px; border: 1px solid #c6d0e0; border-radius: 7px; padding: 8px; }
+.fa-actions { display: flex; gap: 8px; margin-top: 10px; }
+.fa-actions button { border: 1px solid #c6d0e0; border-radius: 8px; padding: 8px 14px; background: #fff; }
+.fa-results { margin-top: 16px; }
+.fa-results h3 { margin-bottom: 8px; }
+@media (max-width: 760px) {
+  .fa-board { padding: 12px; }
+  .fa-header { align-items: flex-start; flex-direction: column; }
+  .fa-header button { width: 100%; }
+  .fa-player-grid { grid-template-columns: 1fr; }
+  .fa-market-card { grid-template-columns: 1fr 1fr; }
+  .fa-offer-box label { align-items: flex-start; flex-direction: column; }
+  .fa-offer-box input { width: 100%; }
+  .fa-actions { flex-direction: column; }
+  .fa-actions button { width: 100%; }
+  .fa-results { overflow-x: auto; }
+  .fa-results table { min-width: 720px; }
+}

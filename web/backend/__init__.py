@@ -1,7 +1,6 @@
 """웹 백엔드 초기화.
 
-사용자가 직접 운영하는 경기 인스턴스에만 Part 2B 교체 기능을 활성화하고,
-웹 오프시즌에는 사용자 참여 드래프트 상태머신을 연결한다.
+실시간 경기 교체, 사용자 FA 시장, 사용자 드래프트 확장을 등록한다.
 """
 from fastapi import FastAPI
 
@@ -19,7 +18,6 @@ def _sub_text(ev: dict) -> str:
     return text
 
 
-# 완료 경기 관전 스트림에서도 교체 로그가 보이도록 표현 계층만 확장한다.
 from web.backend import serializers as _ser
 if not getattr(_ser, "_substitution_stream_patch", False):
     _original_watch_stream = _ser.watch_stream
@@ -30,7 +28,7 @@ if not getattr(_ser, "_substitution_stream_patch", False):
             if ev.get("t") == "substitution":
                 ev["text"] = _sub_text(ev)
                 ev["source_t"] = "substitution"
-                ev["t"] = "pitch_change"  # 기존 Watch.jsx의 교체 스텝 재사용
+                ev["t"] = "pitch_change"
         return payload
 
     _ser.watch_stream = _watch_stream_with_substitutions
@@ -38,7 +36,6 @@ if not getattr(_ser, "_substitution_stream_patch", False):
 
 
 def _patch_game_session() -> None:
-    """실시간 경기 교체와 사용자 드래프트 확장을 GameSession에 연결한다."""
     apply_draft_management_patch()
 
     from web.backend.session import GameSession
@@ -58,7 +55,6 @@ def _patch_game_session() -> None:
     GameSession._substitution_instance_patch = True
 
 
-# main.py를 크게 수정하지 않고 앱 생성 시 세션 패치와 확장 API를 등록한다.
 if not getattr(FastAPI, "_kbo_extension_router_patch", False):
     _original_fastapi_init = FastAPI.__init__
 
@@ -66,8 +62,10 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         _original_fastapi_init(self, *args, **kwargs)
         _patch_game_session()
         from web.backend.substitution_api import router as substitution_router
+        from web.backend.fa_api import router as fa_router
         from web.backend.draft_api import router as draft_router
         self.include_router(substitution_router)
+        self.include_router(fa_router)
         self.include_router(draft_router)
 
     FastAPI.__init__ = _fastapi_init_with_extensions

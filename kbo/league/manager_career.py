@@ -12,6 +12,7 @@ from .team_identity import identity_of
 GRADE_REPUTATION = {"S": 12, "A": 7, "B": 3, "C": -2, "D": -6, "F": -10}
 GRADE_FAN = {"S": 16, "A": 9, "B": 4, "C": -3, "D": -9, "F": -15}
 GRADE_MEDIA = {"S": -15, "A": -8, "B": -3, "C": 5, "D": 12, "F": 20}
+STRATEGY_LABELS = {"win_now": "윈나우", "balanced": "균형", "rebuild": "리빌딩"}
 
 
 def ensure_manager_career(session) -> None:
@@ -85,6 +86,7 @@ def generate_job_offers(session, former_tid: str) -> list[dict]:
     for team in candidates[:count]:
         rank = rank_map.get(team.tid, 10)
         identity = identity_of(team)
+        strategy_label = STRATEGY_LABELS[identity.strategy]
         confidence = clamp(48.0 + reputation * 0.22 + max(0, rank - 5) * 1.5, 48.0, 74.0)
         contract_years = 3 if reputation >= 65 or rank >= 7 else 2
         offers.append({
@@ -93,13 +95,13 @@ def generate_job_offers(session, former_tid: str) -> list[dict]:
             "city": team.city,
             "previous_rank": rank,
             "strategy": identity.strategy,
-            "strategy_label": identity.strategy_label,
+            "strategy_label": strategy_label,
             "manager_style": identity.manager_style,
             "initial_confidence": round(confidence, 1),
             "contract_years": contract_years,
             "pitch": (
-                f"지난 시즌 {rank}위. {identity.strategy_label} 기조에서 "
-                f"{contract_years}년 재건 계획을 제안합니다."
+                f"지난 시즌 {rank}위. {strategy_label} 기조에서 "
+                f"{contract_years}년 운영 계획을 제안합니다."
             ),
         })
     return offers
@@ -157,7 +159,6 @@ def process_season_career(session) -> dict | None:
             "headline": f"{former_team.name}, 감독 해임 발표…사유는 {reason}",
             "tone": "critical",
         })
-        # 해임된 구단의 사용자 오프시즌 의사결정권을 즉시 회수한다.
         for attr in ("trade_session", "fa_session", "draft_session"):
             if hasattr(session, attr):
                 setattr(session, attr, None)
@@ -219,8 +220,6 @@ def accept_job_offer(session, tid: str) -> dict:
         "tone": "neutral",
     })
 
-    # 시즌 종료 직후 해임됐다면 이미 완료된 에이징 다음 단계인 트레이드부터
-    # 새 구단 소속으로 오프시즌 사용자 경로를 재개한다.
     standings = getattr(session, "offseason_standings", None)
     if standings is not None:
         from kbo.league.trade_session import InteractiveTradeMarket

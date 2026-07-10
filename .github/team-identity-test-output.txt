@@ -1,0 +1,30 @@
+/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/__main__.py", line 18, in <module>
+    main(module=None)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 101, in __init__
+    self.parseArgs(argv)
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 150, in parseArgs
+    self.createTests()
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 161, in createTests
+    self.test = self.testLoader.loadTestsFromNames(self.testNames,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 232, in loadTestsFromNames
+    suites = [self.loadTestsFromName(name, module) for name in names]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 232, in <listcomp>
+    suites = [self.loadTestsFromName(name, module) for name in names]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_team_identity_api.py", line 8, in <module>
+    import web.backend.main as main
+  File "/home/runner/work/kbo-sim/kbo-sim/web/backend/__init__.py", line 26, in <module>
+    _original_watch_stream = _ser.watch_stream
+                             ^^^^^^^^^^^^^^^^^
+AttributeError: module 'web.backend.serializers' has no attribute 'watch_stream'
+exit_code=1

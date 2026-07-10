@@ -86,7 +86,11 @@ class TestLiveGameStateMachine(unittest.TestCase):
 
     def test_invalid_manual_pitcher_changes_are_rejected(self):
         home, away = teams_pair()
-        unavailable = {home.bullpen[0].pid}
+        for team in (home, away):
+            team.build_default_lineup()
+            team.build_default_pitching()
+        unavailable_pid = home.bullpen[0].pid
+        unavailable = {unavailable_pid}
         sim = GameSimulator(home, away, random.Random(99), record=False,
                             home_unavailable=unavailable)
         sim.start()
@@ -95,7 +99,7 @@ class TestLiveGameStateMachine(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "야수"):
             sim.force_pitcher_change("home", home.batters[0].pid)
         with self.assertRaisesRegex(ValueError, "등판할 수 없는"):
-            sim.force_pitcher_change("home", home.bullpen[0].pid)
+            sim.force_pitcher_change("home", unavailable_pid)
         with self.assertRaisesRegex(ValueError, "로스터에 없는"):
             sim.force_pitcher_change("home", away.bullpen[0].pid)
 

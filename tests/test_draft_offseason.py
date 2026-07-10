@@ -1,4 +1,4 @@
-"""웹 시즌 종료에서 육성·트레이드·FA·드래프트로 이어지는 상태 전환 검증."""
+"""웹 시즌 종료에서 육성·트레이드·FA·보상·드래프트로 이어지는 상태 전환 검증."""
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -87,11 +87,12 @@ class TestDraftOffseasonLifecycle(unittest.TestCase):
             self.assertTrue(transition["trade_complete"])
             self.assertIsNone(session.trade_session)
             self.assertIsNone(session.fa_session)
+            self.assertIsNone(session.compensation_session)
             self.assertIsNotNone(session.draft_session)
             self.assertTrue(session.draft_session.user_turn)
             self.assertEqual(
                 [report["stage"] for report in session.offseason_reports],
-                ["2군 육성", "에이징/은퇴", "트레이드", "FA"])
+                ["2군 육성", "에이징/은퇴", "트레이드", "FA", "FA 보상"])
             with self.assertRaisesRegex(RuntimeError, "드래프트"):
                 session.advance("day")
 
@@ -107,7 +108,7 @@ class TestDraftOffseasonLifecycle(unittest.TestCase):
         self.assertNotIn(removed, [player for player, _slot in session.user_team.lineup])
         self.assertEqual(
             [report["stage"] for report in session.offseason_reports],
-            ["2군 육성", "에이징/은퇴", "트레이드", "FA", "드래프트", "재정"])
+            ["2군 육성", "에이징/은퇴", "트레이드", "FA", "FA 보상", "드래프트", "재정"])
         self.assertEqual(session.last_draft_state["complete"], True)
 
 

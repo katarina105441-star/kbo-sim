@@ -1,7 +1,7 @@
 """중단·재개 가능한 사용자 참여 FA 시장.
 
-기존 ``run_fa_market``의 자격·등급·보상금·AI 오퍼·선수 appeal 계산을 그대로
-사용한다. 선수별 봉인식 입찰 직전에 멈춰 사용자가 직접 AAV를 제안하거나 패스,
+공용 ``run_fa_market``의 자격·등급·보상금·구단 성향 오퍼·선수 appeal 계산을
+그대로 사용한다. 선수별 입찰 직전에 멈춰 사용자가 직접 AAV를 제안하거나 패스,
 기존 AI 판단을 선택할 수 있다. 객체는 pickle 저장·복원이 가능하다.
 """
 from __future__ import annotations
@@ -15,7 +15,9 @@ from .aging import overall
 from .contracts import asset_war
 from .economy import league_cap
 from .fa import (FAReport, FASigning, _win_score, assign_grades, compensation,
-                 contract_years, eligible, fair_aav, need_frac, player_weights)
+                 contract_years, eligible, external_offer, fair_aav, need_frac,
+                 player_weights)
+from .team_identity import ensure_team_identities
 
 
 @dataclass
@@ -37,12 +39,15 @@ class InteractiveFAMarket:
         self.standings = standings
         self.year = year
         self.user_tid = user_tid.upper()
+        ensure_team_identities(teams)
         self.cap = league_cap(year)
-        self.rank = {team.tid: i for i, team in enumerate(standings, 1)}
+        self.rank = {team.tid: index for index, team in enumerate(standings, 1)}
         self.by_tid = {team.tid: team for team in teams}
-        self.declared = [p for team in teams for p in team.roster if eligible(p)]
+        self.declared = [player for team in teams for player in team.roster
+                         if eligible(player)]
         assign_grades(self.declared)
-        self.queue = sorted(self.declared, key=lambda p: asset_war(p, 1.0), reverse=True)
+        self.queue = sorted(self.declared,
+                            key=lambda player: asset_war(player, 1.0), reverse=True)
         self.limit = max(1, len(self.declared) // TUNE["fa"]["max_signings_divisor"])
         self.signed_count = {team.tid: 0 for team in teams}
         self.spent = {team.tid: 0.0 for team in teams}
@@ -53,31 +58,25 @@ class InteractiveFAMarket:
         self.last_result: dict | None = None
         self._prepare()
 
-    def _build_ai_offers(self, p: Player, fair: float, comp: float,
+    def _build_ai_offers(self, player: Player, fair: float, comp: float,
                          years: int) -> list[tuple[str, float, bool]]:
-        f = TUNE["fa"]
+        tune = TUNE["fa"]
         offers: list[tuple[str, float, bool]] = []
-        if comp <= fair * years * f["comp_tolerance"]:
+        if comp <= fair * years * tune["comp_tolerance"]:
             for team in self.teams:
-                if team.tid == p.team_id:
+                if team.tid == player.team_id:
                     continue
                 if self.signed_count[team.tid] >= self.limit:
                     continue
-                nf = need_frac(team, p.pos)
-                if nf < f["need_min"]:
+                if need_frac(team, player.pos) < tune["need_min"]:
                     continue
-                premium = min(
-                    f["overpay_cap"],
-                    f["overpay_need"] * nf
-                    + f["overpay_win"] * _win_score(
-                        self.rank[team.tid], len(self.teams)),
-                )
-                aav = fair * (1.0 + premium)
+                aav = external_offer(
+                    team, player, fair, self.rank[team.tid], len(self.teams))
                 if (self.spent[team.tid] + aav + comp
-                        > team.budget * f["spend_frac"]):
+                        > team.budget * tune["spend_frac"]):
                     continue
                 offers.append((team.tid, aav, False))
-        offers.append((p.team_id, fair, True))
+        offers.append((player.team_id, fair, True))
         return offers
 
     def _prepare(self) -> None:
@@ -86,14 +85,14 @@ class InteractiveFAMarket:
         if self.index >= len(self.queue):
             self._finish()
             return
-        p = self.queue[self.index]
-        fair = fair_aav(p, self.cap, self.year)
-        comp = compensation(p)
-        years = contract_years(p)
-        weights = player_weights(self.rng, p)
+        player = self.queue[self.index]
+        fair = fair_aav(player, self.cap, self.year)
+        comp = compensation(player)
+        years = contract_years(player)
+        weights = player_weights(self.rng, player)
         self.pending = PendingFA(
-            p, p.team_id, fair, comp, years, weights,
-            self._build_ai_offers(p, fair, comp, years),
+            player, player.team_id, fair, comp, years, weights,
+            self._build_ai_offers(player, fair, comp, years),
         )
 
     def _finish(self) -> None:
@@ -101,7 +100,7 @@ class InteractiveFAMarket:
             return
         for team in self.teams:
             while len(team.roster) > 25:
-                cut = min(team.roster, key=lambda p: asset_war(p, 0.5))
+                cut = min(team.roster, key=lambda player: asset_war(player, 0.5))
                 team.roster.remove(cut)
                 self.report.released.append((team.tid, cut))
         self.complete = True
@@ -134,11 +133,9 @@ class InteractiveFAMarket:
         pending = self.pending
         if pending is None:
             raise RuntimeError("처리할 FA 선수가 없습니다.")
-        p = pending.player
+        player = pending.player
         offers = list(pending.ai_offers)
 
-        # auto는 기존 run_fa_market의 오퍼 목록을 그대로 사용한다.
-        # pass는 사용자 구단 오퍼를 제거한다. offer는 기존 사용자 오퍼를 교체한다.
         if mode in ("pass", "offer"):
             offers = [offer for offer in offers if offer[0] != self.user_tid]
         if mode == "offer":
@@ -147,8 +144,6 @@ class InteractiveFAMarket:
         elif mode not in ("auto", "pass"):
             raise ValueError(f"알 수 없는 FA 처리 방식입니다: {mode}")
 
-        # 원소속팀 사용자가 패스해 유효 오퍼가 하나도 없는 극단 상황은 자유계약
-        # 미체결 대신 원소속 최소 잔류로 처리해 로스터에서 선수가 사라지지 않게 한다.
         if not offers:
             offers.append((pending.home_tid, pending.fair, True))
 
@@ -158,11 +153,11 @@ class InteractiveFAMarket:
         for tid, aav, is_home in offers:
             team = self.by_tid[tid]
             money = aav / max_aav
-            play = (clamp(need_frac(team, p.pos) + 0.5, 0.0, 1.0)
-                    if is_home else need_frac(team, p.pos))
+            play = (clamp(need_frac(team, player.pos) + 0.5, 0.0, 1.0)
+                    if is_home else need_frac(team, player.pos))
             win = _win_score(self.rank[tid], len(self.teams))
-            w = pending.weights
-            appeal = (w[0] * money + w[1] * play + w[2] * win
+            weights = pending.weights
+            appeal = (weights[0] * money + weights[1] * play + weights[2] * win
                       + (TUNE["fa"]["loyalty"] if is_home else 0.0)
                       + self.rng.gauss(0, TUNE["fa"]["choice_noise"]))
             if appeal > best_appeal:
@@ -170,14 +165,14 @@ class InteractiveFAMarket:
                 best_appeal = appeal
 
         to_tid, aav, is_home = best
-        from_tid = p.team_id
-        p.contract.salary = round(aav, 2)
-        p.contract.years = pending.years
-        p.contract.signing_bonus = round(
+        from_tid = player.team_id
+        player.contract.salary = round(aav, 2)
+        player.contract.years = pending.years
+        player.contract.signing_bonus = round(
             aav * pending.years * TUNE["contract"]["signing_bonus_frac"], 2)
-        p.fa_eligible_at = p.service_years + TUNE["fa"]["reelig"]
+        player.fa_eligible_at = player.service_years + TUNE["fa"]["reelig"]
         signing = FASigning(
-            p, from_tid, to_tid, p.fa_grade, round(aav, 2),
+            player, from_tid, to_tid, player.fa_grade, round(aav, 2),
             round(pending.fair, 2), round(pending.comp, 2),
             len(offers) - 1, pending.weights,
         )
@@ -186,9 +181,9 @@ class InteractiveFAMarket:
         if not is_home:
             home = self.by_tid[from_tid]
             destination = self.by_tid[to_tid]
-            home.roster.remove(p)
-            p.team_id = to_tid
-            destination.roster.append(p)
+            home.roster.remove(player)
+            player.team_id = to_tid
+            destination.roster.append(player)
             destination.budget = round(destination.budget - pending.comp, 2)
             home.budget = round(home.budget + pending.comp, 2)
             self.signed_count[to_tid] += 1
@@ -196,13 +191,13 @@ class InteractiveFAMarket:
 
         user_offered = mode == "offer"
         result = {
-            "pid": p.pid,
-            "name": p.name,
+            "pid": player.pid,
+            "name": player.name,
             "from_tid": from_tid,
             "to_tid": to_tid,
             "aav": round(aav, 2),
             "years": pending.years,
-            "grade": p.fa_grade,
+            "grade": player.fa_grade,
             "comp": round(pending.comp, 2),
             "accepted_user_offer": user_offered and to_tid == self.user_tid,
             "user_offered": user_offered,
@@ -243,12 +238,12 @@ class InteractiveFAMarket:
             }
 
         pending = self.pending
-        p = pending.player
+        player = pending.player
         team = self.by_tid[self.user_tid]
         user_is_home = self.user_tid == pending.home_tid
         max_offer = self._user_offer_limit(pending)
-        recent_bat = p.season_bat
-        recent_pit = p.season_pit
+        recent_bat = player.season_bat
+        recent_pit = player.season_pit
         return {
             "active": True,
             "complete": False,
@@ -256,16 +251,16 @@ class InteractiveFAMarket:
             "index": self.index + 1,
             "declared": len(self.declared),
             "player": {
-                "pid": p.pid,
-                "name": p.name,
-                "age": p.age,
-                "pos": p.pos,
-                "grade": p.fa_grade,
+                "pid": player.pid,
+                "name": player.name,
+                "age": player.age,
+                "pos": player.pos,
+                "grade": player.fa_grade,
                 "team_id": pending.home_tid,
-                "ovr": round(overall(p), 1),
-                "salary": round(p.contract.salary, 2),
-                "service_years": round(p.service_years, 1),
-                "is_pitcher": p.is_pitcher,
+                "ovr": round(overall(player), 1),
+                "salary": round(player.contract.salary, 2),
+                "service_years": round(player.service_years, 1),
+                "is_pitcher": player.is_pitcher,
                 "bat_line": {
                     "avg": round(recent_bat.avg, 3),
                     "hr": recent_bat.hr,
@@ -289,7 +284,7 @@ class InteractiveFAMarket:
                     if offer[0] not in (self.user_tid, pending.home_tid)
                 ]),
                 "user_is_home": user_is_home,
-                "user_need": round(need_frac(team, p.pos), 3),
+                "user_need": round(need_frac(team, player.pos), 3),
                 "user_budget": round(team.budget, 2),
                 "user_spent": round(self.spent[self.user_tid], 2),
                 "max_offer": round(max_offer, 2),

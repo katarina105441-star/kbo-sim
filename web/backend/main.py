@@ -11,9 +11,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from web.backend import serializers as ser
+from web.backend.lineup import ai_recommend, apply_lineup, lineup_payload
 from web.backend.session import GameSession
 
 app = FastAPI(title="KBO 매니저")
@@ -34,6 +35,15 @@ class NewGame(BaseModel):
 
 class Advance(BaseModel):
     unit: str  # day | series | month | season_end
+
+
+class LineupUpdate(BaseModel):
+    order: list[str] = Field(default_factory=list)
+    slots: dict[str, str] = Field(default_factory=dict)
+    rotation: list[str] = Field(default_factory=list)
+    closer: str | None = None
+    setup: list[str] = Field(default_factory=list)
+    use_ai: bool = False
 
 
 @app.get("/api/teams/all")
@@ -144,6 +154,25 @@ def player(pid: str):
             if p.pid == pid:
                 return ser.player_detail(p)
     raise HTTPException(404, f"선수 없음: {pid}")
+
+
+@app.get("/api/my/lineup")
+def my_lineup():
+    """유저 팀의 현재 타순·수비 슬롯·투수 보직과 편집 후보를 반환."""
+    return lineup_payload(sess().user_team)
+
+
+@app.put("/api/my/lineup")
+def my_lineup_update(req: LineupUpdate):
+    """라인업 전체를 원자적으로 저장. ``use_ai``면 AI 추천으로 초기화."""
+    team = sess().user_team
+    try:
+        if req.use_ai:
+            return ai_recommend(team)
+        return apply_lineup(team, req.order, req.slots, req.rotation,
+                            req.closer, req.setup)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/api/results")

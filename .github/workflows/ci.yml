@@ -32,28 +32,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Run focused FA tests
-        id: focused
-        continue-on-error: true
-        run: |
-          set +e
-          python -m unittest tests.test_fa_session tests.test_fa_api tests.test_draft_offseason -v > fa-tests.log 2>&1
-          code=$?
-          cat fa-tests.log
-          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Upload focused test log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: fa-test-log
-          path: fa-tests.log
-
-      - name: Fail when focused tests fail
-        if: steps.focused.outputs.exit_code != '0'
-        run: exit 1
-
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
 

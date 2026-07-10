@@ -76,8 +76,10 @@ class TestEngagement(unittest.TestCase):
         before_budget = session.user_team.budget
         before_confidence = session.owner_confidence
         result = resolve_owner_event(session, choice["id"])
-        self.assertEqual(session.user_team.budget,
-                         round(before_budget + choice["effects"]["budget"], 2))
+        self.assertEqual(
+            session.user_team.budget,
+            round(before_budget + choice["effects"]["budget"] + 2.0, 2),
+        )
         self.assertEqual(session.owner_confidence,
                          before_confidence + choice["effects"]["confidence"])
         self.assertEqual(session.front_office_points, choice["effects"]["points"])

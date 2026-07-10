@@ -33,6 +33,13 @@ export const api = {
   livePinchRunner: (base, pid) => post('/api/live/pinch-runner', { base, pid }),
   liveDefense: (outPid, inPid) => post('/api/live/defense', { out_pid: outPid, in_pid: inPid }),
   liveAuto: () => post('/api/live/auto'),
+  tradeState: () => req('/api/trade/state'),
+  tradePropose: (otherTid, giveAssetIds, receiveAssetIds) => post('/api/trade/propose', {
+    other_tid: otherTid, give_asset_ids: giveAssetIds, receive_asset_ids: receiveAssetIds,
+  }),
+  tradeAcceptCounter: () => post('/api/trade/accept-counter'),
+  tradeRejectCounter: () => post('/api/trade/reject-counter'),
+  tradeFinish: () => post('/api/trade/finish'),
   faState: () => req('/api/fa/state'),
   faOffer: (aav) => post('/api/fa/offer', { aav }),
   faPass: () => post('/api/fa/pass'),

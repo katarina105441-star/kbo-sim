@@ -1,0 +1,34 @@
+.front-office-panel { margin:12px 0 14px; padding:14px; border:1px solid #d9e2ec; border-radius:10px; background:#fbfcfe; }
+.front-office-panel.pressure,.front-office-panel.warning,.front-office-panel.critical { border-color:#ead8ca; background:#fffaf6; }
+.front-office-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.front-office-head > div { display:flex; flex-direction:column; gap:3px; }
+.front-office-head .eyebrow { color:#74839a; font-size:11px; font-weight:700; text-transform:uppercase; }
+.front-office-head b { color:#203650; font-size:15px; }
+.risk-badge { padding:4px 9px; border-radius:14px; background:#e7eef7; color:#38577f; font-size:11px; font-weight:800; white-space:nowrap; }
+.risk-badge.pressure { background:#fff0d7; color:#8b5a13; }
+.risk-badge.warning,.risk-badge.critical { background:#fde5df; color:#a23d2d; }
+.front-office-panel p { margin:9px 0; color:#617086; font-size:12.5px; line-height:1.45; }
+.objective-row,.confidence-row,.dismissal-row { display:flex; justify-content:space-between; gap:12px; align-items:center; font-size:12px; }
+.objective-row { margin-top:10px; }
+.objective-row b.ahead { color:#1c7a50; }
+.objective-row b.on_track { color:#315f9f; }
+.objective-row b.behind { color:#a55035; }
+.confidence-row { margin-top:12px; }
+.confidence-track { height:8px; margin:6px 0; overflow:hidden; border-radius:10px; background:#e5eaf0; }
+.confidence-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,#bd654d 0%,#d2a84b 45%,#4d8b72 100%); }
+.dismissal-row { color:#778397; font-size:11px; }
+.latest-evaluation { margin:14px 0; padding:12px; border-radius:9px; background:#f6f8fb; }
+.latest-evaluation h3 { margin-top:0; }
+.latest-evaluation > div { display:flex; gap:10px; align-items:center; }
+.latest-evaluation p { margin:7px 0 0; color:#66758b; font-size:12px; }
+.grade { display:inline-flex; width:32px; height:32px; align-items:center; justify-content:center; border-radius:8px; background:#dfe8f3; color:#264c78; font-size:17px; }
+.grade-s,.grade-a { background:#dcefe5; color:#17603d; }
+.grade-d,.grade-f { background:#f7dfda; color:#9a3829; }
+.career-summary { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 10px; }
+.career-summary span { padding:4px 8px; border-radius:12px; background:#edf1f6; color:#4e6078; font-size:11px; font-weight:700; }
+.office-history td,.office-history th { white-space:nowrap; }
+@media (max-width:800px) {
+  .front-office-head { flex-direction:column; }
+  .objective-row,.dismissal-row { align-items:flex-start; }
+  .office-history { font-size:11px; }
+}

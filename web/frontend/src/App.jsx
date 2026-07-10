@@ -3,6 +3,7 @@ import { api } from './api.js'
 import './live.css'
 import './draft.css'
 import './fa.css'
+import './trade.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -31,6 +32,7 @@ export default function App() {
 
   const openOffseasonIfActive = async () => {
     const active = await Promise.all([
+      api.tradeState().then(() => true).catch(() => false),
       api.faState().then(() => true).catch(() => false),
       api.draftState().then(() => true).catch(() => false),
     ])
@@ -55,7 +57,7 @@ export default function App() {
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {
       setFlash(e.message)
-      if (e.message.includes('FA') || e.message.includes('드래프트')) setTab('offseason')
+      if (e.message.includes('트레이드') || e.message.includes('FA') || e.message.includes('드래프트')) setTab('offseason')
       setTimeout(() => setFlash(''), 3000)
     } finally { setBusy(false) }
   }

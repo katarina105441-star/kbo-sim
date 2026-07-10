@@ -1,0 +1,35 @@
+name: Front office diagnostics
+
+on:
+  push:
+    branches:
+      - feat/front-office-objectives
+
+permissions:
+  contents: write
+
+jobs:
+  focused-tests:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/front-office-objectives
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Capture focused test output
+        run: |
+          set +e
+          python -m unittest tests.test_front_office tests.test_front_office_api -v > .github/front-office-test-output.txt 2>&1
+          echo "exit_code=$?" >> .github/front-office-test-output.txt
+          exit 0
+      - name: Commit diagnostics
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/front-office-test-output.txt
+          git commit -m 'Capture front office diagnostics' || exit 0
+          git push origin HEAD:feat/front-office-objectives

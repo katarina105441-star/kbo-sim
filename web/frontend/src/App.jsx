@@ -60,7 +60,7 @@ export default function App() {
     try {
       const r = await api.advance(unit)
       setState(r.state)
-      if (unit === 'season_end' && r.state.year !== state.year) setTab('offseason')
+      if (unit === 'season_end') await openOffseasonIfActive()
       setFlash(`${r.played_days}일 진행`)
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {

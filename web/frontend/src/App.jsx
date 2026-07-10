@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api } from './api.js'
 import './live.css'
+import './draft.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -27,7 +28,21 @@ export default function App() {
   const [live, setLive] = useState(null)        // 실시간 직접 운영
   const [rev, setRev] = useState(0)             // 관전 종료 후 화면 갱신 키
 
-  useEffect(() => { api.state().then(setState).catch(() => {}) }, [])
+  const openDraftIfActive = async () => {
+    try {
+      await api.draftState()
+      setTab('offseason')
+    } catch (_e) {
+      // 진행 중 드래프트가 없으면 현재 탭을 유지한다.
+    }
+  }
+
+  useEffect(() => {
+    api.state().then(async next => {
+      setState(next)
+      await openDraftIfActive()
+    }).catch(() => {})
+  }, [])
 
   const refresh = () => api.state().then(setState)
   const advance = async (unit) => {
@@ -35,10 +50,12 @@ export default function App() {
     try {
       const r = await api.advance(unit)
       setState(r.state)
+      if (unit === 'season_end') setTab('offseason')
       setFlash(`${r.played_days}일 진행`)
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {
       setFlash(e.message)
+      if (e.message.includes('드래프트')) setTab('offseason')
       setTimeout(() => setFlash(''), 3000)
     } finally { setBusy(false) }
   }
@@ -57,6 +74,7 @@ export default function App() {
   const load = async () => {
     setLive(null)
     setState(await api.load())
+    await openDraftIfActive()
     setFlash('불러오기 완료')
     setTimeout(() => setFlash(''), 2000)
   }
@@ -90,7 +108,7 @@ export default function App() {
                                        onWatch={(day, idx) => setWatch({ day, idx })} />}
         {tab === 'roster' && <Roster userTid={state.user_tid} onPlayer={setPlayerPid} />}
         {tab === 'lineup' && <Lineup />}
-        {tab === 'offseason' && <Offseason state={state} />}
+        {tab === 'offseason' && <Offseason state={state} onState={setState} />}
       </main>
       {playerPid && <PlayerModal pid={playerPid} onClose={() => setPlayerPid(null)} />}
       {watch && <Watch day={watch.day} gameIdx={watch.idx} userTid={state.user_tid}

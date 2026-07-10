@@ -1,0 +1,49 @@
+/* ---- MVP-3 Part 3A 사용자 참여 드래프트 ---- */
+.offseason-page { display: flex; flex-direction: column; gap: 16px; }
+.draft-board { background: #fff; border: 1px solid #d8dfeb; border-radius: 12px;
+               padding: 18px; box-shadow: 0 8px 24px rgba(16, 33, 63, .08); }
+.draft-header { display: flex; align-items: center; justify-content: space-between; gap: 18px;
+                border-bottom: 1px solid #e7ebf1; padding-bottom: 12px; }
+.draft-header h2 { margin-bottom: 4px; }
+.draft-turn { display: flex; flex-direction: column; align-items: flex-end; padding: 9px 13px;
+              border-radius: 9px; background: #fff4e9; border: 1px solid #efc78e; }
+.draft-turn span { font-size: 12px; color: #79572c; }
+.draft-turn b { color: #b34b1f; }
+.draft-needs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+               margin: 12px 0; padding: 9px 11px; background: #f5f7fb; border-radius: 8px; }
+.draft-needs span:not(.muted) { border: 1px solid #cbd5e4; border-radius: 12px; padding: 2px 8px;
+                                background: #fff; font-size: 12px; }
+.draft-toolbar { display: flex; align-items: center; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.draft-toolbar .muted { flex: 1; min-width: 260px; }
+.draft-toolbar button { border: 1px solid #c6d0e0; border-radius: 8px; padding: 8px 13px; background: #fff; }
+.draft-table-wrap { overflow: auto; max-height: 560px; border: 1px solid #e1e6ee; border-radius: 9px; }
+.draft-table thead th { top: 0; }
+.draft-table tbody tr { cursor: pointer; }
+.draft-table tbody tr:hover { background: #f2f6fc; }
+.draft-selected { outline: 2px solid #2c4a80; outline-offset: -2px; background: #eef4ff !important; }
+.draft-recommended td { border-top: 1px solid #efc78e; border-bottom-color: #efc78e; }
+.scout-grade { display: inline-flex; align-items: center; justify-content: center; width: 25px; height: 25px;
+               border-radius: 50%; font-weight: 900; }
+.grade-A { background: #fee3df; color: #b52d1b; }
+.grade-B { background: #fff0ce; color: #8a5d00; }
+.grade-C { background: #e6f0ff; color: #245b9e; }
+.grade-D { background: #edf0f4; color: #556172; }
+.grade-E { background: #eee7f5; color: #6d4888; }
+.recommend-tag { background: #e8542f; color: white; border-radius: 12px; padding: 2px 8px;
+                 font-size: 11px; font-weight: 800; }
+.draft-results { margin-top: 16px; border-top: 1px solid #e7ebf1; padding-top: 12px; }
+.pick-log { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 12px; }
+.pick-log > div { display: grid; grid-template-columns: 36px 42px 1fr auto; gap: 6px;
+                  padding: 6px 8px; background: #f7f9fc; border-radius: 6px; font-size: 12px; }
+.pick-log > div > span:first-child { color: #7c8aa0; }
+
+@media (max-width: 760px) {
+  .draft-board { padding: 12px; }
+  .draft-header { align-items: flex-start; flex-direction: column; }
+  .draft-turn { align-items: flex-start; }
+  .draft-toolbar { align-items: stretch; flex-direction: column; }
+  .draft-toolbar .muted { min-width: 0; }
+  .draft-toolbar select, .draft-toolbar button { width: 100%; }
+  .pick-log { grid-template-columns: 1fr; }
+  .draft-table { min-width: 900px; }
+}

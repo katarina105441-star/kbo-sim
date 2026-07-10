@@ -49,6 +49,11 @@ class GameSession:
         # 최신 내 경기 1개만 숨김 유지 (이전 미관전 경기는 진행 시 자동 공개).
         self.hidden: tuple | None = None       # (day, idx)
         self.pre_snapshot: dict | None = None  # 숨김 경기 직전 순위/기록 스냅샷
+        # 실시간 경기. GameSimulator는 명시적 상태 필드만 사용해 pickle 가능하다.
+        self.live_sim = None
+        self.live_day_no: int | None = None
+        self.live_game_idx: int | None = None
+        self.live_pre_snapshot: dict | None = None
 
     def _records_snapshot(self) -> dict:
         return {t.tid: (t.wins, t.ties, t.losses) for t in self.teams}
@@ -62,7 +67,9 @@ class GameSession:
         return self.hidden == (day, idx)
 
     def visible_records(self) -> dict | None:
-        """숨김 경기가 있으면 그 직전 기록 (순위표/대시보드 스포일러 방지)."""
+        """숨김 또는 진행 중 실시간 경기가 있으면 직전 기록을 표시한다."""
+        if self.live_sim is not None and not self.live_sim.done:
+            return self.live_pre_snapshot
         return self.pre_snapshot if self.hidden else None
 
     def current_news(self) -> list[str]:
@@ -90,12 +97,69 @@ class GameSession:
             news.append(f"부상: {p.name} (잔여 {p.inj_days}일)")
         return news
 
+    # ---------- 실시간 사용자 경기 ----------
+    def start_live(self):
+        if self.live_sim is not None and not self.live_sim.done:
+            raise RuntimeError("이미 실시간 경기가 진행 중입니다.")
+        if self.season.finished:
+            raise RuntimeError("정규시즌 일정이 종료되었습니다.")
+        if self.season.pending_day is not None:
+            raise RuntimeError("이미 진행 중인 날짜가 있습니다.")
+        self.hidden = None
+        self.pre_snapshot = None
+        self.live_pre_snapshot = self._records_snapshot()
+        ctx = self.season.begin_day(self.user_tid)
+        self.live_sim = ctx.managed_sim
+        self.live_day_no = len(self.results_by_day) + 1
+        self.live_game_idx = ctx.managed_idx
+        return self.live_sim
+
+    def require_live(self):
+        if self.live_sim is None:
+            raise LookupError("진행 중인 실시간 경기가 없습니다.")
+        return self.live_sim
+
+    def live_step(self) -> dict:
+        sim = self.require_live()
+        if sim.done:
+            return {"events": [], "state": sim.state(), "done": True,
+                    "result": sim.result}
+        out = sim.step_pa()
+        if sim.done:
+            self._finalize_live()
+        return out
+
+    def live_change_pitcher(self, pid: str) -> dict:
+        sim = self.require_live()
+        user_side = "home" if sim.home.tid == self.user_tid else "away"
+        return sim.force_pitcher_change(user_side, pid)
+
+    def live_auto(self) -> dict:
+        sim = self.require_live()
+        event_from = len(sim.struct_events)
+        if not sim.done:
+            sim.finish_auto()
+            self._finalize_live()
+        return {"events": sim.struct_events[event_from:], "state": sim.state(),
+                "done": True, "result": sim.result}
+
+    def _finalize_live(self) -> None:
+        if self.season.pending_day is None:
+            return
+        results = self.season.complete_managed_game()
+        self.results_by_day.append(results)
+        self.hidden = None                 # 직접 운영한 경기는 이미 공개됨
+        self.pre_snapshot = None
+        self.live_pre_snapshot = None
+
     def advance(self, unit: str) -> dict:
         """진행. 시즌이 끝나면 포스트시즌+오프시즌 자동 통과 후 새 시즌.
 
         스포일러 통제: 매일 스텝 직전 기록 스냅샷 → 그날 내 경기를 숨김으로
         지정 (이전 미관전 경기는 자동 공개 — 최신 1개만 유지).
         """
+        if self.live_sim is not None and not self.live_sim.done:
+            raise RuntimeError("실시간 경기를 먼저 종료해야 합니다.")
         days = {"day": 1, "series": SERIES_DAYS, "month": MONTH_DAYS,
                 "season_end": 10 ** 6}[unit]
         played = 0
@@ -194,4 +258,10 @@ class GameSession:
         if not hasattr(session.season, "isolated"):
             session.season.isolated = False
             session.season._isolation_root = None
+        if not hasattr(session.season, "pending_day"):
+            session.season.pending_day = None
+        for name, value in (("live_sim", None), ("live_day_no", None),
+                            ("live_game_idx", None), ("live_pre_snapshot", None)):
+            if not hasattr(session, name):
+                setattr(session, name, value)
         return session

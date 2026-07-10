@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Dashboard({ state, busy, onAdvance }) {
+export default function Dashboard({ state, busy, onAdvance, onLive }) {
   const t = state.my_team
   const seasonOver = state.day >= state.days_total
   return (
@@ -15,10 +15,13 @@ export default function Dashboard({ state, busy, onAdvance }) {
         )}
         <h3>시즌 진행</h3>
         <div className="btn-row">
-          <button disabled={busy} onClick={() => onAdvance('day')}>하루 ▶</button>
-          <button disabled={busy} onClick={() => onAdvance('series')}>시리즈(3일) ▶▶</button>
-          <button disabled={busy} onClick={() => onAdvance('month')}>한 달 ▶▶▶</button>
-          <button disabled={busy} className="primary" onClick={() => onAdvance('season_end')}>
+          <button disabled={busy || seasonOver} className="live-start" onClick={onLive}>
+            {state.live_active ? '실시간 경기로 복귀 ⚾' : '직접 운영 ⚾'}
+          </button>
+          <button disabled={busy || state.live_active} onClick={() => onAdvance('day')}>하루 ▶</button>
+          <button disabled={busy || state.live_active} onClick={() => onAdvance('series')}>시리즈(3일) ▶▶</button>
+          <button disabled={busy || state.live_active} onClick={() => onAdvance('month')}>한 달 ▶▶▶</button>
+          <button disabled={busy || state.live_active} className="primary" onClick={() => onAdvance('season_end')}>
             시즌 끝까지 ⏭ {seasonOver ? '(새 시즌 시작)' : ''}
           </button>
         </div>

@@ -74,6 +74,21 @@ class GameSimulator:
         self.w_cand: Optional[tuple] = None   # (side, pid)
         self.l_cand: Optional[str] = None     # pid
 
+        # 실시간 진행 상태. generator가 아니라 명시적 필드라 pickle 저장이 가능하다.
+        self.started = False
+        self.done = False
+        self.result: Optional[GameResult] = None
+        self.inning = 1
+        self.side = "away"                 # 현재 공격 팀
+        self.fld = "home"                  # 현재 수비 팀
+        self.bases: Optional[Bases] = None
+        self.outs = 0
+        self.runs_before = 0
+        self.half_ko = "초"
+        self.unearned_rest = False
+        self.at_decision = False            # 다음 타석 시작 전 수동 개입 가능
+        self.manual_change_consumed = False # 같은 결정점에서 AI 재교체 방지
+
     # ---------- 유틸 ----------
     @staticmethod
     def _other(side: str) -> str:
@@ -101,120 +116,278 @@ class GameSimulator:
                 return st
         return staff.cur_stint
 
-    # ---------- 진행 ----------
-    def run(self) -> GameResult:
-        inning = 1
-        while True:
-            self._half(inning, "away")
-            if inning >= 9 and self.score["home"] > self.score["away"]:
-                self.line["home"].append(None)  # 9회말 생략 (X)
-                break
-            self._half(inning, "home")
-            if inning >= 9 and self.score["home"] != self.score["away"]:
-                break
-            if inning >= self.max_innings and (self.allow_tie or inning >= 20):
-                break
-            inning += 1
-        return self._finish(inning)
-
-    def _half(self, inning: int, side: str) -> None:
-        fld = self._other(side)
-        team = self._team(side)
-        staff = self.staff[fld]
-        defense = self.defense[fld]
-        bases = Bases()
-        outs = 0
-        runs_before = self.score[side]
-        park = self.home.park
-        half_ko = "초" if side == "away" else "말"
-        unearned_rest = False  # 2사 후 실책으로 연장된 이닝 → 이후 전 득점 비자책
-
-        while outs < 3:
-            lead_def = self.score[fld] - self.score[side]
-            newp = staff.maybe_change(inning, lead_def, outs, bases.occupied_count())
-            if newp is not None:
-                self._ev(f"{inning}회{half_ko} 투수 교체: {self._team(fld).name} {newp.name}")
-                if self.record_struct:
-                    self._sev({"t": "pitch_change", "inning": inning,
-                               "half": half_ko, "team": self._team(fld).tid,
-                               "in": {"pid": newp.pid, "name": newp.name}})
-
-            # 도루 시도 (1루 주자, 2루 비어 있을 때)
-            if bases.first and not bases.second:
-                rn = bases.first
-                if self.rng.random() < steal_attempt_prob(rn):
-                    rbox = self.box[side][rn.player.pid]
-                    if self.rng.random() < steal_success_prob(rn, defense.c_arm_z):
-                        bases.slots[1], bases.slots[0] = rn, None
-                        rbox.sb += 1
-                        self._ev(f"{inning}회{half_ko} {rn.player.name} 2루 도루 성공")
-                        steal_ok = True
-                    else:
-                        bases.slots[0] = None
-                        outs += 1
-                        rbox.cs += 1
-                        staff.cur_stint.line.outs += 1
-                        self._ev(f"{inning}회{half_ko} {rn.player.name} 도루 실패 ({outs}사)")
-                        steal_ok = False
-                    if self.record_struct:
-                        self._sev({"t": "steal", "inning": inning, "half": half_ko,
-                                   "outs": outs, "success": steal_ok,
-                                   "runner": {"pid": rn.player.pid,
-                                              "name": rn.player.name},
-                                   "from": 1, "to": 2})
-                    if outs >= 3:
-                        break
-
-            batter, _slot = team.lineup[self.bo[side] % 9]
-            self.bo[side] += 1
-            staff.batters_faced_by_current += 1
-            outs_before = outs
-            if self.record_struct:   # 타석 전 스냅샷 (읽기만 — 로직 무영향)
-                snap = {"outs": outs, "score": [self.score["away"], self.score["home"]],
-                        "bases": self._bases_snap(bases),
-                        "pitcher_pitches": staff.cur_stint.line.pitches,
-                        "fatigued": staff.fatigue_penalty() > 0,
-                        "pitcher": staff.current,
-                        "order": (self.bo[side] - 1) % 9 + 1}
-            res = resolve_pa(self.rng, batter, staff, defense, bases, outs,
-                             park_hr=park.hr, park_xbh=park.xbh)
-            outs += res.outs_added
-            self._apply(res, batter, side, fld, unearned_rest)
-            if self.record_struct:
-                self._sev({"t": "pa", "inning": inning, "half": half_ko,
-                           "outs": snap["outs"], "score": snap["score"],
-                           "batter": {"pid": batter.pid, "name": batter.name,
-                                      "order": snap["order"],
-                                      "bats": batter.bats},
-                           "pitcher": {"pid": snap["pitcher"].pid,
-                                       "name": snap["pitcher"].name,
-                                       "pitches": snap["pitcher_pitches"],
-                                       "fatigued": snap["fatigued"],
-                                       "throws": snap["pitcher"].throws},
-                           "outcome": res.outcome, "ball_type": res.ball_type,
-                           "pitches": res.pitches,
-                           "bases_before": snap["bases"],
-                           "bases_after": self._bases_snap(bases),
-                           "scored": [{"pid": r.player.pid, "name": r.player.name}
-                                      for r in res.scored],
-                           "outs_added": res.outs_added,
-                           "rbi": len(res.scored) if res.outcome not in ("DP", "E")
-                                  else 0})
-            if res.outcome == "E":
-                self._charge_error(fld, res.ball_type)
-                if outs_before == 2:
-                    unearned_rest = True
-            if res.scored or res.outcome not in ("GO", "FO", "LO"):
-                extra = f" ({len(res.scored)}득점)" if res.scored else ""
-                self._ev(f"{inning}회{half_ko} {batter.name}: {OUTCOME_KO[res.outcome]}{extra}")
-            # 끝내기
-            if side == "home" and inning >= 9 and self.score["home"] > self.score["away"]:
-                self._ev(f"{inning}회말 끝내기! {self.home.name} 승리")
-                break
-        self.line[side].append(self.score[side] - runs_before)
+    def _emit_pitch_change(self, side: str, player) -> None:
+        self._ev(f"{self.inning}회{self.half_ko} 투수 교체: {self._team(side).name} {player.name}")
         if self.record_struct:
-            self._sev({"t": "half_end", "inning": inning, "half": half_ko,
+            self._sev({"t": "pitch_change", "inning": self.inning,
+                       "half": self.half_ko, "team": self._team(side).tid,
+                       "in": {"pid": player.pid, "name": player.name}})
+
+    # ---------- 실시간 상태머신 ----------
+    def start(self) -> dict:
+        """경기를 시작하고 첫 타석 전 상태를 반환한다. 여러 번 호출해도 안전하다."""
+        if not self.started:
+            self.started = True
+            self.inning = 1
+            self.side = "away"
+            self._begin_half()
+        return self.state()
+
+    def _begin_half(self) -> None:
+        self.fld = self._other(self.side)
+        self.bases = Bases()
+        self.outs = 0
+        self.runs_before = self.score[self.side]
+        self.half_ko = "초" if self.side == "away" else "말"
+        self.unearned_rest = False
+        self.at_decision = True
+        self.manual_change_consumed = False
+
+    def state(self) -> dict:
+        """UI/API가 사용할 현재 경기 상태. 선수 객체 대신 식별자와 표시값만 반환."""
+        if not self.started:
+            return {"started": False, "done": False}
+        next_batter = None
+        pitcher = None
+        available = []
+        bases = [None, None, None]
+        if not self.done:
+            team = self._team(self.side)
+            next_batter = team.lineup[self.bo[self.side] % 9][0]
+            staff = self.staff[self.fld]
+            pitcher = staff.current
+            available = [
+                {"pid": p.pid, "name": p.name, "pos": p.pos,
+                 "ovr": round(p.pit_overall, 1),
+                 "stamina": round(p.pit.stamina),
+                 "pitches": self.staff[self.fld].ctx.get(p.pid, {}).get("pitches", 0)}
+                for p in self.available_relievers(self.fld)
+            ]
+            bases = self._bases_snap(self.bases)
+        return {
+            "started": self.started,
+            "done": self.done,
+            "inning": self.inning,
+            "half": self.half_ko,
+            "batting_side": self.side,
+            "fielding_side": self.fld,
+            "batting_tid": self._team(self.side).tid if not self.done else None,
+            "fielding_tid": self._team(self.fld).tid if not self.done else None,
+            "outs": self.outs,
+            "bases": bases,
+            "score": [self.score["away"], self.score["home"]],
+            "next_batter": ({"pid": next_batter.pid, "name": next_batter.name,
+                             "order": self.bo[self.side] % 9 + 1,
+                             "bats": next_batter.bats}
+                            if next_batter else None),
+            "pitcher": ({"pid": pitcher.pid, "name": pitcher.name,
+                         "throws": pitcher.throws,
+                         "pitches": self.staff[self.fld].cur_stint.line.pitches,
+                         "fatigued": self.staff[self.fld].fatigue_penalty() > 0}
+                        if pitcher else None),
+            "available_relievers": available,
+            "can_change_pitcher": bool(not self.done and self.at_decision and available),
+        }
+
+    def available_relievers(self, side: str) -> list:
+        """현재 경기에서 수동 투입 가능한 불펜/마무리 목록."""
+        staff = self.staff[side]
+        team = self._team(side)
+        pool = list(team.bullpen)
+        if team.closer is not None:
+            pool.append(team.closer)
+        out, seen = [], set()
+        for p in pool:
+            if p.pid in seen:
+                continue
+            seen.add(p.pid)
+            if (not p.is_pitcher or p.pid in staff.used or p.pid in staff.unavailable
+                    or p.inj_days > 0 or p is staff.current):
+                continue
+            out.append(p)
+        return sorted(out, key=lambda p: p.pit_overall, reverse=True)
+
+    def force_pitcher_change(self, side: str, pitcher_pid: str) -> dict:
+        """다음 타석 시작 전에 수비 팀 투수를 수동 교체한다."""
+        self.start()
+        if self.done:
+            raise ValueError("이미 종료된 경기입니다.")
+        if not self.at_decision:
+            raise ValueError("투수 교체는 다음 타석 시작 전에만 가능합니다.")
+        if side != self.fld:
+            raise ValueError("현재 수비 중인 팀만 투수를 교체할 수 있습니다.")
+        team = self._team(side)
+        player = next((p for p in team.roster if p.pid == pitcher_pid), None)
+        if player is None:
+            raise ValueError("해당 팀 로스터에 없는 선수입니다.")
+        if not player.is_pitcher:
+            raise ValueError("야수는 투수로 교체할 수 없습니다.")
+        staff = self.staff[side]
+        if player.pid in staff.used:
+            raise ValueError("이미 등판한 투수는 재등판할 수 없습니다.")
+        if player.pid in staff.unavailable:
+            raise ValueError("오늘 등판할 수 없는 투수입니다.")
+        if player.inj_days > 0:
+            raise ValueError("부상 투수는 등판할 수 없습니다.")
+        if player not in self.available_relievers(side):
+            raise ValueError("현재 불펜에서 선택할 수 없는 투수입니다.")
+        lead = self.score[side] - self.score[self._other(side)]
+        staff.bring(player, self.inning, lead)
+        self._emit_pitch_change(side, player)
+        self.manual_change_consumed = True
+        return self.state()
+
+    def step_pa(self, include_state: bool = True) -> dict:
+        """최대 한 타석을 진행한다. 도루 실패로 이닝이 끝나면 타석 없이 반환할 수 있다."""
+        self.start()
+        if self.done:
+            return {"events": [], "state": self.state() if include_state else None,
+                    "done": True, "result": self.result}
+
+        event_from = len(self.struct_events)
+        self.at_decision = False
+        staff = self.staff[self.fld]
+        defense = self.defense[self.fld]
+        team = self._team(self.side)
+
+        # 수동 교체가 없었던 결정점에서만 기존 AI 교체 판단을 수행한다.
+        if not self.manual_change_consumed:
+            lead_def = self.score[self.fld] - self.score[self.side]
+            newp = staff.maybe_change(self.inning, lead_def, self.outs,
+                                      self.bases.occupied_count())
+            if newp is not None:
+                self._emit_pitch_change(self.fld, newp)
+        self.manual_change_consumed = False
+
+        # 도루 시도 (1루 주자, 2루 비어 있을 때)
+        if self.bases.first and not self.bases.second:
+            rn = self.bases.first
+            if self.rng.random() < steal_attempt_prob(rn):
+                rbox = self.box[self.side][rn.player.pid]
+                if self.rng.random() < steal_success_prob(rn, defense.c_arm_z):
+                    self.bases.slots[1], self.bases.slots[0] = rn, None
+                    rbox.sb += 1
+                    self._ev(f"{self.inning}회{self.half_ko} {rn.player.name} 2루 도루 성공")
+                    steal_ok = True
+                else:
+                    self.bases.slots[0] = None
+                    self.outs += 1
+                    rbox.cs += 1
+                    staff.cur_stint.line.outs += 1
+                    self._ev(f"{self.inning}회{self.half_ko} {rn.player.name} 도루 실패 ({self.outs}사)")
+                    steal_ok = False
+                if self.record_struct:
+                    self._sev({"t": "steal", "inning": self.inning, "half": self.half_ko,
+                               "outs": self.outs, "success": steal_ok,
+                               "runner": {"pid": rn.player.pid, "name": rn.player.name},
+                               "from": 1, "to": 2})
+                if self.outs >= 3:
+                    self._end_half()
+                    self._advance_after_half()
+                    return self._step_payload(event_from, include_state)
+
+        batter, _slot = team.lineup[self.bo[self.side] % 9]
+        self.bo[self.side] += 1
+        staff.batters_faced_by_current += 1
+        outs_before = self.outs
+        if self.record_struct:   # 타석 전 스냅샷 (읽기만 — 로직 무영향)
+            snap = {"outs": self.outs,
+                    "score": [self.score["away"], self.score["home"]],
+                    "bases": self._bases_snap(self.bases),
+                    "pitcher_pitches": staff.cur_stint.line.pitches,
+                    "fatigued": staff.fatigue_penalty() > 0,
+                    "pitcher": staff.current,
+                    "order": (self.bo[self.side] - 1) % 9 + 1}
+        res = resolve_pa(self.rng, batter, staff, defense, self.bases, self.outs,
+                         park_hr=self.home.park.hr, park_xbh=self.home.park.xbh)
+        self.outs += res.outs_added
+        self._apply(res, batter, self.side, self.fld, self.unearned_rest)
+        if self.record_struct:
+            self._sev({"t": "pa", "inning": self.inning, "half": self.half_ko,
+                       "outs": snap["outs"], "score": snap["score"],
+                       "batter": {"pid": batter.pid, "name": batter.name,
+                                  "order": snap["order"], "bats": batter.bats},
+                       "pitcher": {"pid": snap["pitcher"].pid,
+                                   "name": snap["pitcher"].name,
+                                   "pitches": snap["pitcher_pitches"],
+                                   "fatigued": snap["fatigued"],
+                                   "throws": snap["pitcher"].throws},
+                       "outcome": res.outcome, "ball_type": res.ball_type,
+                       "pitches": res.pitches,
+                       "bases_before": snap["bases"],
+                       "bases_after": self._bases_snap(self.bases),
+                       "scored": [{"pid": r.player.pid, "name": r.player.name}
+                                  for r in res.scored],
+                       "outs_added": res.outs_added,
+                       "rbi": len(res.scored) if res.outcome not in ("DP", "E") else 0})
+        if res.outcome == "E":
+            self._charge_error(self.fld, res.ball_type)
+            if outs_before == 2:
+                self.unearned_rest = True
+        if res.scored or res.outcome not in ("GO", "FO", "LO"):
+            extra = f" ({len(res.scored)}득점)" if res.scored else ""
+            self._ev(f"{self.inning}회{self.half_ko} {batter.name}: {OUTCOME_KO[res.outcome]}{extra}")
+
+        walkoff = (self.side == "home" and self.inning >= 9
+                   and self.score["home"] > self.score["away"])
+        if walkoff:
+            self._ev(f"{self.inning}회말 끝내기! {self.home.name} 승리")
+        if self.outs >= 3 or walkoff:
+            self._end_half()
+            self._advance_after_half(walkoff=walkoff)
+        else:
+            self.at_decision = True
+        return self._step_payload(event_from, include_state)
+
+    def _step_payload(self, event_from: int, include_state: bool = True) -> dict:
+        return {"events": self.struct_events[event_from:] if include_state else [],
+                "state": self.state() if include_state else None, "done": self.done,
+                "result": self.result if self.done else None}
+
+    def _end_half(self) -> None:
+        self.line[self.side].append(self.score[self.side] - self.runs_before)
+        if self.record_struct:
+            self._sev({"t": "half_end", "inning": self.inning, "half": self.half_ko,
                        "score": [self.score["away"], self.score["home"]]})
+
+    def _advance_after_half(self, walkoff: bool = False) -> None:
+        if walkoff:
+            self._complete_game()
+            return
+        if self.side == "away":
+            if self.inning >= 9 and self.score["home"] > self.score["away"]:
+                self.line["home"].append(None)  # 9회말 생략 (X)
+                self._complete_game()
+                return
+            self.side = "home"
+            self._begin_half()
+            return
+        if self.inning >= 9 and self.score["home"] != self.score["away"]:
+            self._complete_game()
+            return
+        if self.inning >= self.max_innings and (self.allow_tie or self.inning >= 20):
+            self._complete_game()
+            return
+        self.inning += 1
+        self.side = "away"
+        self._begin_half()
+
+    def _complete_game(self) -> None:
+        if not self.done:
+            self.done = True
+            self.at_decision = False
+            self.result = self._finish(self.inning)
+
+    def finish_auto(self) -> GameResult:
+        """현재 상태부터 경기 종료까지 자동 진행한다."""
+        self.start()
+        while not self.done:
+            self.step_pa(include_state=False)
+        return self.result
+
+    def run(self) -> GameResult:
+        """기존 호환 API. 상태머신을 끝까지 자동 실행한다."""
+        return self.finish_auto()
 
     def _charge_error(self, fld: str, ball_type: str) -> None:
         """실책을 저지른 수비수 선정 (수비력 낮을수록 가중) 후 개인 기록 귀속."""

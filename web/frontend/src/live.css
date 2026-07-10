@@ -1,0 +1,42 @@
+/* ---- MVP-3 Part 2A 실시간 경기 운영 ---- */
+.live-start { border-color: #e8542f !important; color: #b5381e; font-weight: 800; }
+.live-game { position: fixed; inset: 0; z-index: 35; background: #0d1626; color: #e8edf6;
+             display: flex; flex-direction: column; overflow: auto; }
+.live-top { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 12px 18px; background: #10213f; }
+.live-score { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+              gap: 18px; padding: 12px 18px; background: #16294a;
+              border-bottom: 2px solid #e8542f; font-size: 17px; text-align: center; }
+.live-score span:first-child { text-align: right; }
+.live-score span:last-child { text-align: left; }
+.live-score b { color: #ffd977; font-size: 25px; margin: 0 5px; }
+.live-layout { width: min(1180px, 100%); margin: 0 auto; padding: 16px;
+               display: grid; grid-template-columns: minmax(460px, 1.2fr) minmax(320px, .8fr);
+               gap: 16px; color: #1b2430; }
+.live-status, .live-log { margin: 0; }
+.live-situation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.live-situation > div { display: flex; flex-direction: column; min-height: 96px;
+                        border: 1px solid #dce3ed; border-radius: 9px; padding: 12px;
+                        background: #f7f9fc; }
+.live-situation small { color: #7c8aa0; }
+.live-situation b { font-size: 18px; margin: 4px 0; }
+.live-situation span { color: #526079; font-size: 13px; }
+.live-actions { display: flex; gap: 8px; margin: 16px 0; }
+.live-actions button, .pitcher-row button, .live-final button {
+  border: 1px solid #c6d0e0; border-radius: 8px; padding: 9px 15px; }
+.pitcher-change { border-top: 1px solid #edf0f5; padding-top: 10px; }
+.pitcher-row { display: flex; gap: 8px; }
+.pitcher-row select { flex: 1; }
+.live-log { max-height: calc(100vh - 145px); overflow-y: auto; }
+.live-log .log-line { color: #33415e; border-bottom-color: #e3e8f0; }
+.live-final { text-align: center; padding: 28px 10px; }
+.live-final p { font-size: 24px; font-weight: 800; margin: 12px 0 20px; }
+@media (max-width: 860px) {
+  .live-layout { grid-template-columns: 1fr; padding: 10px; }
+  .live-situation { grid-template-columns: 1fr; }
+  .live-situation > div { min-height: auto; }
+  .live-log { max-height: 280px; }
+  .live-score { gap: 8px; font-size: 14px; }
+  .live-score b { font-size: 21px; }
+  .pitcher-row { flex-direction: column; }
+}

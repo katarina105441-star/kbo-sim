@@ -28,7 +28,21 @@ export default function App() {
   const [live, setLive] = useState(null)        // 실시간 직접 운영
   const [rev, setRev] = useState(0)             // 관전 종료 후 화면 갱신 키
 
-  useEffect(() => { api.state().then(setState).catch(() => {}) }, [])
+  const openDraftIfActive = async () => {
+    try {
+      await api.draftState()
+      setTab('offseason')
+    } catch (_e) {
+      // 진행 중 드래프트가 없으면 현재 탭을 유지한다.
+    }
+  }
+
+  useEffect(() => {
+    api.state().then(async next => {
+      setState(next)
+      await openDraftIfActive()
+    }).catch(() => {})
+  }, [])
 
   const refresh = () => api.state().then(setState)
   const advance = async (unit) => {
@@ -60,6 +74,7 @@ export default function App() {
   const load = async () => {
     setLive(null)
     setState(await api.load())
+    await openDraftIfActive()
     setFlash('불러오기 완료')
     setTimeout(() => setFlash(''), 2000)
   }

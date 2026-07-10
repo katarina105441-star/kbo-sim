@@ -8,6 +8,7 @@ import './trade.css'
 import './development.css'
 import './team-identity.css'
 import './front-office.css'
+import './engagement.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -59,7 +60,7 @@ export default function App() {
     try {
       const r = await api.advance(unit)
       setState(r.state)
-      if (unit === 'season_end') setTab('offseason')
+      if (unit === 'season_end' && r.state.year !== state.year) setTab('offseason')
       setFlash(`${r.played_days}일 진행`)
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {
@@ -111,7 +112,8 @@ export default function App() {
       </header>
       <main>
         {tab === 'dashboard' && <Dashboard state={state} busy={busy}
-                                             onAdvance={advance} onLive={startLive} />}
+                                             onAdvance={advance} onLive={startLive}
+                                             onRefresh={refresh} />}
         {tab === 'standings' && <Standings userTid={state.user_tid} onTeam={() => setTab('roster')} />}
         {tab === 'results' && <Results key={rev} userTid={state.user_tid}
                                        onWatch={(day, idx) => setWatch({ day, idx })} />}

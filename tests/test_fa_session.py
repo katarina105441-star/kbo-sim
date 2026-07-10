@@ -22,6 +22,16 @@ def fp(report):
             for s in report.signings]
 
 
+def advance_to_offerable(market):
+    """보상금·예산 때문에 입찰 불가인 대어를 지나 실제 제안 가능한 선수로 이동."""
+    while not market.complete:
+        state = market.state()
+        if state["market"]["can_offer"]:
+            return state
+        market.auto_resolve()
+    raise AssertionError("사용자 구단이 제안 가능한 FA 선수가 없습니다.")
+
+
 class TestInteractiveFAMarket(unittest.TestCase):
     def test_auto_finish_matches_existing_market(self):
         teams1, rng1, standings1 = prepared(2026)
@@ -40,8 +50,7 @@ class TestInteractiveFAMarket(unittest.TestCase):
     def test_high_user_offer_can_be_accepted_and_moves_player(self):
         teams, rng, standings = prepared(44)
         market = InteractiveFAMarket(rng, teams, standings, 1, "KIA")
-        state = market.state()
-        self.assertTrue(state["active"])
+        state = advance_to_offerable(market)
         player = state["player"]
         maximum = state["market"]["max_offer"]
         self.assertGreater(maximum, 0)
@@ -57,7 +66,7 @@ class TestInteractiveFAMarket(unittest.TestCase):
     def test_offer_above_limit_rejected_without_advancing(self):
         teams, rng, standings = prepared(55)
         market = InteractiveFAMarket(rng, teams, standings, 1, "KIA")
-        before = market.state()
+        before = advance_to_offerable(market)
         with self.assertRaisesRegex(ValueError, "최대 AAV"):
             market.offer(before["market"]["max_offer"] + 1.0)
         self.assertEqual(market.state()["player"]["pid"], before["player"]["pid"])

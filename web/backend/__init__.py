@@ -1,6 +1,6 @@
 """웹 백엔드 초기화.
 
-실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성 확장을 등록한다.
+실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성·구단 성향 확장을 등록한다.
 """
 from fastapi import FastAPI
 
@@ -8,6 +8,7 @@ from kbo.engine.substitution_patch import enable_substitutions
 from web.backend.draft_management import apply_draft_management_patch
 from web.backend.development_management import apply_development_management_patch
 from web.backend.fa_compensation_management import apply_fa_compensation_patch
+from web.backend.team_identity_management import apply_team_identity_patch
 
 
 def _sub_text(ev: dict) -> str:
@@ -41,6 +42,7 @@ def _patch_game_session() -> None:
     apply_draft_management_patch()
     apply_development_management_patch()
     apply_fa_compensation_patch()
+    apply_team_identity_patch()
 
     from web.backend.session import GameSession
     if getattr(GameSession, "_substitution_instance_patch", False):

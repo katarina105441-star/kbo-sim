@@ -107,7 +107,8 @@ def evaluate_season(session, season_row: dict) -> dict:
     objective = getattr(session, "current_objective", None) or create_objective(session)
     actual_rank = int(season_row["my_rank"])
     champion = season_row.get("champion") == session.user_team.name
-    goal_met = actual_rank <= objective.target_rank
+    # 한국시리즈 우승은 정규시즌 순위 목표보다 상위의 성과이므로 자동 달성 처리한다.
+    goal_met = actual_rank <= objective.target_rank or champion
     grade = _grade(actual_rank, objective.target_rank, champion)
 
     margin = objective.target_rank - actual_rank
@@ -119,6 +120,12 @@ def evaluate_season(session, season_row: dict) -> dict:
     before = float(getattr(session, "owner_confidence", 65.0))
     after = clamp(before + delta, 0.0, 100.0)
 
+    if champion:
+        summary = "한국시리즈 우승으로 시즌 목표를 초과 달성"
+    elif goal_met:
+        summary = f"목표 {objective.target_rank}위 이내 달성"
+    else:
+        summary = f"목표보다 {actual_rank - objective.target_rank}계단 낮은 순위"
     result = {
         "year": objective.year,
         "objective": objective.title,
@@ -131,10 +138,7 @@ def evaluate_season(session, season_row: dict) -> dict:
         "confidence_before": round(before, 1),
         "confidence_after": round(after, 1),
         "confidence_delta": round(after - before, 1),
-        "summary": (
-            f"목표 {objective.target_rank}위 이내 달성" if goal_met
-            else f"목표보다 {actual_rank - objective.target_rank}계단 낮은 순위"
-        ),
+        "summary": summary,
     }
     session.owner_confidence = after
     session.front_office_history.append(result)

@@ -1,30 +1,4 @@
 Ran 184 tests
-Failures: 2
+Failures: 0
 Errors: 0
-
-FAIL: test_all_auto_matches_existing_run_draft (test_draft_session.TestInteractiveDraft.test_all_auto_matches_existing_run_draft)
-Traceback (most recent call last):
-  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_draft_session.py", line 40, in test_all_auto_matches_existing_run_draft
-    self.assertEqual(fingerprint(expected), fingerprint(draft.results))
-AssertionError: Lists differ: [(1, 'KWM', 'SP', 28.65462869, 19.08311203), (1, 'NC', 'SP',[783 chars]779)] != [(1, 'KWM', 'SP', 21.0580409, 19.08311203), (1, 'NC', 'SP', [794 chars]034)]
-
-First differing element 0:
-(1, 'KWM', 'SP', 28.65462869, 19.08311203)
-(1, 'KWM', 'SP', 21.0580409, 19.08311203)
-
-Diff is 2278 characters long. Set self.maxDiff to None to see it.
-
-
-FAIL: test_auto_finish_matches_existing_market (test_fa_session.TestInteractiveFAMarket.test_auto_finish_matches_existing_market)
-Traceback (most recent call last):
-  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_fa_session.py", line 44, in test_auto_finish_matches_existing_market
-    self.assertEqual(fp(expected), fp(market.report))
-AssertionError: Lists differ: [('HW[684 chars]', 4.65, 3.94, 3.0, 2), ('DSN-B3', 'DSN', 'DSN[1373 chars], 0)] != [('HW[684 chars]', 4.35, 3.94, 3.0, 2), ('DSN-B3', 'DSN', 'DSN[1373 chars], 0)]
-
-First differing element 13:
-('LTE-B6', 'LTE', 'DSN', 'C', 4.65, 3.94, 3.0, 2)
-('LTE-B6', 'LTE', 'DSN', 'C', 4.35, 3.94, 3.0, 2)
-
-Diff is 2369 characters long. Set self.maxDiff to None to see it.
-
-exit_code=1
+exit_code=0

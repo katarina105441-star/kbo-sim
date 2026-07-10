@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { api } from './api.js'
 import './live.css'
 import './draft.css'
+import './fa.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -19,28 +20,27 @@ const TABS = [
 ]
 
 export default function App() {
-  const [state, setState] = useState(null)      // 게임 상태 (null = 미시작)
+  const [state, setState] = useState(null)
   const [tab, setTab] = useState('dashboard')
   const [playerPid, setPlayerPid] = useState(null)
   const [busy, setBusy] = useState(false)
   const [flash, setFlash] = useState('')
-  const [watch, setWatch] = useState(null)      // {day, idx} = 관전 중
-  const [live, setLive] = useState(null)        // 실시간 직접 운영
-  const [rev, setRev] = useState(0)             // 관전 종료 후 화면 갱신 키
+  const [watch, setWatch] = useState(null)
+  const [live, setLive] = useState(null)
+  const [rev, setRev] = useState(0)
 
-  const openDraftIfActive = async () => {
-    try {
-      await api.draftState()
-      setTab('offseason')
-    } catch (_e) {
-      // 진행 중 드래프트가 없으면 현재 탭을 유지한다.
-    }
+  const openOffseasonIfActive = async () => {
+    const active = await Promise.all([
+      api.faState().then(() => true).catch(() => false),
+      api.draftState().then(() => true).catch(() => false),
+    ])
+    if (active.some(Boolean)) setTab('offseason')
   }
 
   useEffect(() => {
     api.state().then(async next => {
       setState(next)
-      await openDraftIfActive()
+      await openOffseasonIfActive()
     }).catch(() => {})
   }, [])
 
@@ -55,7 +55,7 @@ export default function App() {
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {
       setFlash(e.message)
-      if (e.message.includes('드래프트')) setTab('offseason')
+      if (e.message.includes('FA') || e.message.includes('드래프트')) setTab('offseason')
       setTimeout(() => setFlash(''), 3000)
     } finally { setBusy(false) }
   }
@@ -74,7 +74,7 @@ export default function App() {
   const load = async () => {
     setLive(null)
     setState(await api.load())
-    await openDraftIfActive()
+    await openOffseasonIfActive()
     setFlash('불러오기 완료')
     setTimeout(() => setFlash(''), 2000)
   }

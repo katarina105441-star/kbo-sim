@@ -9,6 +9,7 @@ import './development.css'
 import './team-identity.css'
 import './front-office.css'
 import './engagement.css'
+import './manager-career.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -80,6 +81,13 @@ export default function App() {
       setTimeout(() => setFlash(''), 3000)
     } finally { setBusy(false) }
   }
+  const acceptCareerOffer = async nextState => {
+    setLive(null)
+    setState(nextState)
+    setFlash(`새 구단 ${nextState.my_team.name} 부임`)
+    await openOffseasonIfActive()
+    setTimeout(() => setFlash(''), 3000)
+  }
   const save = async () => { await api.save(); setFlash('저장 완료'); setTimeout(() => setFlash(''), 2000) }
   const load = async () => {
     setLive(null)
@@ -113,7 +121,8 @@ export default function App() {
       <main>
         {tab === 'dashboard' && <Dashboard state={state} busy={busy}
                                              onAdvance={advance} onLive={startLive}
-                                             onRefresh={refresh} />}
+                                             onRefresh={refresh}
+                                             onCareerAccepted={acceptCareerOffer} />}
         {tab === 'standings' && <Standings userTid={state.user_tid} onTeam={() => setTab('roster')} />}
         {tab === 'results' && <Results key={rev} userTid={state.user_tid}
                                        onWatch={(day, idx) => setWatch({ day, idx })} />}

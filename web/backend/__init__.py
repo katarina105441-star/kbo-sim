@@ -1,6 +1,6 @@
 """웹 백엔드 초기화.
 
-실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성·구단 성향·프런트 평가·구단주 이벤트 확장을 등록한다.
+실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성·구단 성향·프런트 평가·구단주 이벤트·감독 커리어 확장을 등록한다.
 """
 from fastapi import FastAPI
 
@@ -10,6 +10,7 @@ from web.backend.development_management import apply_development_management_patc
 from web.backend.engagement_management import apply_engagement_patch
 from web.backend.fa_compensation_management import apply_fa_compensation_patch
 from web.backend.front_office_management import apply_front_office_patch
+from web.backend.manager_career_management import apply_manager_career_patch
 from web.backend.team_identity_management import apply_team_identity_patch
 
 
@@ -47,6 +48,7 @@ def _patch_game_session() -> None:
     apply_team_identity_patch()
     apply_front_office_patch()
     apply_engagement_patch()
+    apply_manager_career_patch()
 
     from web.backend.session import GameSession
     if getattr(GameSession, "_substitution_instance_patch", False):
@@ -80,6 +82,7 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         from web.backend.team_identity_api import router as identity_router
         from web.backend.front_office_api import router as front_office_router
         from web.backend.engagement_api import router as engagement_router
+        from web.backend.manager_career_api import router as career_router
         self.include_router(substitution_router)
         self.include_router(trade_router)
         self.include_router(fa_router)
@@ -89,6 +92,7 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         self.include_router(identity_router)
         self.include_router(front_office_router)
         self.include_router(engagement_router)
+        self.include_router(career_router)
 
     FastAPI.__init__ = _fastapi_init_with_extensions
     FastAPI._kbo_extension_router_patch = True

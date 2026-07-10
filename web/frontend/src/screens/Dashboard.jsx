@@ -12,23 +12,26 @@ function effectText(effects) {
   return parts.join(' · ') || '즉시 수치 변화 없음'
 }
 
-export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh }) {
+export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, onCareerAccepted }) {
   const t = state.my_team
   const identity = t.identity
   const seasonOver = state.day >= state.days_total
   const [office, setOffice] = useState(null)
   const [engagement, setEngagement] = useState(null)
+  const [career, setCareer] = useState(null)
   const [choosing, setChoosing] = useState(false)
+  const [accepting, setAccepting] = useState('')
   const [choiceError, setChoiceError] = useState('')
 
-  const reloadPanels = () => Promise.all([api.frontOffice(), api.engagement()])
-    .then(([nextOffice, nextEngagement]) => {
+  const reloadPanels = () => Promise.all([api.frontOffice(), api.engagement(), api.career()])
+    .then(([nextOffice, nextEngagement, nextCareer]) => {
       setOffice(nextOffice)
       setEngagement(nextEngagement)
+      setCareer(nextCareer)
     })
     .catch(() => {})
 
-  useEffect(() => { reloadPanels() }, [state.year, state.day, state.my_rank])
+  useEffect(() => { reloadPanels() }, [state.year, state.day, state.my_rank, state.user_tid])
 
   const chooseOwnerResponse = async choiceId => {
     setChoosing(true)
@@ -37,6 +40,7 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh })
       const response = await api.ownerEventChoice(choiceId)
       setEngagement(response.state)
       setOffice(await api.frontOffice())
+      setCareer(await api.career())
       await onRefresh?.()
     } catch (error) {
       setChoiceError(error.message)
@@ -45,8 +49,23 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh })
     }
   }
 
+  const acceptOffer = async tid => {
+    setAccepting(tid)
+    setChoiceError('')
+    try {
+      const response = await api.acceptCareerOffer(tid)
+      setCareer(response.career)
+      await onCareerAccepted?.(response.state)
+    } catch (error) {
+      setChoiceError(error.message)
+    } finally {
+      setAccepting('')
+    }
+  }
+
   const pendingEvent = engagement?.pending_event
-  const progressBlocked = Boolean(pendingEvent)
+  const dismissed = career?.status === 'dismissed'
+  const progressBlocked = Boolean(pendingEvent || dismissed)
   const unlocked = engagement?.achievements?.filter(a => a.unlocked) || []
   const latestReward = engagement?.latest_season_reward
 
@@ -90,7 +109,22 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh })
             <span>연속 실패 {office.failed_streak}시즌</span>
           </div>
         </div>}
-        {pendingEvent && <div className="owner-event-panel">
+        {dismissed && <div className="dismissal-panel">
+          <span className="career-kicker">감독 해임 · 재취업 시장</span>
+          <h3>새 구단을 선택하십시오</h3>
+          <p>기존 구단의 오프시즌 권한이 회수됐습니다. 제안을 수락하면 새 구단의 트레이드 시장부터 업무를 시작합니다.</p>
+          <div className="job-offer-grid">
+            {career.job_offers.map(offer => <button key={offer.tid}
+              disabled={Boolean(accepting)} onClick={() => acceptOffer(offer.tid)}>
+              <div><b>{offer.team}</b><span>{offer.previous_rank}위 · {offer.strategy_label}</span></div>
+              <p>{offer.pitch}</p>
+              <small>{offer.contract_years}년 계약 · 초기 신뢰도 {offer.initial_confidence}</small>
+              <strong>{accepting === offer.tid ? '계약 처리 중…' : '제안 수락'}</strong>
+            </button>)}
+          </div>
+          {choiceError && <p className="career-error">{choiceError}</p>}
+        </div>}
+        {pendingEvent && !dismissed && <div className="owner-event-panel">
           <span className="event-kicker">구단주 긴급 안건 · {pendingEvent.milestone}일차</span>
           <h3>{pendingEvent.title}</h3>
           <p>{pendingEvent.description}</p>
@@ -124,10 +158,29 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh })
         {busy && <p className="muted">시뮬레이션 중…</p>}
       </section>
       <section className="card">
+        {career && <div className="career-pulse">
+          <div className="career-pulse-head"><h3>감독 커리어</h3><span>평판 {career.reputation}</span></div>
+          <div className="sentiment-grid">
+            <div><span>팬 지지율</span><b>{career.fan_approval}</b><small>{career.fan_label}</small></div>
+            <div><span>언론 압박</span><b>{career.media_pressure}</b><small>{career.media_label}</small></div>
+          </div>
+          <p className="media-headline">“{career.current_headline}”</p>
+          {career.moves.length > 0 && <div className="career-moves">
+            {career.moves.slice(0, 3).map((move, i) => <span key={`${move.year}-${i}`}>
+              {move.year}년차 {move.from_tid} → {move.to_tid}
+            </span>)}
+          </div>}
+        </div>}
         <h3>알림</h3>
         {state.news.length === 0
           ? <p className="muted">아직 소식이 없습니다. 시즌을 진행하세요.</p>
           : <ul className="news">{state.news.map((n, i) => <li key={i}>{n}</li>)}</ul>}
+        {career?.media_feed?.length > 0 && <div className="media-feed">
+          <h3>미디어 브리핑</h3>
+          {career.media_feed.slice(0, 4).map((item, i) => <div key={`${item.year}-${i}`} className={item.tone}>
+            <span>{item.year}년차 · {item.team}</span><b>{item.headline}</b>
+          </div>)}
+        </div>}
         {latestReward?.reward_budget > 0 && <div className="season-reward">
           <b>직전 시즌 목표 보상</b>
           <span>예산 +{latestReward.reward_budget}억 · 프런트 포인트 +{latestReward.reward_points}</span>

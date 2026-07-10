@@ -30,7 +30,7 @@ class TestDraftOffseasonLifecycle(unittest.TestCase):
 
     def test_season_end_pauses_then_new_season_starts_after_pick(self):
         session = main.SESSION
-        removed = session.user_team.roster[-1]
+        removed = session.user_team.lineup[0][0]
 
         def fake_aging(_rng, _teams, year, draft_mode):
             self.assertTrue(draft_mode)
@@ -69,6 +69,8 @@ class TestDraftOffseasonLifecycle(unittest.TestCase):
         self.assertIsNone(session.draft_session)
         self.assertEqual(session.season.day, 0)
         self.assertEqual(len(session.user_team.roster), 25)
+        self.assertNotIn(removed, session.user_team.roster)
+        self.assertNotIn(removed, [player for player, _slot in session.user_team.lineup])
         self.assertEqual(
             [report["stage"] for report in session.offseason_reports],
             ["에이징/은퇴", "트레이드", "FA", "드래프트", "재정"])

@@ -30,7 +30,7 @@ FOCUS_OPTIONS = {
 @dataclass
 class DevelopmentReport:
     gains: list = field(default_factory=list)      # [(Team, Player, gain)]
-    retired: list = field(default_factory=list)    # 예약 훅
+    retired: list = field(default_factory=list)
 
 
 def ensure_player_fields(player: Player) -> None:
@@ -73,6 +73,8 @@ def ensure_farms(rng: random.Random, teams: list[Team], year: int = 1,
             rookie.development_focus = "balanced"
             team.minors.append(rookie)
             existing.add(rookie.pid)
+    # 새로 생성했거나 구버전 저장에서 복원한 2군 선수도 즉시 경기 투입 가능해야 한다.
+    precompute_all(p for team in teams for p in team.roster + team.minors)
 
 
 def accrue_minor_days(teams: list[Team], days: int = 1) -> None:
@@ -83,6 +85,9 @@ def accrue_minor_days(teams: list[Team], days: int = 1) -> None:
 
 
 def _rebuild_roles(team: Team) -> None:
+    # 콜업 선수의 확률 캐시를 승격 즉시 계산한다. 경기 중 pa_event_probs가 shifts를
+    # 직접 참조하므로 이 단계가 없으면 첫 출전에서 KeyError가 발생할 수 있다.
+    precompute_all(team.roster)
     team.build_default_lineup()
     team.build_default_pitching()
     if team.user_managed:
@@ -196,6 +201,7 @@ def development_tick(rng: random.Random, teams: list[Team]) -> DevelopmentReport
     report.gains.sort(key=lambda row: row[2], reverse=True)
     return report
 
+
 def _make_room_for_callup(team: Team, pitcher: bool) -> Player | None:
     if len(team.roster) < ACTIVE_MAX:
         return None
@@ -244,7 +250,6 @@ def auto_assign_active(team: Team) -> dict:
     batters = sorted([p for p in players if not p.is_pitcher], key=overall, reverse=True)
     pitchers = sorted([p for p in players if p.is_pitcher], key=overall, reverse=True)
     active = batters[:14] + pitchers[:11]
-    # 인원이 부족한 유형은 남은 최고 선수로 25명까지 보충한다.
     chosen = {p.pid for p in active}
     rest = sorted([p for p in players if p.pid not in chosen], key=overall, reverse=True)
     active += rest[:max(0, TARGET_ACTIVE - len(active))]

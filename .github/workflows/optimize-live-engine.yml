@@ -1,0 +1,43 @@
+name: Optimize live engine auto path
+
+on:
+  push:
+    branches:
+      - feat/mvp3-live-management
+
+permissions:
+  contents: write
+
+jobs:
+  edit:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mvp3-live-management
+      - name: Avoid UI state serialization during auto simulation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('kbo/engine/game.py')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('def step_pa(self) -> dict:',
+                        'def step_pa(self, include_state: bool = True) -> dict:')
+          s = s.replace('return {"events": [], "state": self.state(), "done": True,\n                    "result": self.result}',
+                        'return {"events": [], "state": self.state() if include_state else None,\n                    "done": True, "result": self.result}')
+          s = s.replace('return self._step_payload(event_from)',
+                        'return self._step_payload(event_from, include_state)')
+          s = s.replace('def _step_payload(self, event_from: int) -> dict:\n        return {"events": self.struct_events[event_from:],\n                "state": self.state(), "done": self.done,',
+                        'def _step_payload(self, event_from: int, include_state: bool = True) -> dict:\n        return {"events": self.struct_events[event_from:] if include_state else [],\n                "state": self.state() if include_state else None, "done": self.done,')
+          s = s.replace('self.step_pa()\n        return self.result',
+                        'self.step_pa(include_state=False)\n        return self.result')
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit optimization
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add kbo/engine/game.py
+          git commit -m 'Optimize automatic game simulation path'
+          git push origin HEAD:feat/mvp3-live-management

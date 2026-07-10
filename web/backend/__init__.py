@@ -30,6 +30,9 @@ if not getattr(_ser, "_substitution_stream_patch", False):
         for ev in payload["events"]:
             if ev.get("t") == "substitution":
                 ev["text"] = _sub_text(ev)
+                # 기존 Watch.jsx가 교체 스텝으로 재생하도록 표현 계층에서만 호환한다.
+                ev["source_t"] = "substitution"
+                ev["t"] = "pitch_change"
         return payload
 
     _ser.watch_stream = _watch_stream_with_substitutions

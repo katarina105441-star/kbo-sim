@@ -141,6 +141,174 @@ TUNE = {
         # 결장 기간 분포: (비율, 최소일, 최대일) — 경미/중간/중상/시즌아웃급
         "dur": [(0.60, 2, 7), (0.25, 8, 20), (0.12, 21, 50), (0.03, 60, 120)],
     },
+
+    # 에이징 (시즌 간 변화 전용 — 시즌 중 무영향. 설계: DESIGN_AGING.md)
+    # 곡선: (성장/년, 피크시작, 피크끝, 완만하락/년, 급락시작, 급락/년)
+    # 수치는 세이버 정성 합의 + KBO 롱런 완화를 반영한 설계값 (franchise_check로 조정)
+    "aging": {
+        "bat_curve": {
+            "speed":    (1.5, 24, 27, 1.2, 33, 2.5),
+            "fielding": (1.8, 25, 29, 0.8, 35, 2.0),
+            "arm":      (1.5, 25, 29, 0.7, 35, 2.0),
+            "contact":  (2.2, 26, 30, 0.6, 35, 2.2),
+            "power":    (2.5, 27, 31, 0.5, 35, 2.2),
+            "eye":      (2.0, 28, 33, 0.3, 37, 2.0),
+        },
+        # 투수 하락은 야수보다 구조적으로 가파름 → 리그 투타 균형이 시즌이
+        # 갈수록 타자 쪽으로 밀리는 드리프트가 생겨, 완만/급락 기울기를
+        # 약 15% 완화 (KBO 롱런 특성 반영 + franchise_check 드리프트 진단)
+        "pit_curve": {
+            "velocity": (2.0, 24, 26, 0.85, 32, 2.1),
+            "stuff":    (2.2, 26, 30, 0.6, 34, 2.0),
+            "stamina":  (1.8, 25, 29, 0.7, 34, 2.3),
+            "control":  (2.0, 28, 34, 0.3, 37, 2.0),
+            "breaking": (2.2, 29, 35, 0.25, 38, 1.8),
+        },
+        "catcher_shift": 1,                  # 포수: 하락 시작 1년 앞당김
+        "talent_g": (1.0, 0.35, 0.3, 1.7),   # 성장 재능 gauss(μ,σ) 클램프 [lo,hi]
+        "talent_d": (1.05, 0.25, 0.5, 1.6),  # 노쇠 내성 — 하락에 (2−d) 배율
+        "stub_g_sd": 0.5,                    # 스텁 신인 성장 재능 고분산
+        "noise_sd": 1.2,                     # 연간 노이즈 (일시적 반등/슬럼프)
+        "delta_clamp": 6.0,                  # 능력치당 연간 변화 상한
+        "rating_min": 20.0, "rating_max": 99.0,
+        # 은퇴 3단 규칙
+        "replacement": 42.0,                 # 대체선수 수준 OVR — 주 트리거
+        "retire_young_pot": 48.0,            # 30세 미만 & pot 이상이면 유예
+        "retire_age_soft": (36, 55.0),       # 36세+ & OVR<55 → 은퇴
+        "retire_age_coin": 41,               # 41세+ 매년 50%
+        "retire_age_hard": 44,               # 44세 강제
+        # 신인 풀 생성 (스텁 = 정식 드래프트 전 임시. generate_prospect 프리미티브)
+        # 성장 기대 +11 반영 시 피크가 리그 평균 근처. 투수는 쇠퇴가 빨라
+        # 평형 유지에 더 높은 시작점 필요 (franchise_check 드리프트 진단 결과)
+        "rookie_age": (19, 23),
+        "rookie_mean_bat": 51.0, "rookie_mean_pit": 55.0, "rookie_sd": 6.0,
+        "rookie_lo": 25.0, "rookie_hi": 68.0,
+        # 아키타입 3티어: 극단 재능 꼬리를 확률적으로 재생산 (엘리트 고갈 방지)
+        # DESIGN_AGING.md §4. 원툴 특화형은 시그니처만 극단 → OVR 평균 → 드리프트 중립.
+        "archetype": {
+            # 티어 확률 (일반 / 특화형 / 특급). 나머지가 일반.
+            "spec_prob": 0.18, "elite_prob": 0.05,
+            # 특화형: 시그니처 gauss(sig_mean, sig_sd) 상한 sig_hi,
+            #         비시그니처 base+off_spec (출전 위해 -1로 완화, 관찰2)
+            "sig_mean": 86.0, "sig_sd": 5.0, "sig_hi": 95.0, "off_spec": -1.0,
+            # 시그니처별 평균 오버라이드 — 컨택+선구 특화형이 OVR 68로 상시 출전+
+            # 성장해 장기 타율왕 .390+ 상시화(README 미결). contact/eye만 하향해
+            # .40+ 타자 상시생성을 억제 (도루·홈런 특화 재생산은 유지). 4시드+ 튜닝.
+            "sig_mean_override": {"contact": 79.0, "eye": 79.0},
+            # 특급: 전 능력치 base+elite_off 상한 elite_hi + 성장재능 g 상단
+            "elite_off": 9.0, "elite_hi": 90.0, "elite_g": (1.45, 0.15, 1.0, 1.7),
+            # 포지션별 시그니처 능력치 묶음 (한 아키타입 = 1~2개 극단)
+            "bat_sigs": [["speed"], ["power"], ["contact", "eye"], ["fielding", "arm"]],
+            "pit_sigs": [["velocity", "stuff"], ["breaking"], ["control"]],
+        },
+    },
+
+    # 연봉/계약·재정 (시즌 간 전용. 설계: DESIGN_CONTRACTS.md)
+    "contract": {
+        # 가치평가: WAR = k·(OVR − repl)·role·scarcity, 금액 = WAR × $/WAR
+        "war_k_bat": 0.15, "war_k_pit": 0.15,
+        # 연봉 대체선수 OVR — 은퇴 대체(42)와 별개 개념(자유롭게 구할 수 있는
+        # 선수 수준). 로스터 평균≈58 대비 55로 잡아야 리그 총연봉≈캡 (economy_check
+        # 캘리브레이션: 최고연봉 24억·중앙 2.7억·캡초과 2/10팀).
+        "ovr_repl": 55.0,
+        "horizon": 6, "discount": 0.10,   # 미래가치 투영 연수·연 할인율
+        "cap_to_war_ratio": 0.040,        # $/WAR(억) = 리그캡 × 이 비율
+        # $/WAR 연동 완화 — 캡은 +5%/yr지만 리그 WAR 총량은 대체로 일정.
+        # 로스터 OVR 드리프트가 연봉으로 새어 인플레가 캡 상승률을 소폭 초과
+        # (검증: median 5.4%/yr vs 캡 5%/yr) → $/WAR을 연 0.7% 감쇠해 캡에 정렬.
+        "war_growth_damp": 0.007,
+        "min_salary": 0.3,                # 최저연봉(억) — 신인 계약금과 정합
+        "signing_bonus_frac": 0.20,       # 계약금 = 총액의 20% (AAV 산정)
+        # 출전 기대(역할) 배율 — 로스터 OVR 순위로 추정
+        "role_reg": 1.0, "role_sub": 0.6, "role_bench": 0.3,
+        "role_sp": 1.0, "role_rp": 0.4,
+        # 포지션 희소성 (C·SS·CF 프리미엄, 1B·DH 할인)
+        "scarcity": {"C": 1.15, "SS": 1.12, "CF": 1.10, "2B": 1.05, "3B": 1.00,
+                     "RF": 0.98, "LF": 0.96, "1B": 0.92, "DH": 0.88,
+                     "SP": 1.05, "RP": 0.90, "CL": 1.00},
+        # 경쟁균형세(소프트캡) + 하한
+        "cap_year0": 137.0, "cap_growth": 0.05,   # 2025 137억, +5%/yr
+        "luxury_rate": 0.50,                       # 초과분 제재금 비율
+        "floor_frac": 0.50,                        # 하한 = 캡 × 이 비율
+        "floor_topup_max": 1.6,                    # 하한 톱업 배율 상한 (과잉 방지)
+        # 동적 예산: EMA + 변동폭 클램프 + 시장/성적 배분 (런어웨이 3중 차단)
+        "ema_alpha": 0.30, "max_swing": 0.15,
+        "budget_base_share": 0.60,   # 시장 기반 (market_size에 곱)
+        "budget_win_share": 0.50,    # 성적 기반 ((wins−72)/72에 곱) — 동적 지배
+        "fa_svc_max_missed": 45,     # 서비스타임 인정 결장 상한 (145일 상당 근사)
+    },
+
+    # 신인 드래프트 (시즌 간 전용. 설계: DESIGN_DRAFT.md)
+    "draft": {
+        "rounds": 11,                # 팀당 최대 지명 (Z자, 매 라운드 동일 역순)
+        "pool_factor": 1.5,          # 풀 크기 = 총 구멍 × 이 값, [pool_min,max] 클램프
+        "pool_min": 150, "pool_max": 200,
+        "pitcher_frac": 0.62,        # 모집단 투수 편중 (60~65%)
+        # 은퇴 구멍 분포를 소폭만 섞는다 (기본 투수편중 유지 — 구멍은 야수 편중이라
+        # 크게 섞으면 투수편중이 무너짐). 0.15면 투수 ~58% 유지.
+        "retire_blend": 0.15,
+        # Need = clamp((ref − depth)/span, 0, 1) × max_bonus (WAR 환산 보너스)
+        "need_ref": 62.0, "need_span": 15.0, "need_max_bonus": 6.0,
+        # 라운드별 Need 가중치 (실제 KBO 단장 패턴: 상위 BPA / 중위 Need / 하위 실링).
+        # ※ 우리 드래프트는 은퇴 구멍만 refill(팀당 ~2픽)이라 KBO 11라운드 클래스보다
+        # 얕다 — 픽이 대부분 1~3R. KBO의 1-2/3-7/8+ 매핑을 실제 깊이에 맞춰 축소:
+        # 1R = 프리미엄 픽 BPA / 2~3R = Need 피크(니즈픽) / 4R~ = 실링(원석).
+        "round_mid_start": 2, "round_late_start": 4,
+        "need_mult_early": 0.3, "need_mult_mid": 1.4, "need_mult_late": 0.4,
+        "ceiling_bonus": 3.0,        # 하위 라운드 실링(젊음) 가중 (WAR 환산)
+        "scout_noise": 0.35,         # 스카우팅 로그정규 σ (지명 bust/대박의 축)
+        # 로스터 구성 보장 — 14야수/11투수. 부족한 타입만 지명 후보로 제한해
+        # 투수편중 풀이 야수를 고갈시켜 라인업 불가가 되는 것을 막는다.
+        "roster_bat": 14, "roster_pit": 11,
+    },
+
+    # FA 자유계약 (시즌 간 전용. 설계: DESIGN_FA.md)
+    "fa": {
+        "service_req": 8.0,          # 자격 서비스 시즌 (고졸8/대졸7 → 단일 근사)
+        "reelig": 4.0,               # FA 계약 후 재자격까지 추가 서비스
+        # 등급별 보상금 (전년연봉 배수) — 이동 브레이크. A 특급 신중, C 활발.
+        "comp": {"A": 3.0, "B": 2.0, "C": 1.5},
+        # 선수 오퍼 판단 appeal = w_money·money + w_play·play + w_win·win
+        "w_base": (0.50, 0.25, 0.25),     # (money, play, win)
+        "vet_age": 32, "young_age": 28,   # 노장 +win −play / 젊은FA +play −money
+        "tilt": 0.12,                     # 성향 편향 크기 (약하게 — 가치 역전 금지)
+        "w_noise": 0.05,                  # 선수별 가중 노이즈
+        "loyalty": 0.08,                  # 원소속 잔류 오퍼 appeal 가산 (대다수 잔류)
+        "choice_noise": 0.03,             # 선택 노이즈
+        # 구단 입찰: bid = fair_aav × (1 + need·overpay_need + contention·overpay_win)
+        "overpay_need": 0.25, "overpay_win": 0.15, "overpay_cap": 0.35,
+        "need_min": 0.15,            # 이 미만 약점엔 입찰 안 함
+        "spend_frac": 0.40,          # 시장당 누적 FA 지출(AAV+보상금) ≤ 예산 × 이 비율
+        "comp_tolerance": 1.0,       # 보상금 > 계약총가치×이 값이면 입찰 포기(합리성)
+        "contract_years": ((30, 4), (33, 3), (36, 2), (99, 1)),  # (나이 상한, 연수)
+        "max_signings_divisor": 10,  # 팀당 한도 = max(1, 신청자수 // 이 값)
+    },
+
+    # 트레이드 (시즌 간 전용. 설계: DESIGN_TRADE.md)
+    "trade": {
+        # 지명권 기대 WAR — 시뮬 실측 역산 (24시즌: R1 13.1 / R2 9.5 / R3 7.2)
+        # × 미실현 리스크 할인 0.85. 과소평가 어림값(9/6/4)을 데이터로 보정.
+        "pick_war": {1: 11.0, 2: 8.0, 3: 6.0},
+        "pick_penalty_mult": 0.5,    # 경쟁균형세 페널티 지명권 할인
+        "mint_rounds": 3,            # 1~3R만 민팅/거래 (4R+ 저가치)
+        # 성사 3조건 — 초안 tol 0.15/σ 0.20은 객관 재측정에서 한쪽 25%+ 손해가
+        # 거래의 ~25%로 반복(σ 과대) + 1위팀 베테랑 싹쓸이로 순환 악화 → 조임.
+        "tol": 0.10,                 # (a) 등가 허용오차 — GM 주관 기준
+        "gm_noise": 0.12,            # GM별 자산 평가 로그정규 σ (★검증 대상)
+        # 시간 선호 (트레이드가 성립하는 경제 원리): 윈나우는 미래를 강하게
+        # 할인(즉전 선호), 리빌딩은 약하게(유망주 선호). 기준 할인율은 0.10.
+        "disc_win": 0.30, "disc_reb": 0.06,
+        "pick_mult_win": 0.70, "pick_mult_reb": 1.10,   # 지명권(미래 자산) 배율
+        # 팀 phase 판별 (승률점수 1=우승권)
+        "contend_win": 0.65, "contend_reb": 0.35,
+        "vet_age": 30, "young_age": 26,   # 즉전 베테랑 / 유망주 경계
+        "vet_min_ovr": 58.0,         # 팔릴 만한 베테랑 하한
+        "need_min": 0.25,            # 윈나우가 메꾸려는 약점 하한
+        # 니즈 (b)의 두 경로: 약점 메꾸기 OR 업그레이드 (현 주전 대비 +gap 이상).
+        # 윈나우는 강팀이라 구멍이 드묾 → 업그레이드가 실제 컨텐더 트레이드 패턴.
+        "upgrade_gap": 3.0,
+        "max_per_team": 1, "max_league": 6,   # 오프시즌 한도 (KBO 연 몇~십몇 건)
+    },
 }
 
 

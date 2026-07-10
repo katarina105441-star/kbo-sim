@@ -15,6 +15,19 @@ class ParkFactor:
 
 
 @dataclass
+class DraftPick:
+    """드래프트 지명권 자산 (DESIGN_CONTRACTS.md §6 훅).
+
+    지금은 예약 필드만 — 평가/트레이드는 드래프트 단계. value_of() 디스패치가
+    선수와 동일 통화(WAR/억원)로 지명권을 평가할 인터페이스를 위해 존재.
+    """
+    year: int
+    round: int
+    original_tid: str          # 원 소유 구단 (역순지명·트레이드 추적)
+    penalty: bool = False      # 경쟁균형세 초과 페널티 지명권 여부
+
+
+@dataclass
 class Team:
     tid: str
     name: str
@@ -22,6 +35,11 @@ class Team:
     stadium: str
     park: ParkFactor
     budget: float
+    # 재정 (DESIGN_CONTRACTS.md §4). market_size = 시장 크기 고정 오프셋
+    # (1.0 = 리그 평균, 완만한 20~30% 격차). revenue = 전 시즌 수입(억).
+    market_size: float = 1.0
+    revenue: float = 0.0
+    draft_picks: list = field(default_factory=list)   # DraftPick 자산 (§6 훅)
     roster: list[Player] = field(default_factory=list)
     # 라인업: 타순 9명. 각 항목 (선수, 수비 슬롯 or "DH")
     lineup: list[tuple[Player, str]] = field(default_factory=list)
@@ -32,6 +50,7 @@ class Team:
     wins: int = 0
     losses: int = 0
     ties: int = 0
+    user_managed: bool = False   # 유저 팀: 유저가 짠 타순/로테이션 유지 (UI 훅)
 
     @property
     def batters(self) -> list[Player]:
@@ -80,6 +99,18 @@ class Team:
         order.append(pick(lambda t: b(t).power))                              # 4번
         order.extend(sorted(nine, key=lambda t: t[0].bat_overall, reverse=True))
         self.lineup = order
+
+    def refresh_lineup(self) -> None:
+        """경기 전 라인업 갱신. 유저 팀은 짜둔 타순 유지 — 부상자만 최고 백업 대체."""
+        if not (self.user_managed and self.lineup):
+            self.build_default_lineup()
+            return
+        used = {p.pid for p, _ in self.lineup}
+        subs = sorted([p for p in self.batters
+                       if p.inj_days == 0 and p.pid not in used],
+                      key=lambda p: p.bat_overall, reverse=True)
+        self.lineup = [(p, s) if p.inj_days == 0 or not subs
+                       else (subs.pop(0), s) for p, s in self.lineup]
 
     def build_default_pitching(self) -> None:
         sps = sorted([p for p in self.pitchers if p.pos == "SP"],

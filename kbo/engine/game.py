@@ -30,6 +30,7 @@ class GameResult:
     tie: bool
     innings: int
     events: list = field(default_factory=list)
+    struct_events: list = field(default_factory=list)   # 관전 스트림 (DESIGN_WATCH.md)
 
 
 class GameSimulator:
@@ -42,11 +43,16 @@ class GameSimulator:
                  home_starter=None, away_starter=None,
                  stat_target: str = "season",  # "season" | "ps" (포스트시즌 분리 집계)
                  aggressive: bool = False,
-                 record_events: bool = False):
+                 record_events: bool = False,
+                 record_struct: bool = False):
         self.home, self.away, self.rng = home, away, rng
         self.record, self.allow_tie, self.max_innings = record, allow_tie, max_innings
         self.stat_target = stat_target
         self.record_events = record_events
+        # 구조화 이벤트 계측 (DESIGN_WATCH.md): 스냅샷 append만 — 분기·rng
+        # 소비 없음 → 기록 ON/OFF가 경기 결과에 영향 없음 (테스트 가드)
+        self.record_struct = record_struct
+        self.struct_events: list[dict] = []
         if not home.lineup:
             home.build_default_lineup(); home.build_default_pitching()
         if not away.lineup:
@@ -79,6 +85,15 @@ class GameSimulator:
     def _ev(self, txt: str) -> None:
         if self.record_events:
             self.events.append(txt)
+
+    def _sev(self, d: dict) -> None:
+        """구조화 이벤트 append (관전 스트림). seed = 결정론 연출용."""
+        d["seed"] = (len(self.struct_events) * 1000003 + 7) & 0x7FFFFFFF
+        self.struct_events.append(d)
+
+    @staticmethod
+    def _bases_snap(bases: Bases) -> list:
+        return [r.player.pid if r else None for r in bases.slots]
 
     def _stint_of(self, staff: PitchingStaff, pid: str) -> PitcherStint:
         for st in staff.stints:
@@ -119,6 +134,10 @@ class GameSimulator:
             newp = staff.maybe_change(inning, lead_def, outs, bases.occupied_count())
             if newp is not None:
                 self._ev(f"{inning}회{half_ko} 투수 교체: {self._team(fld).name} {newp.name}")
+                if self.record_struct:
+                    self._sev({"t": "pitch_change", "inning": inning,
+                               "half": half_ko, "team": self._team(fld).tid,
+                               "in": {"pid": newp.pid, "name": newp.name}})
 
             # 도루 시도 (1루 주자, 2루 비어 있을 때)
             if bases.first and not bases.second:
@@ -129,23 +148,58 @@ class GameSimulator:
                         bases.slots[1], bases.slots[0] = rn, None
                         rbox.sb += 1
                         self._ev(f"{inning}회{half_ko} {rn.player.name} 2루 도루 성공")
+                        steal_ok = True
                     else:
                         bases.slots[0] = None
                         outs += 1
                         rbox.cs += 1
                         staff.cur_stint.line.outs += 1
                         self._ev(f"{inning}회{half_ko} {rn.player.name} 도루 실패 ({outs}사)")
-                        if outs >= 3:
-                            break
+                        steal_ok = False
+                    if self.record_struct:
+                        self._sev({"t": "steal", "inning": inning, "half": half_ko,
+                                   "outs": outs, "success": steal_ok,
+                                   "runner": {"pid": rn.player.pid,
+                                              "name": rn.player.name},
+                                   "from": 1, "to": 2})
+                    if outs >= 3:
+                        break
 
             batter, _slot = team.lineup[self.bo[side] % 9]
             self.bo[side] += 1
             staff.batters_faced_by_current += 1
             outs_before = outs
+            if self.record_struct:   # 타석 전 스냅샷 (읽기만 — 로직 무영향)
+                snap = {"outs": outs, "score": [self.score["away"], self.score["home"]],
+                        "bases": self._bases_snap(bases),
+                        "pitcher_pitches": staff.cur_stint.line.pitches,
+                        "fatigued": staff.fatigue_penalty() > 0,
+                        "pitcher": staff.current,
+                        "order": (self.bo[side] - 1) % 9 + 1}
             res = resolve_pa(self.rng, batter, staff, defense, bases, outs,
                              park_hr=park.hr, park_xbh=park.xbh)
             outs += res.outs_added
             self._apply(res, batter, side, fld, unearned_rest)
+            if self.record_struct:
+                self._sev({"t": "pa", "inning": inning, "half": half_ko,
+                           "outs": snap["outs"], "score": snap["score"],
+                           "batter": {"pid": batter.pid, "name": batter.name,
+                                      "order": snap["order"],
+                                      "bats": batter.bats},
+                           "pitcher": {"pid": snap["pitcher"].pid,
+                                       "name": snap["pitcher"].name,
+                                       "pitches": snap["pitcher_pitches"],
+                                       "fatigued": snap["fatigued"],
+                                       "throws": snap["pitcher"].throws},
+                           "outcome": res.outcome, "ball_type": res.ball_type,
+                           "pitches": res.pitches,
+                           "bases_before": snap["bases"],
+                           "bases_after": self._bases_snap(bases),
+                           "scored": [{"pid": r.player.pid, "name": r.player.name}
+                                      for r in res.scored],
+                           "outs_added": res.outs_added,
+                           "rbi": len(res.scored) if res.outcome not in ("DP", "E")
+                                  else 0})
             if res.outcome == "E":
                 self._charge_error(fld, res.ball_type)
                 if outs_before == 2:
@@ -158,6 +212,9 @@ class GameSimulator:
                 self._ev(f"{inning}회말 끝내기! {self.home.name} 승리")
                 break
         self.line[side].append(self.score[side] - runs_before)
+        if self.record_struct:
+            self._sev({"t": "half_end", "inning": inning, "half": half_ko,
+                       "score": [self.score["away"], self.score["home"]]})
 
     def _charge_error(self, fld: str, ball_type: str) -> None:
         """실책을 저지른 수비수 선정 (수비력 낮을수록 가중) 후 개인 기록 귀속."""
@@ -275,8 +332,11 @@ class GameSimulator:
                     st.line.gs = 1 if i == 0 else 0
                     getattr(st.player, self.stat_target + "_pit").add(st.line)
 
+        if self.record_struct:
+            self._sev({"t": "game_end", "score": [a, h], "innings": innings,
+                       "tie": tie, "decisions": decisions})
         box_bat = {s: [(p, slot, self.box[s][p.pid]) for p, slot in self._team(s).lineup]
                    for s in ("away", "home")}
         return GameResult(self.away, self.home, self.line, (a, h), box_bat,
                           {s: self.staff[s].stints for s in ("away", "home")},
-                          decisions, tie, innings, self.events)
+                          decisions, tie, innings, self.events, self.struct_events)

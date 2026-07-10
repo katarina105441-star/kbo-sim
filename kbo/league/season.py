@@ -42,38 +42,64 @@ class SeasonRunner:
         self.schedule = make_schedule(len(teams))
         self.results: list[GameResult] = []
         self.tracker = PitcherUsageTracker()
+        self.day = 0                  # 진행 위치 (step_day 훅)
+        self.keep_results = False
+        # 관전 스트림 기록 대상 팀 tid 집합 (기록은 순수 관측 — 결과 무영향)
+        self.record_watch: set[str] = set()
 
     @property
     def days_played(self) -> int:
         return len(self.schedule)
 
-    def run(self, keep_results: bool = False) -> None:
+    def start(self, keep_results: bool = False) -> None:
+        """시즌 준비 (UI 훅: step_day 반복 진행의 시작점)."""
+        self.day = 0
+        self.keep_results = keep_results
         for t in self.teams:
             t.reset_season()
-            t.build_default_lineup()
-            t.build_default_pitching()
+            t.refresh_lineup()
+            if not (t.user_managed and t.rotation):
+                t.build_default_pitching()
         draw_season_form(self.rng, self.teams)  # 시즌 폼 추첨
-        for day, games in enumerate(self.schedule):
-            outing: dict[str, int] = {}
-            for hi, ai in games:
-                home, away = self.teams[hi], self.teams[ai]
-                home.build_default_lineup()  # 부상 반영 라인업 재구성 (백업 자동 대체)
-                away.build_default_lineup()
-                sim = GameSimulator(
-                    home, away, self.rng,
-                    home_unavailable=self.tracker.unavailable(home, day),
-                    away_unavailable=self.tracker.unavailable(away, day),
-                    home_pitcher_ctx=self.tracker.ctx(home, day),
-                    away_pitcher_ctx=self.tracker.ctx(away, day))
-                res = sim.run()
-                self.tracker.track(res, day)
-                for side in ("home", "away"):
-                    for st in res.stints[side]:
-                        outing[st.player.pid] = outing.get(st.player.pid, 0) + st.line.pitches
-                if keep_results:
-                    self.results.append(res)
-            daily_injury_tick(self.rng, self.teams, outing)
-            daily_form_tick(self.rng, self.teams)
+
+    @property
+    def finished(self) -> bool:
+        return self.day >= len(self.schedule)
+
+    def step_day(self) -> list[GameResult]:
+        """하루 진행 후 그날 결과 반환 (UI 진행 컨트롤 훅). run()과 동일 로직."""
+        games = self.schedule[self.day]
+        day_results: list[GameResult] = []
+        outing: dict[str, int] = {}
+        for hi, ai in games:
+            home, away = self.teams[hi], self.teams[ai]
+            home.refresh_lineup()  # 부상 반영 라인업 재구성 (유저 팀은 타순 유지)
+            away.refresh_lineup()
+            sim = GameSimulator(
+                home, away, self.rng,
+                home_unavailable=self.tracker.unavailable(home, self.day),
+                away_unavailable=self.tracker.unavailable(away, self.day),
+                home_pitcher_ctx=self.tracker.ctx(home, self.day),
+                away_pitcher_ctx=self.tracker.ctx(away, self.day),
+                record_struct=(home.tid in self.record_watch
+                               or away.tid in self.record_watch))
+            res = sim.run()
+            self.tracker.track(res, self.day)
+            for side in ("home", "away"):
+                for st in res.stints[side]:
+                    outing[st.player.pid] = outing.get(st.player.pid, 0) + st.line.pitches
+            day_results.append(res)
+            if self.keep_results:
+                self.results.append(res)
+        daily_injury_tick(self.rng, self.teams, outing)
+        daily_form_tick(self.rng, self.teams)
+        self.day += 1
+        return day_results
+
+    def run(self, keep_results: bool = False) -> None:
+        self.start(keep_results)
+        while not self.finished:
+            self.step_day()
 
     def standings(self) -> list[Team]:
         return sorted(self.teams, key=lambda t: (t.pct, t.wins), reverse=True)

@@ -1,4 +1,5 @@
 """구단 성향 API와 웹 AI 패치 통합 검증."""
+import os
 import random
 import unittest
 
@@ -8,12 +9,18 @@ import web.backend.main as main
 from kbo.io.loader import load_league
 from kbo.league.draft_session import InteractiveDraft
 from kbo.league.team_identity import ensure_team_identities
+from web.backend.session import SAVE_DIR
 
 
 class TestTeamIdentityApi(unittest.TestCase):
     def setUp(self):
         main.SESSION = None
         self.client = TestClient(main.app)
+
+    def tearDown(self):
+        path = os.path.join(SAVE_DIR, "save.pkl")
+        if os.path.exists(path):
+            os.remove(path)
 
     def test_identity_endpoint_lists_all_teams(self):
         response = self.client.get("/api/teams/identities")

@@ -73,6 +73,14 @@ def _begin_managed_offseason(session, standings) -> None:
         _complete_managed_offseason(session, draft)
 
 
+def _reset_user_roster_roles(session) -> None:
+    """은퇴·이적 선수가 다음 시즌 라인업에 남지 않도록 새 로스터로 재편성한다."""
+    team = session.user_team
+    team.build_default_lineup()
+    team.build_default_pitching()
+    team.user_managed = True
+
+
 def _complete_managed_offseason(session, draft: InteractiveDraft) -> None:
     final_state = draft.state()
     reports = list(session.offseason_reports)
@@ -92,6 +100,7 @@ def _complete_managed_offseason(session, draft: InteractiveDraft) -> None:
     session.offseason_reports = reports
     session.last_draft_state = final_state
     session.draft_session = None
+    _reset_user_roster_roles(session)
     session.year += 1
     session._new_season()
 

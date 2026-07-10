@@ -13,6 +13,10 @@ from kbo.league.postseason import PostseasonRunner
 from kbo.league.trade_session import InteractiveTradeMarket
 
 
+def _trade_asset_name(asset) -> str:
+    return asset.name if hasattr(asset, "name") else f"{asset.round}R 지명권"
+
+
 def _trade_report(market: InteractiveTradeMarket) -> dict:
     items = []
     for deal in market.report.trades:
@@ -24,9 +28,9 @@ def _trade_report(market: InteractiveTradeMarket) -> dict:
                if deal.picks else "")
         )
     for deal in market.user_trades:
-        gave = ", ".join(getattr(asset, "name", f"{asset.round}R 지명권")
+        gave = ", ".join(_trade_asset_name(asset)
                          for asset in deal.user_gave)
-        received = ", ".join(getattr(asset, "name", f"{asset.round}R 지명권")
+        received = ", ".join(_trade_asset_name(asset)
                              for asset in deal.user_received)
         items.append(f"{deal.user_tid} [{gave}] ↔ {deal.other_tid} [{received}]")
     return {
@@ -241,6 +245,7 @@ def apply_draft_management_patch() -> None:
             "trade": final_state,
             "trade_complete": True,
             "fa_active": self.fa_session is not None,
+            "draft_active": self.draft_session is not None,
         }
 
     def require_fa(self) -> InteractiveFAMarket:

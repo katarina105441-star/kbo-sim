@@ -34,6 +34,9 @@ export default function Offseason({ state, onState }) {
     if (result.fa_active) {
       const faState = await api.faState().catch(() => null)
       setFa(faState?.active ? faState : null)
+    } else if (result.draft_active) {
+      const draftState = await api.draftState().catch(() => null)
+      setDraft(draftState?.active ? draftState : null)
     } else {
       onState(result.game_state || await api.state())
     }

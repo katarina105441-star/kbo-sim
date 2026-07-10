@@ -71,7 +71,7 @@ export default function Roster({ userTid, onPlayer }) {
           </tbody>
         </table>
       )}
-      <p className="muted">행을 클릭하면 선수 상세. ▲핫 ▼콜드 = 컨디션. (타순 편집은 MVP-2)</p>
+      <p className="muted">행을 클릭하면 선수 상세. ▲핫 ▼콜드 = 컨디션. 편집은 상단의 라인업 관리에서.</p>
     </section>
   )
 }

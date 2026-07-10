@@ -2,6 +2,7 @@ import React from 'react'
 
 export default function Dashboard({ state, busy, onAdvance, onLive }) {
   const t = state.my_team
+  const identity = t.identity
   const seasonOver = state.day >= state.days_total
   return (
     <div className="two-col">
@@ -9,6 +10,16 @@ export default function Dashboard({ state, busy, onAdvance, onLive }) {
         <h2>{t.name} <span className="badge">{state.my_rank}위</span></h2>
         <div className="bigline">{t.wins}승 {t.ties}무 {t.losses}패
           <span className="muted"> · 승률 {t.pct.toFixed(3)} · {t.games}경기</span></div>
+        {identity && <div className="identity-panel">
+          <div><b>{identity.label}</b><span>{identity.manager_style}</span></div>
+          <div className="identity-tags">
+            <span>{identity.strategy_label}</span>
+            <span>타격 {identity.offense_label}</span>
+            <span>투수 {identity.pitching_label}</span>
+            <span>스카우팅 {Math.round(identity.scouting * 100)}</span>
+          </div>
+          <p>{identity.description}</p>
+        </div>}
         {state.next_games.length > 0 && (
           <p>다음 경기: {state.next_games.map(g =>
             `${g.away} @ ${g.home}${g.home === state.user_tid ? ' (홈)' : ' (원정)'}`).join(', ')}</p>

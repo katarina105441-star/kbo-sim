@@ -2,16 +2,53 @@ import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
 
 const progressLabel = { ahead: '목표 초과', on_track: '목표선', behind: '목표 미달' }
+const signed = n => `${n > 0 ? '+' : ''}${n}`
 
-export default function Dashboard({ state, busy, onAdvance, onLive }) {
+function effectText(effects) {
+  const parts = []
+  if (effects.budget) parts.push(`예산 ${signed(effects.budget)}억`)
+  if (effects.confidence) parts.push(`신뢰도 ${signed(effects.confidence)}`)
+  if (effects.points) parts.push(`포인트 +${effects.points}`)
+  return parts.join(' · ') || '즉시 수치 변화 없음'
+}
+
+export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh }) {
   const t = state.my_team
   const identity = t.identity
   const seasonOver = state.day >= state.days_total
   const [office, setOffice] = useState(null)
+  const [engagement, setEngagement] = useState(null)
+  const [choosing, setChoosing] = useState(false)
+  const [choiceError, setChoiceError] = useState('')
 
-  useEffect(() => {
-    api.frontOffice().then(setOffice).catch(() => setOffice(null))
-  }, [state.year, state.day, state.my_rank])
+  const reloadPanels = () => Promise.all([api.frontOffice(), api.engagement()])
+    .then(([nextOffice, nextEngagement]) => {
+      setOffice(nextOffice)
+      setEngagement(nextEngagement)
+    })
+    .catch(() => {})
+
+  useEffect(() => { reloadPanels() }, [state.year, state.day, state.my_rank])
+
+  const chooseOwnerResponse = async choiceId => {
+    setChoosing(true)
+    setChoiceError('')
+    try {
+      const response = await api.ownerEventChoice(choiceId)
+      setEngagement(response.state)
+      setOffice(await api.frontOffice())
+      await onRefresh?.()
+    } catch (error) {
+      setChoiceError(error.message)
+    } finally {
+      setChoosing(false)
+    }
+  }
+
+  const pendingEvent = engagement?.pending_event
+  const progressBlocked = Boolean(pendingEvent)
+  const unlocked = engagement?.achievements?.filter(a => a.unlocked) || []
+  const latestReward = engagement?.latest_season_reward
 
   return (
     <div className="two-col">
@@ -53,19 +90,34 @@ export default function Dashboard({ state, busy, onAdvance, onLive }) {
             <span>연속 실패 {office.failed_streak}시즌</span>
           </div>
         </div>}
+        {pendingEvent && <div className="owner-event-panel">
+          <span className="event-kicker">구단주 긴급 안건 · {pendingEvent.milestone}일차</span>
+          <h3>{pendingEvent.title}</h3>
+          <p>{pendingEvent.description}</p>
+          <div className="event-choices">
+            {pendingEvent.choices.map(choice => <button key={choice.id}
+              disabled={choosing || busy} onClick={() => chooseOwnerResponse(choice.id)}>
+              <b>{choice.label}</b>
+              <span>{choice.description}</span>
+              <small>{effectText(choice.effects)}</small>
+            </button>)}
+          </div>
+          {choiceError && <p className="event-error">{choiceError}</p>}
+          <p className="event-block-note">응답 전에는 시즌을 진행할 수 없습니다.</p>
+        </div>}
         {state.next_games.length > 0 && (
           <p>다음 경기: {state.next_games.map(g =>
             `${g.away} @ ${g.home}${g.home === state.user_tid ? ' (홈)' : ' (원정)'}`).join(', ')}</p>
         )}
         <h3>시즌 진행</h3>
         <div className="btn-row">
-          <button disabled={busy || seasonOver} className="live-start" onClick={onLive}>
+          <button disabled={busy || seasonOver || progressBlocked} className="live-start" onClick={onLive}>
             {state.live_active ? '실시간 경기로 복귀 ⚾' : '직접 운영 ⚾'}
           </button>
-          <button disabled={busy || state.live_active} onClick={() => onAdvance('day')}>하루 ▶</button>
-          <button disabled={busy || state.live_active} onClick={() => onAdvance('series')}>시리즈(3일) ▶▶</button>
-          <button disabled={busy || state.live_active} onClick={() => onAdvance('month')}>한 달 ▶▶▶</button>
-          <button disabled={busy || state.live_active} className="primary" onClick={() => onAdvance('season_end')}>
+          <button disabled={busy || state.live_active || progressBlocked} onClick={() => onAdvance('day')}>하루 ▶</button>
+          <button disabled={busy || state.live_active || progressBlocked} onClick={() => onAdvance('series')}>시리즈(3일) ▶▶</button>
+          <button disabled={busy || state.live_active || progressBlocked} onClick={() => onAdvance('month')}>한 달 ▶▶▶</button>
+          <button disabled={busy || state.live_active || progressBlocked} className="primary" onClick={() => onAdvance('season_end')}>
             시즌 끝까지 ⏭ {seasonOver ? '(새 시즌 시작)' : ''}
           </button>
         </div>
@@ -76,6 +128,21 @@ export default function Dashboard({ state, busy, onAdvance, onLive }) {
         {state.news.length === 0
           ? <p className="muted">아직 소식이 없습니다. 시즌을 진행하세요.</p>
           : <ul className="news">{state.news.map((n, i) => <li key={i}>{n}</li>)}</ul>}
+        {latestReward?.reward_budget > 0 && <div className="season-reward">
+          <b>직전 시즌 목표 보상</b>
+          <span>예산 +{latestReward.reward_budget}억 · 프런트 포인트 +{latestReward.reward_points}</span>
+        </div>}
+        {engagement && <div className="achievement-panel">
+          <div className="achievement-head">
+            <h3>감독 업적</h3>
+            <span>{engagement.achievement_count}/{engagement.achievement_total} · 포인트 {engagement.front_office_points}</span>
+          </div>
+          {unlocked.length === 0
+            ? <p className="muted">시즌 목표와 구단주 안건을 수행하면 업적이 해금됩니다.</p>
+            : <div className="achievement-grid">{unlocked.map(a => <div key={a.id}>
+                <b>{a.title}</b><span>{a.description}</span><small>보상 예산 +{a.reward}억</small>
+              </div>)}</div>}
+        </div>}
         {office?.latest_evaluation && <div className="latest-evaluation">
           <h3>직전 시즌 프런트 평가</h3>
           <div><b className={`grade grade-${office.latest_evaluation.grade.toLowerCase()}`}>

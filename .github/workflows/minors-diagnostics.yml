@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/mvp3-minors-development
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read

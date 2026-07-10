@@ -15,10 +15,10 @@ VOLUNTARY_RETIREMENT_SEASONS = 10
 MANDATORY_RETIREMENT_SEASONS = 30
 
 LEGACY_TIERS = (
-    (130, "전설", "KBO 감독 전설"),
-    (95, "hall_of_fame", "명예의 전당"),
-    (65, "master", "명장"),
-    (40, "veteran", "베테랑 감독"),
+    (170, "legend", "KBO 감독 전설"),
+    (115, "hall_of_fame", "명예의 전당"),
+    (80, "master", "명장"),
+    (50, "veteran", "베테랑 감독"),
     (0, "career", "프로 감독"),
 )
 
@@ -87,17 +87,17 @@ def career_totals(session) -> dict:
 
 def legacy_score(session) -> float:
     totals = career_totals(session)
-    best_bonus = max(0, 8 - (totals["best_rank"] or 10)) * 2.0
+    best_bonus = max(0, 8 - (totals["best_rank"] or 10)) * 1.5
     score = (
-        totals["seasons"] * 2.0
-        + totals["goals_met"] * 4.0
-        + totals["championships"] * 28.0
-        + totals["grades"]["S"] * 8.0
-        + totals["grades"]["A"] * 4.0
-        + totals["team_count"] * 2.0
+        totals["seasons"] * 1.2
+        + totals["goals_met"] * 2.5
+        + totals["championships"] * 22.0
+        + totals["grades"]["S"] * 5.0
+        + totals["grades"]["A"] * 3.0
+        + totals["team_count"] * 1.5
         + best_bonus
-        + max(0.0, float(session.manager_reputation) - 40.0) * 0.3
-        - totals["dismissals"] * 5.0
+        + max(0.0, float(session.manager_reputation) - 40.0) * 0.2
+        - totals["dismissals"] * 6.0
     )
     return round(clamp(score, 0.0, 250.0), 1)
 

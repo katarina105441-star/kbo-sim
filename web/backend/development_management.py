@@ -14,11 +14,14 @@ from kbo.league.development import (
 def _development_report(report) -> dict:
     return {
         "stage": "2군 육성",
-        "items": [
+        "items": ([
             f"{team.tid} {player.name}({player.age}세 {player.pos}) "
             f"OVR +{gain:.2f} · {player.development_focus}"
             for team, player, gain in report.gains[:20]
-        ] or ["이번 시즌 육성 보너스 대상 없음"],
+        ] + [
+            f"{team.tid} {player.name}({player.age}세) 2군 은퇴"
+            for team, player in report.retired
+        ]) or ["이번 시즌 육성 보너스 대상 없음"],
     }
 
 

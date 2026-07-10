@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 from ..engine.probability import TUNE, clamp, precompute_all
 from ..models.player import Player
 from ..models.team import Team
-from .aging import BAT_W, PIT_W, ensure_talents, make_rookie, overall
+from .aging import (BAT_W, PIT_W, age_player, ensure_talents, make_rookie,
+                    overall, should_retire)
 
 ACTIVE_MIN = 20
 ACTIVE_MAX = 28
@@ -155,13 +156,14 @@ def _focus_multiplier(player: Player, rating_name: str) -> float:
 
 
 def development_tick(rng: random.Random, teams: list[Team]) -> DevelopmentReport:
-    """완료된 시즌의 2군 등록일을 능력치 보너스로 환산한다."""
+    """완료된 시즌의 2군 등록일을 성장 보너스로 환산한 뒤 에이징한다."""
     report = DevelopmentReport()
     all_players = [p for team in teams for p in team.roster + team.minors]
     ensure_talents(rng, all_players)
     a = TUNE["aging"]
     for team in teams:
-        for player in team.minors:
+        survivors = []
+        for player in list(team.minors):
             ensure_player_fields(player)
             before = overall(player)
             if player.minor_days >= 30:
@@ -177,17 +179,22 @@ def development_tick(rng: random.Random, teams: list[Team]) -> DevelopmentReport
                     setattr(ratings, name,
                             clamp(getattr(ratings, name) + delta,
                                   a["rating_min"], a["rating_max"]))
-            after = overall(player)
-            player.dev_last_gain = round(max(0.0, after - before), 2)
+            after_training = overall(player)
+            player.dev_last_gain = round(max(0.0, after_training - before), 2)
             if player.dev_last_gain > 0:
                 report.gains.append((team, player, player.dev_last_gain))
             if player.minor_days >= 100:
                 player.minor_seasons += 1
             player.minor_days = 0
+            age_player(rng, player)
+            if should_retire(rng, player):
+                report.retired.append((team, player))
+            else:
+                survivors.append(player)
+        team.minors = survivors
     precompute_all(p for team in teams for p in team.roster + team.minors)
     report.gains.sort(key=lambda row: row[2], reverse=True)
     return report
-
 
 def _make_room_for_callup(team: Team, pitcher: bool) -> Player | None:
     if len(team.roster) < ACTIVE_MAX:

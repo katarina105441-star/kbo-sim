@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
+import SubstitutionControls from './SubstitutionControls.jsx'
 
 const baseLabel = (bases) => ['1루', '2루', '3루'].filter((_, i) => bases[i]).join(' · ') || '주자 없음'
 
@@ -63,6 +64,8 @@ export default function LiveGame({ initial, onClose, onFinished }) {
               if (window.confirm('남은 경기를 자동으로 진행할까요?')) apply(api.liveAuto)
             }}>자동 완료 ⏭</button>
           </div>
+
+          <SubstitutionControls state={s} userSide={meta.user_side} busy={busy} apply={apply} />
 
           <div className="pitcher-change">
             <h3>투수 교체</h3>

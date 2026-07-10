@@ -73,12 +73,14 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         from web.backend.fa_compensation_api import router as compensation_router
         from web.backend.draft_api import router as draft_router
         from web.backend.development_api import router as development_router
+        from web.backend.team_identity_api import router as identity_router
         self.include_router(substitution_router)
         self.include_router(trade_router)
         self.include_router(fa_router)
         self.include_router(compensation_router)
         self.include_router(draft_router)
         self.include_router(development_router)
+        self.include_router(identity_router)
 
     FastAPI.__init__ = _fastapi_init_with_extensions
     FastAPI._kbo_extension_router_patch = True

@@ -174,7 +174,10 @@ def my_lineup():
 @app.put("/api/my/lineup")
 def my_lineup_update(req: LineupUpdate):
     """라인업 전체를 원자적으로 저장. ``use_ai``면 AI 추천으로 초기화."""
-    team = sess().user_team
+    s = sess()
+    if s.live_sim is not None and not s.live_sim.done:
+        raise HTTPException(409, "실시간 경기 중에는 라인업을 변경할 수 없습니다.")
+    team = s.user_team
     try:
         if req.use_ai:
             return ai_recommend(team)
@@ -259,9 +262,14 @@ def live_step():
 def live_pitcher(req: LivePitcherChange):
     s = sess()
     try:
-        s.live_change_pitcher(req.pid)
+        sim = s.require_live()
     except LookupError as exc:
         raise HTTPException(404, str(exc)) from exc
+    user_side = "home" if sim.home.tid == s.user_tid else "away"
+    if sim.done or not sim.at_decision or sim.fld != user_side:
+        raise HTTPException(409, "현재 시점에는 투수를 교체할 수 없습니다.")
+    try:
+        s.live_change_pitcher(req.pid)
     except RuntimeError as exc:
         raise HTTPException(409, str(exc)) from exc
     except ValueError as exc:

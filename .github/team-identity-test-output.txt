@@ -1,30 +1,19 @@
 /opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
   from starlette.testclient import TestClient as TestClient  # noqa
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/__main__.py", line 18, in <module>
-    main(module=None)
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 101, in __init__
-    self.parseArgs(argv)
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 150, in parseArgs
-    self.createTests()
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/main.py", line 161, in createTests
-    self.test = self.testLoader.loadTestsFromNames(self.testNames,
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 232, in loadTestsFromNames
-    suites = [self.loadTestsFromName(name, module) for name in names]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 232, in <listcomp>
-    suites = [self.loadTestsFromName(name, module) for name in names]
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
-    module = __import__(module_name)
-             ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_team_identity_api.py", line 8, in <module>
-    import web.backend.main as main
-  File "/home/runner/work/kbo-sim/kbo-sim/web/backend/__init__.py", line 26, in <module>
-    _original_watch_stream = _ser.watch_stream
-                             ^^^^^^^^^^^^^^^^^
-AttributeError: module 'web.backend.serializers' has no attribute 'watch_stream'
-exit_code=1
+test_all_teams_receive_stable_profiles (tests.test_team_identity.TestTeamIdentity.test_all_teams_receive_stable_profiles) ... ok
+test_draft_style_changes_player_fit (tests.test_team_identity.TestTeamIdentity.test_draft_style_changes_player_fit) ... ok
+test_fa_aggression_changes_offer_multiplier (tests.test_team_identity.TestTeamIdentity.test_fa_aggression_changes_offer_multiplier) ... ok
+test_identity_is_pickle_safe (tests.test_team_identity.TestTeamIdentity.test_identity_is_pickle_safe) ... ok
+test_long_term_strategy_shifts_effective_phase (tests.test_team_identity.TestTeamIdentity.test_long_term_strategy_shifts_effective_phase) ... ok
+test_rebuilding_team_values_young_asset_more (tests.test_team_identity.TestTeamIdentity.test_rebuilding_team_values_young_asset_more) ... ok
+test_scouting_strength_reduces_observation_noise (tests.test_team_identity.TestTeamIdentity.test_scouting_strength_reduces_observation_noise) ... ok
+test_game_save_load_preserves_identity (tests.test_team_identity_api.TestTeamIdentityApi.test_game_save_load_preserves_identity) ... ok
+test_identity_endpoint_lists_all_teams (tests.test_team_identity_api.TestTeamIdentityApi.test_identity_endpoint_lists_all_teams) ... ok
+test_interactive_draft_has_team_specific_scouting_boards (tests.test_team_identity_api.TestTeamIdentityApi.test_interactive_draft_has_team_specific_scouting_boards) ... ok
+test_new_game_state_exposes_user_identity (tests.test_team_identity_api.TestTeamIdentityApi.test_new_game_state_exposes_user_identity) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.161s
+
+OK
+exit_code=0

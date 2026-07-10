@@ -1,19 +1,30 @@
-/opt/hostedtoolcache/Python/3.11.15/x64/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
-  from starlette.testclient import TestClient as TestClient  # noqa
-test_all_teams_receive_stable_profiles (tests.test_team_identity.TestTeamIdentity.test_all_teams_receive_stable_profiles) ... ok
-test_draft_style_changes_player_fit (tests.test_team_identity.TestTeamIdentity.test_draft_style_changes_player_fit) ... ok
-test_fa_aggression_changes_offer_multiplier (tests.test_team_identity.TestTeamIdentity.test_fa_aggression_changes_offer_multiplier) ... ok
-test_identity_is_pickle_safe (tests.test_team_identity.TestTeamIdentity.test_identity_is_pickle_safe) ... ok
-test_long_term_strategy_shifts_effective_phase (tests.test_team_identity.TestTeamIdentity.test_long_term_strategy_shifts_effective_phase) ... ok
-test_rebuilding_team_values_young_asset_more (tests.test_team_identity.TestTeamIdentity.test_rebuilding_team_values_young_asset_more) ... ok
-test_scouting_strength_reduces_observation_noise (tests.test_team_identity.TestTeamIdentity.test_scouting_strength_reduces_observation_noise) ... ok
-test_game_save_load_preserves_identity (tests.test_team_identity_api.TestTeamIdentityApi.test_game_save_load_preserves_identity) ... ok
-test_identity_endpoint_lists_all_teams (tests.test_team_identity_api.TestTeamIdentityApi.test_identity_endpoint_lists_all_teams) ... ok
-test_interactive_draft_has_team_specific_scouting_boards (tests.test_team_identity_api.TestTeamIdentityApi.test_interactive_draft_has_team_specific_scouting_boards) ... ok
-test_new_game_state_exposes_user_identity (tests.test_team_identity_api.TestTeamIdentityApi.test_new_game_state_exposes_user_identity) ... ok
+Ran 184 tests
+Failures: 2
+Errors: 0
 
-----------------------------------------------------------------------
-Ran 11 tests in 0.161s
+FAIL: test_all_auto_matches_existing_run_draft (test_draft_session.TestInteractiveDraft.test_all_auto_matches_existing_run_draft)
+Traceback (most recent call last):
+  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_draft_session.py", line 40, in test_all_auto_matches_existing_run_draft
+    self.assertEqual(fingerprint(expected), fingerprint(draft.results))
+AssertionError: Lists differ: [(1, 'KWM', 'SP', 28.65462869, 19.08311203), (1, 'NC', 'SP',[783 chars]779)] != [(1, 'KWM', 'SP', 21.0580409, 19.08311203), (1, 'NC', 'SP', [794 chars]034)]
 
-OK
-exit_code=0
+First differing element 0:
+(1, 'KWM', 'SP', 28.65462869, 19.08311203)
+(1, 'KWM', 'SP', 21.0580409, 19.08311203)
+
+Diff is 2278 characters long. Set self.maxDiff to None to see it.
+
+
+FAIL: test_auto_finish_matches_existing_market (test_fa_session.TestInteractiveFAMarket.test_auto_finish_matches_existing_market)
+Traceback (most recent call last):
+  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_fa_session.py", line 44, in test_auto_finish_matches_existing_market
+    self.assertEqual(fp(expected), fp(market.report))
+AssertionError: Lists differ: [('HW[684 chars]', 4.65, 3.94, 3.0, 2), ('DSN-B3', 'DSN', 'DSN[1373 chars], 0)] != [('HW[684 chars]', 4.35, 3.94, 3.0, 2), ('DSN-B3', 'DSN', 'DSN[1373 chars], 0)]
+
+First differing element 13:
+('LTE-B6', 'LTE', 'DSN', 'C', 4.65, 3.94, 3.0, 2)
+('LTE-B6', 'LTE', 'DSN', 'C', 4.35, 3.94, 3.0, 2)
+
+Diff is 2369 characters long. Set self.maxDiff to None to see it.
+
+exit_code=1

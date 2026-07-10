@@ -109,7 +109,8 @@ class InteractiveFAMarket:
 
     def _user_offer_limit(self, pending: PendingFA) -> float:
         team = self.by_tid[self.user_tid]
-        if self.signed_count[self.user_tid] >= self.limit:
+        if (self.user_tid != pending.home_tid
+                and self.signed_count[self.user_tid] >= self.limit):
             return 0.0
         comp_cost = 0.0 if self.user_tid == pending.home_tid else pending.comp
         remaining = team.budget * TUNE["fa"]["spend_frac"] - self.spent[self.user_tid]

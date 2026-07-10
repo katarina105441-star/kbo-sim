@@ -30,13 +30,21 @@ class TestDevelopmentEngine(unittest.TestCase):
             self.assertEqual(len(ids), len(set(ids)))
             self.assertTrue(all(p.team_id == team.tid for p in team.minors))
 
+    def test_initial_farm_players_have_probability_cache(self):
+        for team in self.teams:
+            for player in team.minors:
+                self.assertIn("k", player.shifts)
+                self.assertTrue(player.shifts)
+
     def test_promote_and_demote_move_single_player(self):
         prospect = self.team.minors[0]
+        prospect.shifts = {}
         before = len(self.team.roster)
         promote(self.team, prospect.pid)
         self.assertEqual(len(self.team.roster), before + 1)
         self.assertIn(prospect, self.team.roster)
         self.assertNotIn(prospect, self.team.minors)
+        self.assertIn("k", prospect.shifts)
 
         demote(self.team, prospect.pid)
         self.assertEqual(len(self.team.roster), before)
@@ -99,6 +107,8 @@ class TestDevelopmentEngine(unittest.TestCase):
         healthy_after = sum(not p.is_pitcher and p.inj_days == 0
                             for p in self.team.roster)
         self.assertGreaterEqual(healthy_after, 9)
+        called_up = next(p for p in self.team.roster if p.pid == moves[0]["pid"])
+        self.assertIn("k", called_up.shifts)
 
     def test_auto_assign_returns_to_25_active_players(self):
         promote(self.team, self.team.minors[0].pid)
@@ -107,6 +117,7 @@ class TestDevelopmentEngine(unittest.TestCase):
         self.assertEqual(len(self.team.roster) + len(self.team.minors), 30)
         self.assertIn("promoted", result)
         self.assertIn("demoted", result)
+        self.assertTrue(all("k" in p.shifts for p in self.team.roster))
 
     def test_pickle_preserves_farm_and_focus(self):
         player = self.team.minors[0]

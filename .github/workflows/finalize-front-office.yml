@@ -1,0 +1,58 @@
+name: Finalize front office
+
+on:
+  push:
+    branches:
+      - feat/front-office-objectives
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/front-office-objectives
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - name: Update documentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('README.md')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '- 구단별 감독·스카우팅·운영 성향: 팀마다 다른 드래프트·FA·트레이드 판단\n'
+              '- 후속 범위: 장기 밸런스 검증과 게임 진행 동기 강화',
+              '- 구단별 감독·스카우팅·운영 성향: 팀마다 다른 드래프트·FA·트레이드 판단\n'
+              '- 시즌 목표·프런트 평가: 구단주 신뢰도, S~F 시즌 평가, 해임 위험, 장기 성과 기록\n'
+              '- 후속 범위: 장기 밸런스 검증과 이벤트·보상 중심 진행 동기 강화')
+          text = text.replace(
+              '남은 확장: 장기 밸런스 검증·시즌 목표·프런트 평가 등 게임 진행 동기 강화.',
+              '4단계 진행 동기: 시즌 목표·구단주 신뢰도·프런트 평가·해임 위험·감독 성과 기록 ✔\n'
+              '남은 확장: 장기 밸런스 검증·시즌 이벤트·구단주 보상·업적 시스템.')
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Build frontend dist
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Commit generated assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md web/frontend/dist
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+          else
+            git commit -m 'Update front office docs and frontend assets'
+            git push origin HEAD:feat/front-office-objectives
+          fi

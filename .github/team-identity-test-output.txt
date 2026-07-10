@@ -1,4 +1,0 @@
-Ran 184 tests
-Failures: 0
-Errors: 0
-exit_code=0

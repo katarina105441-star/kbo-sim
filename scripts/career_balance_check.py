@@ -78,6 +78,7 @@ def run_career(seed: int, seasons: int) -> dict:
 
     for year in range(1, seasons + 1):
         session.year = year
+        session.current_objective = create_objective(session)
         session.season = SeasonRunner(session.teams, session.rng, isolated=True)
         session.season.run()
         standings = session.season.standings()
@@ -109,7 +110,6 @@ def run_career(seed: int, seasons: int) -> dict:
         run_fa_market(session.rng, session.teams, standings, year=year)
         run_draft(session.rng, session.teams, standings, year=year)
         offseason_finance_tick(session.rng, session.teams, year=year)
-        session.current_objective = create_objective(session)
 
     summary = retire_manager(session, reason="mandatory", force=True)
     totals = career_totals(session)

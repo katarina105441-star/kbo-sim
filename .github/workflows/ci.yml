@@ -12,7 +12,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   python-tests:
@@ -59,38 +59,3 @@ jobs:
 
       - name: Build frontend
         run: npm run build
-
-  update-feature-dist:
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/mvp3-substitutions' && github.actor != 'github-actions[bot]'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout feature branch
-        uses: actions/checkout@v4
-        with:
-          ref: feat/mvp3-substitutions
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: web/frontend/package-lock.json
-
-      - name: Build frontend dist
-        working-directory: web/frontend
-        run: |
-          npm ci
-          npm run build
-
-      - name: Commit generated dist
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A web/frontend/dist
-          if git diff --cached --quiet; then
-            echo 'No dist changes.'
-          else
-            git commit -m 'Build MVP-3 Part 2B frontend dist'
-            git push origin HEAD:feat/mvp3-substitutions
-          fi

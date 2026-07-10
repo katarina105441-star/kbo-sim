@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { api } from '../api.js'
 
 const POSITIONS = ['전체', '투수', '야수', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'SP', 'RP', 'CL']
@@ -16,6 +16,10 @@ export default function DraftBoard({ draft, onDraftChange, onComplete }) {
     if (position === '투수' || position === '야수') return rows.filter(p => p.type === position)
     return rows.filter(p => p.pos === position)
   }, [draft, position])
+
+  useEffect(() => {
+    if (selected && !candidates.some(player => player.pid === selected)) setSelected('')
+  }, [candidates, selected])
 
   const execute = async (fn) => {
     setBusy(true)

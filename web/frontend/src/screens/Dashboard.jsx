@@ -21,6 +21,7 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
   const [career, setCareer] = useState(null)
   const [choosing, setChoosing] = useState(false)
   const [accepting, setAccepting] = useState('')
+  const [retiring, setRetiring] = useState(false)
   const [choiceError, setChoiceError] = useState('')
 
   const reloadPanels = () => Promise.all([api.frontOffice(), api.engagement(), api.career()])
@@ -63,11 +64,29 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
     }
   }
 
+  const retireCareer = async () => {
+    if (!window.confirm('감독 커리어를 종료하고 최종 평가를 확정하시겠습니까?')) return
+    setRetiring(true)
+    setChoiceError('')
+    try {
+      const response = await api.retireCareer()
+      setCareer(response.career)
+      await onRefresh?.()
+    } catch (error) {
+      setChoiceError(error.message)
+    } finally {
+      setRetiring(false)
+    }
+  }
+
   const pendingEvent = engagement?.pending_event
   const dismissed = career?.status === 'dismissed'
-  const progressBlocked = Boolean(pendingEvent || dismissed)
+  const retired = career?.status === 'retired'
+  const progressBlocked = Boolean(pendingEvent || dismissed || retired)
   const unlocked = engagement?.achievements?.filter(a => a.unlocked) || []
   const latestReward = engagement?.latest_season_reward
+  const legacy = career?.legacy_preview
+  const retirement = career?.retirement_summary
 
   return (
     <div className="two-col">
@@ -85,7 +104,7 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
           </div>
           <p>{identity.description}</p>
         </div>}
-        {office && <div className={`front-office-panel ${office.risk_level}`}>
+        {office && !retired && <div className={`front-office-panel ${office.risk_level}`}>
           <div className="front-office-head">
             <div>
               <span className="eyebrow">{office.objective.year}년차 구단주 목표</span>
@@ -122,9 +141,25 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
               <strong>{accepting === offer.tid ? '계약 처리 중…' : '제안 수락'}</strong>
             </button>)}
           </div>
+          {career.retirement_eligible && <button className="retire-secondary" disabled={retiring}
+            onClick={retireCareer}>재취업하지 않고 은퇴</button>}
           {choiceError && <p className="career-error">{choiceError}</p>}
         </div>}
-        {pendingEvent && !dismissed && <div className="owner-event-panel">
+        {retired && retirement && <div className={`retirement-panel ${retirement.tier.key}`}>
+          <span className="career-kicker">감독 커리어 최종 결산</span>
+          <h3>{retirement.tier.label}</h3>
+          <div className="legacy-score"><b>{retirement.score}</b><span>레거시 점수</span></div>
+          <p>{retirement.reason_label} · 최종 평판 {retirement.final_reputation}</p>
+          <div className="retirement-stats">
+            <span>{retirement.totals.seasons}시즌</span>
+            <span>우승 {retirement.totals.championships}회</span>
+            <span>목표 달성 {retirement.totals.goals_met}회</span>
+            <span>{retirement.totals.team_count}개 구단</span>
+          </div>
+          <ul>{retirement.highlights.map((item, i) => <li key={i}>{item}</li>)}</ul>
+          <strong>{retirement.inducted ? '명예의 전당 헌액 확정' : '커리어 기록 보존 완료'}</strong>
+        </div>}
+        {pendingEvent && !dismissed && !retired && <div className="owner-event-panel">
           <span className="event-kicker">구단주 긴급 안건 · {pendingEvent.milestone}일차</span>
           <h3>{pendingEvent.title}</h3>
           <p>{pendingEvent.description}</p>
@@ -139,7 +174,7 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
           {choiceError && <p className="event-error">{choiceError}</p>}
           <p className="event-block-note">응답 전에는 시즌을 진행할 수 없습니다.</p>
         </div>}
-        {state.next_games.length > 0 && (
+        {!retired && state.next_games.length > 0 && (
           <p>다음 경기: {state.next_games.map(g =>
             `${g.away} @ ${g.home}${g.home === state.user_tid ? ' (홈)' : ' (원정)'}`).join(', ')}</p>
         )}
@@ -155,6 +190,7 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
             시즌 끝까지 ⏭ {seasonOver ? '(새 시즌 시작)' : ''}
           </button>
         </div>
+        {retired && <p className="muted">은퇴가 확정되어 이 커리어는 더 진행되지 않습니다.</p>}
         {busy && <p className="muted">시뮬레이션 중…</p>}
       </section>
       <section className="card">
@@ -164,12 +200,23 @@ export default function Dashboard({ state, busy, onAdvance, onLive, onRefresh, o
             <div><span>팬 지지율</span><b>{career.fan_approval}</b><small>{career.fan_label}</small></div>
             <div><span>언론 압박</span><b>{career.media_pressure}</b><small>{career.media_label}</small></div>
           </div>
+          {legacy && <div className="legacy-preview">
+            <div><span>현재 레거시</span><b>{legacy.score}</b></div>
+            <strong>{legacy.tier.label}</strong>
+            <small>{legacy.totals.seasons}/{career.retirement_mandatory_seasons}시즌</small>
+          </div>}
           <p className="media-headline">“{career.current_headline}”</p>
+          {career.retirement_eligible && !retired && <button className="retire-button"
+            disabled={retiring} onClick={retireCareer}>{retiring ? '최종 결산 중…' : '감독 은퇴 및 최종 결산'}</button>}
+          {!career.retirement_eligible && !retired && <p className="retirement-hint">
+            자발적 은퇴까지 {Math.max(0, career.retirement_min_seasons - (legacy?.totals.seasons || 0))}시즌
+          </p>}
           {career.moves.length > 0 && <div className="career-moves">
             {career.moves.slice(0, 3).map((move, i) => <span key={`${move.year}-${i}`}>
               {move.year}년차 {move.from_tid} → {move.to_tid}
             </span>)}
           </div>}
+          {choiceError && <p className="career-error">{choiceError}</p>}
         </div>}
         <h3>알림</h3>
         {state.news.length === 0

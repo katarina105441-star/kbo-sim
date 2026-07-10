@@ -1,0 +1,20 @@
+/* ---- FA 보상선수 ---- */
+.comp-board { background:#fff; border:1px solid #dfe6ef; border-radius:12px; padding:18px; margin-bottom:18px; }
+.comp-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:1px solid #e5eaf1; padding-bottom:12px; }
+.comp-header h2, .comp-summary h3, .comp-instruction h3 { margin:0; }
+.comp-summary { display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; margin:16px 0; padding:14px; background:#f7f9fc; border-radius:10px; }
+.comp-options { display:flex; flex-direction:column; gap:6px; text-align:right; }
+.comp-instruction { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:14px 0 10px; }
+.comp-instruction p { margin:4px 0 0; color:#65738a; }
+.comp-count { white-space:nowrap; font-weight:700; }
+.comp-table-wrap { overflow-x:auto; }
+.comp-table { min-width:900px; }
+.comp-table input { width:18px; height:18px; }
+.comp-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.comp-results { margin-top:18px; border-top:1px solid #e5eaf1; padding-top:12px; }
+@media (max-width:760px) {
+  .comp-header, .comp-instruction { flex-direction:column; align-items:stretch; }
+  .comp-summary { grid-template-columns:auto 1fr; }
+  .comp-options { grid-column:1 / -1; text-align:left; }
+  .comp-actions button, .comp-header button { flex:1; }
+}

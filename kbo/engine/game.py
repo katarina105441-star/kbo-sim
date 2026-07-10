@@ -237,12 +237,12 @@ class GameSimulator:
         self.manual_change_consumed = True
         return self.state()
 
-    def step_pa(self) -> dict:
+    def step_pa(self, include_state: bool = True) -> dict:
         """최대 한 타석을 진행한다. 도루 실패로 이닝이 끝나면 타석 없이 반환할 수 있다."""
         self.start()
         if self.done:
-            return {"events": [], "state": self.state(), "done": True,
-                    "result": self.result}
+            return {"events": [], "state": self.state() if include_state else None,
+                    "done": True, "result": self.result}
 
         event_from = len(self.struct_events)
         self.at_decision = False
@@ -284,7 +284,7 @@ class GameSimulator:
                 if self.outs >= 3:
                     self._end_half()
                     self._advance_after_half()
-                    return self._step_payload(event_from)
+                    return self._step_payload(event_from, include_state)
 
         batter, _slot = team.lineup[self.bo[self.side] % 9]
         self.bo[self.side] += 1
@@ -337,11 +337,11 @@ class GameSimulator:
             self._advance_after_half(walkoff=walkoff)
         else:
             self.at_decision = True
-        return self._step_payload(event_from)
+        return self._step_payload(event_from, include_state)
 
-    def _step_payload(self, event_from: int) -> dict:
-        return {"events": self.struct_events[event_from:],
-                "state": self.state(), "done": self.done,
+    def _step_payload(self, event_from: int, include_state: bool = True) -> dict:
+        return {"events": self.struct_events[event_from:] if include_state else [],
+                "state": self.state() if include_state else None, "done": self.done,
                 "result": self.result if self.done else None}
 
     def _end_half(self) -> None:
@@ -382,7 +382,7 @@ class GameSimulator:
         """현재 상태부터 경기 종료까지 자동 진행한다."""
         self.start()
         while not self.done:
-            self.step_pa()
+            self.step_pa(include_state=False)
         return self.result
 
     def run(self) -> GameResult:

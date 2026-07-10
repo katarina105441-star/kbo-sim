@@ -51,14 +51,19 @@ def career_accept(req: JobAcceptRequest):
 @router.post("/api/career/retire")
 def career_retire():
     from web.backend.main import game_state, sess
+    session = sess()
+    if session.live_sim is not None and not session.live_sim.done:
+        raise HTTPException(409, "진행 중인 실시간 경기를 먼저 종료해야 합니다.")
     try:
-        summary = retire_manager(sess())
+        summary = retire_manager(session)
     except LookupError as exc:
         raise HTTPException(409, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    if hasattr(session, "pending_owner_event"):
+        session.pending_owner_event = None
     return {
         "summary": summary,
-        "career": _career_payload(sess()),
+        "career": _career_payload(session),
         "state": game_state(),
     }

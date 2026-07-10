@@ -3,6 +3,7 @@ import { api } from './api.js'
 import './live.css'
 import './draft.css'
 import './fa.css'
+import './fa-compensation.css'
 import './trade.css'
 import './development.css'
 import TeamSelect from './screens/TeamSelect.jsx'
@@ -37,6 +38,7 @@ export default function App() {
     const active = await Promise.all([
       api.tradeState().then(() => true).catch(() => false),
       api.faState().then(() => true).catch(() => false),
+      api.compensationState().then(() => true).catch(() => false),
       api.draftState().then(() => true).catch(() => false),
     ])
     if (active.some(Boolean)) setTab('offseason')
@@ -60,7 +62,7 @@ export default function App() {
       setTimeout(() => setFlash(''), 2500)
     } catch (e) {
       setFlash(e.message)
-      if (e.message.includes('트레이드') || e.message.includes('FA') || e.message.includes('드래프트')) setTab('offseason')
+      if (e.message.includes('트레이드') || e.message.includes('FA') || e.message.includes('보상선수') || e.message.includes('드래프트')) setTab('offseason')
       setTimeout(() => setFlash(''), 3000)
     } finally { setBusy(false) }
   }

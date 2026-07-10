@@ -21,6 +21,7 @@ export const api = {
   ownerEventChoice: (choiceId) => post('/api/engagement/choice', { choice_id: choiceId }),
   career: () => req('/api/career'),
   acceptCareerOffer: (tid) => post('/api/career/accept', { tid }),
+  retireCareer: () => post('/api/career/retire'),
   newGame: (tid, seed) => post('/api/game/new', { tid, seed }),
   state: () => req('/api/game/state'),
   save: () => post('/api/game/save'),

@@ -72,15 +72,18 @@ class TestFAApi(unittest.TestCase):
         self.assertEqual(restored.status_code, 200)
         self.assertEqual(restored.json(), expected)
 
-    def test_auto_finish_starts_draft_or_new_season(self):
+    def test_auto_finish_starts_compensation_draft_or_new_season(self):
         self.prepare_market()
         response = self.client.post("/api/fa/auto-finish")
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         self.assertTrue(body["fa_complete"])
         self.assertEqual(self.client.get("/api/fa/state").status_code, 404)
-        # 대부분 팀은 로스터가 차 있어 드래프트가 즉시 끝날 수 있다.
-        self.assertTrue(body["draft_active"] or body["game_state"]["year"] >= 2)
+        compensation_active = body.get("compensation_active", False)
+        draft_active = body.get("draft_active", False)
+        self.assertTrue(compensation_active or draft_active or body["game_state"]["year"] >= 2)
+        if compensation_active:
+            self.assertEqual(self.client.get("/api/fa/compensation/state").status_code, 200)
 
     def test_no_active_market_returns_404(self):
         self.assertEqual(self.client.get("/api/fa/state").status_code, 404)

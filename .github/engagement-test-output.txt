@@ -1,11 +1,4 @@
 Ran 218 tests
-Failures: 1
+Failures: 0
 Errors: 0
-
-FAIL: test_choice_applies_effects_and_unlocks_first_event (test_engagement.TestEngagement.test_choice_applies_effects_and_unlocks_first_event)
-Traceback (most recent call last):
-  File "/home/runner/work/kbo-sim/kbo-sim/tests/test_engagement.py", line 79, in test_choice_applies_effects_and_unlocks_first_event
-    self.assertEqual(session.user_team.budget,
-AssertionError: 218.0 != 216.0
-
-exit_code=1
+exit_code=0

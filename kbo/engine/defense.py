@@ -1,7 +1,6 @@
 """수비 집계 — 현재 라인업의 수비/송구 능력치를 팀 단위 z값으로 변환.
 
 BABIP(안타 억제), 병살 전환, 주자 추가진루 억제에 쓰인다.
-경기 시작 시 1회 계산해 캐싱한다 (1단계: 경기 중 야수 교체 없음).
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -21,12 +20,17 @@ class TeamDefense:
     c_arm_z: float    # 포수 송구 z
 
 
-def compute_defense(team: Team) -> TeamDefense:
+def compute_defense(team: Team, lineup=None) -> TeamDefense:
+    """수비력을 계산한다.
+
+    ``lineup``을 생략하면 시즌용 ``team.lineup``을 사용한다. 경기 중 교체가 있는
+    경우에는 경기 내부 활성 라인업을 전달해 팀의 시즌 라인업을 오염시키지 않는다.
+    """
     if_num = if_den = 0.0
     of_num = of_den = 0.0
     arm_num = arm_den = 0.0
     c_arm = 50.0
-    for player, slot in team.lineup:
+    for player, slot in (team.lineup if lineup is None else lineup):
         b = player.bat
         if slot in INFIELD:
             w = 1.3 if slot in {"2B", "SS"} else 1.0  # 센터라인 가중

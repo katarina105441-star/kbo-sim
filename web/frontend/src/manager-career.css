@@ -21,7 +21,27 @@
 .sentiment-grid span { color:#6a788b; font-size:10.5px; }
 .sentiment-grid b { grid-row:1 / span 2; grid-column:2; align-self:center; color:#263d5a; font-size:18px; }
 .sentiment-grid small { color:#4f6b8d; font-size:10px; font-weight:700; }
+.legacy-preview { display:grid; grid-template-columns:1fr auto; gap:2px 10px; align-items:center; margin:9px 0; padding:9px 10px; border-radius:8px; background:#edf2f8; }
+.legacy-preview > div { display:flex; align-items:baseline; gap:7px; }
+.legacy-preview span,.legacy-preview small { color:#687a90; font-size:10.5px; }
+.legacy-preview b { color:#213b5c; font-size:18px; }
+.legacy-preview strong { color:#4f6380; font-size:11px; }
+.legacy-preview small { grid-column:1 / span 2; }
 .media-headline { margin:8px 0 0; color:#3d4f65; font-size:12px; font-weight:700; line-height:1.45; }
+.retire-button,.retire-secondary { margin-top:10px; border:1px solid #8b6f46; background:#fffaf0; color:#6e5128; font-weight:800; }
+.retire-secondary { width:100%; }
+.retirement-hint { margin:7px 0 0; color:#7b8797; font-size:10.5px; }
+.retirement-panel { margin:14px 0; padding:17px; border:1px solid #d3c18a; border-radius:12px; background:linear-gradient(145deg,#fffcf3,#f4efe1); box-shadow:0 5px 20px rgba(83,65,21,.10); }
+.retirement-panel.hall_of_fame,.retirement-panel.legend { border-color:#b08b2f; background:linear-gradient(145deg,#fff9df,#efe4b9); }
+.retirement-panel h3 { margin:5px 0 9px; color:#5d4818; font-size:21px; }
+.legacy-score { display:flex; align-items:baseline; gap:8px; }
+.legacy-score b { color:#7d5c10; font-size:34px; line-height:1; }
+.legacy-score span { color:#7d6b42; font-size:11px; font-weight:700; }
+.retirement-panel > p { color:#726447; font-size:12px; }
+.retirement-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:10px 0; }
+.retirement-stats span { padding:7px 5px; border-radius:7px; background:rgba(255,255,255,.65); color:#5d5137; font-size:10.5px; font-weight:700; text-align:center; }
+.retirement-panel ul { margin:8px 0 10px; padding-left:18px; color:#5f563f; font-size:11.5px; line-height:1.55; }
+.retirement-panel > strong { color:#785a16; font-size:12px; }
 .career-moves { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
 .career-moves span { padding:3px 7px; border-radius:11px; background:#e9eef5; color:#53677f; font-size:10px; }
 .media-feed { margin:14px 0; }
@@ -34,4 +54,5 @@
 .media-feed b { color:#42546a; font-size:11.5px; line-height:1.35; }
 @media (max-width:800px) {
   .job-offer-grid,.sentiment-grid { grid-template-columns:1fr; }
+  .retirement-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }

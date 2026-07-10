@@ -1,0 +1,24 @@
+name: Team identity diagnostics
+
+on:
+  push:
+    branches:
+      - feat/team-identity-tendencies
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  focused-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Run team identity tests
+        run: python -m unittest tests.test_team_identity tests.test_team_identity_api -v

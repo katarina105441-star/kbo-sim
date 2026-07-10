@@ -5,10 +5,8 @@ import unittest
 from kbo.engine.baserunning import Runner
 from kbo.engine.defense import compute_defense
 from kbo.engine.game import GameSimulator
-from kbo.engine.substitution_patch import apply_substitution_patch
+from kbo.engine.substitution_patch import enable_substitutions
 from kbo.io.loader import load_league
-
-apply_substitution_patch()
 
 
 def pair():
@@ -21,8 +19,8 @@ def pair():
 class TestSubstitutions(unittest.TestCase):
     def make(self, seed=42, record=False):
         home, away = pair()
-        sim = GameSimulator(home, away, random.Random(seed), record=record,
-                            record_struct=True)
+        sim = enable_substitutions(GameSimulator(
+            home, away, random.Random(seed), record=record, record_struct=True))
         sim.start()
         return home, away, sim
 
@@ -109,13 +107,14 @@ class TestSubstitutions(unittest.TestCase):
 
     def test_no_substitution_keeps_seed_result_and_team_lineups(self):
         home1, away1 = pair()
-        sim1 = GameSimulator(home1, away1, random.Random(2026),
-                             record=False, record_struct=True)
+        sim1 = enable_substitutions(GameSimulator(
+            home1, away1, random.Random(2026), record=False, record_struct=True))
         before1 = {t.tid: [(p.pid, s) for p, s in t.lineup] for t in (home1, away1)}
         r1 = sim1.run()
         home2, away2 = pair()
-        r2 = GameSimulator(home2, away2, random.Random(2026),
-                           record=False, record_struct=True).run()
+        sim2 = enable_substitutions(GameSimulator(
+            home2, away2, random.Random(2026), record=False, record_struct=True))
+        r2 = sim2.run()
         self.assertEqual((r1.score, r1.line, r1.decisions, r1.struct_events),
                          (r2.score, r2.line, r2.decisions, r2.struct_events))
         self.assertEqual(before1,

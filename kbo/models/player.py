@@ -69,6 +69,11 @@ class Player:
     service_years: float = 0.0
     fa_eligible_at: float = 0.0   # 재자격 서비스 임계 (FA 계약 시 +reelig로 미룸)
     fa_grade: str = ""            # 직전 FA 시장 등급 A/B/C (검증·표시용)
+    # 2군·육성. 선수는 Team.roster(1군) 또는 Team.minors(2군) 중 한 곳에만 존재한다.
+    development_focus: str = "balanced"
+    minor_days: int = 0           # 이번 시즌 2군 등록일
+    minor_seasons: int = 0        # 2군 풀시즌 상당 누적 횟수
+    dev_last_gain: float = 0.0    # 직전 오프시즌 육성 OVR 증가량(표시용)
     form_season: float = 0.0  # 시즌 폼 편차 (시즌 시작 시 추첨, gauss(0,1) 클램프)
     form_day: float = 0.0     # 일일 핫/콜드 (OU 프로세스, 정상상태 sd≈1)
     inj_days: int = 0        # 잔여 결장일 (0 = 건강)

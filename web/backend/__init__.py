@@ -1,12 +1,13 @@
 """웹 백엔드 초기화.
 
-실시간 경기 교체와 사용자 트레이드·FA·드래프트·2군 육성 확장을 등록한다.
+실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성 확장을 등록한다.
 """
 from fastapi import FastAPI
 
 from kbo.engine.substitution_patch import enable_substitutions
 from web.backend.draft_management import apply_draft_management_patch
 from web.backend.development_management import apply_development_management_patch
+from web.backend.fa_compensation_management import apply_fa_compensation_patch
 
 
 def _sub_text(ev: dict) -> str:
@@ -39,6 +40,7 @@ if not getattr(_ser, "_substitution_stream_patch", False):
 def _patch_game_session() -> None:
     apply_draft_management_patch()
     apply_development_management_patch()
+    apply_fa_compensation_patch()
 
     from web.backend.session import GameSession
     if getattr(GameSession, "_substitution_instance_patch", False):
@@ -66,11 +68,13 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         from web.backend.substitution_api import router as substitution_router
         from web.backend.trade_api import router as trade_router
         from web.backend.fa_api import router as fa_router
+        from web.backend.fa_compensation_api import router as compensation_router
         from web.backend.draft_api import router as draft_router
         from web.backend.development_api import router as development_router
         self.include_router(substitution_router)
         self.include_router(trade_router)
         self.include_router(fa_router)
+        self.include_router(compensation_router)
         self.include_router(draft_router)
         self.include_router(development_router)
 

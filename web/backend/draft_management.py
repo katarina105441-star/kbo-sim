@@ -1,7 +1,7 @@
 """웹 사용자 참여 오프시즌 상태머신.
 
-콘솔 자동 경로는 변경하지 않는다. 웹 시즌 종료 시 에이징·트레이드 후 FA 시장에서
-사용자 결정을 받고, FA 완료 후 사용자 드래프트, 재정, 새 시즌으로 이어진다.
+콘솔 자동 경로는 변경하지 않는다. 웹 시즌 종료 시 에이징 후 사용자 트레이드,
+FA 시장, 사용자 드래프트, 재정, 새 시즌 순으로 진행한다.
 """
 from __future__ import annotations
 
@@ -10,7 +10,29 @@ from kbo.league.draft_session import InteractiveDraft
 from kbo.league.economy import offseason_finance_tick
 from kbo.league.fa_session import InteractiveFAMarket
 from kbo.league.postseason import PostseasonRunner
-from kbo.league.trade import run_trades
+from kbo.league.trade_session import InteractiveTradeMarket
+
+
+def _trade_report(market: InteractiveTradeMarket) -> dict:
+    items = []
+    for deal in market.report.trades:
+        items.append(
+            f"{deal.reb_tid} {deal.veteran.name}"
+            f"({deal.veteran.age}세 {deal.veteran.pos}) ↔ "
+            f"{deal.win_tid} {deal.prospects[0].name}"
+            + (f"+지명권{[pick.round for pick in deal.picks]}R"
+               if deal.picks else "")
+        )
+    for deal in market.user_trades:
+        gave = ", ".join(getattr(asset, "name", f"{asset.round}R 지명권")
+                         for asset in deal.user_gave)
+        received = ", ".join(getattr(asset, "name", f"{asset.round}R 지명권")
+                             for asset in deal.user_received)
+        items.append(f"{deal.user_tid} [{gave}] ↔ {deal.other_tid} [{received}]")
+    return {
+        "stage": "트레이드",
+        "items": items or ["성사된 트레이드 없음"],
+    }
 
 
 def _fa_report(market: InteractiveFAMarket) -> dict:
@@ -59,42 +81,40 @@ def _complete_fa(session, market: InteractiveFAMarket) -> None:
     _begin_draft(session)
 
 
+def _begin_fa(session) -> None:
+    standings = session.offseason_standings
+    session.fa_session = InteractiveFAMarket(
+        session.rng, session.teams, standings, session.year, session.user_tid)
+    session.last_fa_state = None
+    if session.fa_session.complete:
+        _complete_fa(session, session.fa_session)
+
+
+def _complete_trade(session, market: InteractiveTradeMarket) -> None:
+    session.offseason_reports = list(session.offseason_reports) + [_trade_report(market)]
+    session.last_trade_state = market.state()
+    session.trade_session = None
+    _begin_fa(session)
+
+
 def _begin_managed_offseason(session, standings) -> None:
     year = session.year
-    reports = []
-
     aging = offseason_tick(session.rng, session.teams, year=year, draft_mode=True)
-    reports.append({
+    session.offseason_reports = [{
         "stage": "에이징/은퇴",
         "items": [
             f"{team.tid} {player.name}({player.age}세) 은퇴"
             for team, player in aging.retired
         ] or ["은퇴 선수 없음"],
-    })
-
-    trades = run_trades(session.rng, session.teams, standings, year=year)
-    reports.append({
-        "stage": "트레이드",
-        "items": [
-            f"{deal.reb_tid} {deal.veteran.name}"
-            f"({deal.veteran.age}세 {deal.veteran.pos}) ↔ "
-            f"{deal.win_tid} {deal.prospects[0].name}"
-            + (f"+지명권{[pick.round for pick in deal.picks]}R"
-               if deal.picks else "")
-            for deal in trades.trades
-        ] or ["성사된 트레이드 없음"],
-    })
-
-    session.offseason_reports = reports
+    }]
     session.offseason_standings = standings
-    session.fa_session = InteractiveFAMarket(
+    session.trade_session = InteractiveTradeMarket(
         session.rng, session.teams, standings, year, session.user_tid)
+    session.last_trade_state = None
+    session.fa_session = None
     session.last_fa_state = None
     session.draft_session = None
     session.last_draft_state = None
-
-    if session.fa_session.complete:
-        _complete_fa(session, session.fa_session)
 
 
 def _reset_user_roster_roles(session) -> None:
@@ -142,6 +162,8 @@ def apply_draft_management_patch() -> None:
 
     def patched_init(self, *args, **kwargs):
         original_init(self, *args, **kwargs)
+        self.trade_session = None
+        self.last_trade_state = None
         self.fa_session = None
         self.last_fa_state = None
         self.draft_session = None
@@ -176,11 +198,50 @@ def apply_draft_management_patch() -> None:
         _begin_managed_offseason(self, ranked)
 
     def patched_advance(self, unit: str) -> dict:
+        if getattr(self, "trade_session", None) is not None:
+            raise RuntimeError("트레이드 시장을 먼저 종료해야 합니다.")
         if getattr(self, "fa_session", None) is not None:
             raise RuntimeError("FA 시장 결정을 먼저 완료해야 합니다.")
         if getattr(self, "draft_session", None) is not None:
             raise RuntimeError("드래프트 지명을 먼저 완료해야 합니다.")
         return original_advance(self, unit)
+
+    def require_trade(self) -> InteractiveTradeMarket:
+        market = getattr(self, "trade_session", None)
+        if market is None:
+            raise LookupError("진행 중인 사용자 트레이드 시장이 없습니다.")
+        return market
+
+    def trade_state(self) -> dict:
+        return require_trade(self).state()
+
+    def trade_propose(self, other_tid: str, give_ids: list[str],
+                      receive_ids: list[str]) -> dict:
+        market = require_trade(self)
+        result = market.propose(other_tid, give_ids, receive_ids)
+        return {"result": result, "trade": market.state()}
+
+    def trade_accept_counter(self) -> dict:
+        market = require_trade(self)
+        result = market.accept_counter()
+        return {"result": result, "trade": market.state()}
+
+    def trade_reject_counter(self) -> dict:
+        market = require_trade(self)
+        result = market.reject_counter()
+        return {"result": result, "trade": market.state()}
+
+    def trade_finish(self) -> dict:
+        market = require_trade(self)
+        result = market.finish()
+        final_state = market.state()
+        _complete_trade(self, market)
+        return {
+            "result": result,
+            "trade": final_state,
+            "trade_complete": True,
+            "fa_active": self.fa_session is not None,
+        }
 
     def require_fa(self) -> InteractiveFAMarket:
         market = getattr(self, "fa_session", None)
@@ -279,6 +340,8 @@ def apply_draft_management_patch() -> None:
     def patched_load(name: str = "save"):
         session = original_load(name)
         defaults = {
+            "trade_session": None,
+            "last_trade_state": None,
             "fa_session": None,
             "last_fa_state": None,
             "draft_session": None,
@@ -293,6 +356,12 @@ def apply_draft_management_patch() -> None:
     GameSession.__init__ = patched_init
     GameSession._season_end = patched_season_end
     GameSession.advance = patched_advance
+    GameSession.require_trade = require_trade
+    GameSession.trade_state = trade_state
+    GameSession.trade_propose = trade_propose
+    GameSession.trade_accept_counter = trade_accept_counter
+    GameSession.trade_reject_counter = trade_reject_counter
+    GameSession.trade_finish = trade_finish
     GameSession.require_fa = require_fa
     GameSession.fa_state = fa_state
     GameSession.fa_offer = fa_offer

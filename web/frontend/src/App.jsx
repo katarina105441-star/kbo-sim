@@ -120,7 +120,7 @@ export default function App() {
         {tab === 'offseason' && <Offseason state={state} onState={setState} />}
       </main>
       {playerPid && <PlayerModal pid={playerPid} onClose={() => setPlayerPid(null)} />}
-      {watch && <Watch day={watch.day} gameIdx={watch.gameIdx} userTid={state.user_tid}
+      {watch && <Watch day={watch.day} gameIdx={watch.idx} userTid={state.user_tid}
                        onClose={() => { setWatch(null); setRev(r => r + 1); refresh() }} />}
       {live && <LiveGame initial={live}
                          onFinished={() => { setRev(r => r + 1); refresh() }}

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from kbo.engine.game import GameResult
 from kbo.league.aging import overall, potential
+from kbo.league.team_identity import identity_payload
 from kbo.models.player import Player
 from kbo.models.team import Team
 
@@ -73,7 +74,8 @@ def team_summary(t: Team) -> dict:
     g = t.wins + t.losses + t.ties
     return {"tid": t.tid, "name": t.name, "city": t.city, "stadium": t.stadium,
             "games": g, "wins": t.wins, "ties": t.ties, "losses": t.losses,
-            "pct": round(t.pct, 3), "budget": t.budget}
+            "pct": round(t.pct, 3), "budget": t.budget,
+            "identity": identity_payload(t)}
 
 
 def standings_rows(ranked: list[Team]) -> list[dict]:
@@ -157,13 +159,12 @@ def _count_seq(rng, outcome: str, n_pitches: int) -> list[str]:
     elif outcome == "HBP":
         final = "H"
         balls = min(3, max(0, n - 2)); strikes = 0
-    else:                       # 인플레이
+    else:
         final = "X"
         balls = min(3, n - 1); strikes = min(2, max(0, n - 1 - min(3, n - 1)))
     fouls = max(0, n - 1 - balls - strikes)
     priors = ["B"] * balls + ["S"] * strikes + ["F"] * fouls
     rng.shuffle(priors)
-    # 파울은 2스트라이크 후에만 의미가 자연스러움 — 순서 보정 없이도 연출로 충분
     return priors[:n - 1] + [final]
 
 
@@ -171,7 +172,7 @@ def _pa_text(ev: dict) -> str:
     txt = f"{ev['inning']}회{ev['half']} {ev['batter']['name']}: " \
           f"{OUTCOME_KO.get(ev['outcome'], ev['outcome'])}"
     if ev["scored"]:
-        a, h = ev["score"]                    # 타석 시작 시점 스코어
+        a, h = ev["score"]
         if ev["half"] == "초":
             a += len(ev["scored"])
         else:

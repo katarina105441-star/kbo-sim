@@ -46,6 +46,7 @@ class Team:
     losses: int = 0
     ties: int = 0
     user_managed: bool = False
+    identity: object | None = None
 
     @property
     def batters(self) -> list[Player]:

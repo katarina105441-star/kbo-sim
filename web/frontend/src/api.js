@@ -15,6 +15,7 @@ const put = (path, body) =>
 
 export const api = {
   teamsAll: () => req('/api/teams/all'),
+  teamIdentities: () => req('/api/teams/identities'),
   newGame: (tid, seed) => post('/api/game/new', { tid, seed }),
   state: () => req('/api/game/state'),
   save: () => post('/api/game/save'),

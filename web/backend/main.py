@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -44,6 +45,10 @@ class LineupUpdate(BaseModel):
     closer: str | None = None
     setup: list[str] = Field(default_factory=list)
     use_ai: bool = False
+
+
+class LivePitcherChange(BaseModel):
+    pid: str
 
 
 @app.get("/api/teams/all")
@@ -106,6 +111,7 @@ def game_state():
         "next_games": upcoming, "news": s.current_news(),
         "history": s.history, "postseason": s.postseason_summary,
         "has_offseason_report": bool(s.offseason_reports),
+        "live_active": bool(s.live_sim is not None and not s.live_sim.done),
     }
 
 
@@ -128,7 +134,10 @@ def game_load():
 def sim_advance(req: Advance):
     if req.unit not in ("day", "series", "month", "season_end"):
         raise HTTPException(400, f"unit 오류: {req.unit}")
-    out = sess().advance(req.unit)
+    try:
+        out = sess().advance(req.unit)
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
     out["state"] = game_state()
     return out
 
@@ -173,6 +182,103 @@ def my_lineup_update(req: LineupUpdate):
                             req.closer, req.setup)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+
+
+def _serialize_live_events(events: list[dict]) -> list[dict]:
+    """관전 스트림과 동일한 표현용 필드를 실시간 이벤트에 추가한다."""
+    out = []
+    for ev in events:
+        e = dict(ev)
+        if e["t"] == "pa":
+            e["count_seq"] = ser._count_seq(random.Random(e["seed"]),
+                                              e["outcome"], e["pitches"])
+            e["text"] = ser._pa_text(e)
+        elif e["t"] == "steal":
+            e["text"] = (f"{e['inning']}회{e['half']} {e['runner']['name']} "
+                         f"2루 도루 {'성공' if e['success'] else '실패'}")
+        elif e["t"] == "pitch_change":
+            e["text"] = (f"{e['inning']}회{e['half']} {e['team']} 투수 교체: "
+                         f"{e['in']['name']}")
+        out.append(e)
+    return out
+
+
+def _live_payload(s: GameSession, out: dict | None = None) -> dict:
+    try:
+        sim = s.require_live()
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    state = sim.state()
+    user_side = "home" if sim.home.tid == s.user_tid else "away"
+    payload = {
+        "meta": {
+            "away": {"tid": sim.away.tid, "name": sim.away.name},
+            "home": {"tid": sim.home.tid, "name": sim.home.name},
+            "user_side": user_side,
+            "day": s.live_day_no,
+            "game_idx": s.live_game_idx,
+        },
+        "state": state,
+        "events": _serialize_live_events((out or {}).get("events", [])),
+        "done": sim.done,
+        "result": ser.boxscore(sim.result) if sim.done and sim.result else None,
+    }
+    return payload
+
+
+@app.post("/api/live/start")
+def live_start():
+    s = sess()
+    try:
+        s.start_live()
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return _live_payload(s)
+
+
+@app.get("/api/live/state")
+def live_state():
+    return _live_payload(sess())
+
+
+@app.post("/api/live/step")
+def live_step():
+    s = sess()
+    try:
+        out = s.live_step()
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    return _live_payload(s, out)
+
+
+@app.post("/api/live/pitcher")
+def live_pitcher(req: LivePitcherChange):
+    s = sess()
+    try:
+        s.live_change_pitcher(req.pid)
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return _live_payload(s)
+
+
+@app.post("/api/live/auto")
+def live_auto():
+    s = sess()
+    try:
+        out = s.live_auto()
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    return _live_payload(s, out)
 
 
 @app.get("/api/results")

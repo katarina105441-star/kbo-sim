@@ -50,15 +50,31 @@ def ensure_manager_career(session) -> None:
         })
 
 
+def _current_tenure_history(session) -> tuple[list[dict], int]:
+    start_year = 1
+    if session.manager_tenures:
+        start_year = int(session.manager_tenures[-1].get("start_year", 1))
+    history = [row for row in session.front_office_history
+               if int(row.get("year", 0)) >= start_year]
+    return history, start_year
+
+
 def dismissal_reason(session, evaluation: dict) -> str | None:
     confidence = float(session.owner_confidence)
-    failures = failed_streak(session.front_office_history)
-    if confidence <= 20:
+    tenure_history, start_year = _current_tenure_history(session)
+    failures = failed_streak(tenure_history)
+    tenure_seasons = max(1, int(evaluation.get("year", session.year)) - start_year + 1)
+
+    # 신뢰도가 사실상 소진된 경우에는 보호기간과 무관하게 계약을 종료한다.
+    if confidence <= 10:
         return f"구단주 신뢰도 {confidence:.0f}까지 하락"
-    if failures >= 3 and confidence < 40:
-        return f"시즌 목표 {failures}년 연속 실패"
-    if evaluation.get("grade") == "F" and failures >= 2 and confidence < 30:
-        return "연속 최하위권 성적과 프런트 평가 F"
+    # 새 구단 부임 직후 두 시즌은 장기 계획을 평가할 최소 보호기간으로 둔다.
+    if tenure_seasons <= 2:
+        return None
+    if failures >= 4 and confidence < 25:
+        return f"현 구단 시즌 목표 {failures}년 연속 실패"
+    if evaluation.get("grade") == "F" and failures >= 3 and confidence < 18:
+        return "현 구단 연속 최하위권 성적과 프런트 평가 F"
     return None
 
 
@@ -87,7 +103,10 @@ def generate_job_offers(session, former_tid: str) -> list[dict]:
         rank = rank_map.get(team.tid, 10)
         identity = identity_of(team)
         strategy_label = STRATEGY_LABELS[identity.strategy]
-        confidence = clamp(48.0 + reputation * 0.22 + max(0, rank - 5) * 1.5, 48.0, 74.0)
+        confidence = clamp(
+            58.0 + reputation * 0.18 + max(0, rank - 5) * 1.5,
+            55.0, 78.0,
+        )
         contract_years = 3 if reputation >= 65 or rank >= 7 else 2
         offers.append({
             "tid": team.tid,

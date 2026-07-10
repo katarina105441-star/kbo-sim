@@ -40,7 +40,8 @@ class GameSession:
 
     # ---------- 시즌 ----------
     def _new_season(self):
-        self.season = SeasonRunner(self.teams, self.rng)
+        # 웹만 격리 모드. 콘솔/검증 하네스는 SeasonRunner 기본 공유 모드를 유지한다.
+        self.season = SeasonRunner(self.teams, self.rng, isolated=True)
         self.season.record_watch = {self.user_tid}   # 내 경기만 관전 스트림 기록
         self.season.start(keep_results=False)
         self.results_by_day: list[list] = []   # [day][GameResult]
@@ -184,4 +185,13 @@ class GameSession:
     @staticmethod
     def load(name: str = "save") -> "GameSession":
         with open(os.path.join(SAVE_DIR, f"{name}.pkl"), "rb") as f:
-            return pickle.load(f)
+            session = pickle.load(f)
+        # MVP-3 이전 저장 파일은 새 필드가 없다. 진행 중 시즌은 공유 모드로
+        # 안전하게 이어가고, 다음 _new_season부터 웹 격리 모드가 적용된다.
+        for team in session.teams:
+            if not hasattr(team, "setup"):
+                team.setup = []
+        if not hasattr(session.season, "isolated"):
+            session.season.isolated = False
+            session.season._isolation_root = None
+        return session

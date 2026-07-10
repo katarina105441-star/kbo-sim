@@ -9,6 +9,9 @@ async function req(path, opts) {
 const post = (path, body) =>
   req(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body || {}) })
+const put = (path, body) =>
+  req(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body || {}) })
 
 export const api = {
   teamsAll: () => req('/api/teams/all'),
@@ -19,6 +22,9 @@ export const api = {
   advance: (unit) => post('/api/sim/advance', { unit }),
   standings: () => req('/api/standings'),
   roster: (tid) => req(`/api/teams/${tid}/roster`),
+  myLineup: () => req('/api/my/lineup'),
+  saveLineup: (body) => put('/api/my/lineup', body),
+  aiLineup: () => put('/api/my/lineup', { use_ai: true }),
   player: (pid) => req(`/api/players/${pid}`),
   results: (day) => req(day ? `/api/results?day=${day}` : '/api/results'),
   boxscore: (day, idx) => req(`/api/results/${day}/${idx}`),

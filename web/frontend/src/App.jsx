@@ -5,13 +5,14 @@ import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
 import Results from './screens/Results.jsx'
 import Roster from './screens/Roster.jsx'
+import Lineup from './screens/Lineup.jsx'
 import Offseason from './screens/Offseason.jsx'
 import PlayerModal from './screens/PlayerModal.jsx'
 import Watch from './screens/Watch.jsx'
 
 const TABS = [
   ['dashboard', '대시보드'], ['standings', '순위표'], ['results', '일정·결과'],
-  ['roster', '로스터'], ['offseason', '오프시즌'],
+  ['roster', '로스터'], ['lineup', '라인업 관리'], ['offseason', '오프시즌'],
 ]
 
 export default function App() {
@@ -62,6 +63,7 @@ export default function App() {
         {tab === 'results' && <Results key={rev} userTid={state.user_tid}
                                        onWatch={(day, idx) => setWatch({ day, idx })} />}
         {tab === 'roster' && <Roster userTid={state.user_tid} onPlayer={setPlayerPid} />}
+        {tab === 'lineup' && <Lineup />}
         {tab === 'offseason' && <Offseason state={state} />}
       </main>
       {playerPid && <PlayerModal pid={playerPid} onClose={() => setPlayerPid(null)} />}

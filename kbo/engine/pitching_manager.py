@@ -120,7 +120,8 @@ class PitchingStaff:
                      if p.pid not in self.used and p.inj_days == 0]
         if not cands:
             return None
-        cands.sort(key=lambda p: p.pit_overall, reverse=True)
+        setup_pids = {p.pid for p in getattr(self.team, "setup", [])}
+        cands.sort(key=lambda p: (p.pid in setup_pids, p.pit_overall), reverse=True)
         high_leverage = self.aggressive or (abs(lead) <= 2 and inning >= 7)
         if high_leverage or allow_closer:
             return cands[0]

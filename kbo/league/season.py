@@ -3,6 +3,7 @@
 부상(백업 자동 대체)·컨디션(폼)·등판간격(선발 휴식/불펜 연투)이 매일 반영된다.
 """
 from __future__ import annotations
+import hashlib
 import random
 from dataclasses import dataclass, field
 
@@ -35,10 +36,29 @@ class LeagueTotals:
         return self.bat.sb / att if att else 0.0
 
 
+def _stable_seed(*parts: object) -> int:
+    """프로세스와 무관한 결정론적 128-bit 시드.
+
+    Python ``hash()``는 프로세스마다 salt가 달라지므로 격리 모드에 사용할 수 없다.
+    길이 prefix를 넣어 ("ab", "c")와 ("a", "bc")도 구분한다.
+    """
+    h = hashlib.blake2b(digest_size=16, person=b"kbo-isolate-v1")
+    for part in parts:
+        raw = str(part).encode("utf-8")
+        h.update(len(raw).to_bytes(4, "big"))
+        h.update(raw)
+    return int.from_bytes(h.digest(), "big")
+
+
 class SeasonRunner:
-    def __init__(self, teams: list[Team], rng: random.Random):
+    def __init__(self, teams: list[Team], rng: random.Random,
+                 isolated: bool = False):
         self.teams = teams
         self.rng = rng
+        self.isolated = isolated
+        # 공유 모드는 단 한 번의 추가 draw도 하지 않는다. 격리 모드만 독립 우주를
+        # 위한 root를 소비하고, 이후 모든 일/경기/팀 스트림은 root에서 파생한다.
+        self._isolation_root = rng.getrandbits(128) if isolated else None
         self.schedule = make_schedule(len(teams))
         self.results: list[GameResult] = []
         self.tracker = PitcherUsageTracker()
@@ -60,7 +80,14 @@ class SeasonRunner:
             t.refresh_lineup()
             if not (t.user_managed and t.rotation):
                 t.build_default_pitching()
-        draw_season_form(self.rng, self.teams)  # 시즌 폼 추첨
+        if self.isolated:
+            for t in self.teams:
+                draw_season_form(
+                    random.Random(_stable_seed(self._isolation_root,
+                                               "season-form", t.tid)),
+                    [t])
+        else:
+            draw_season_form(self.rng, self.teams)  # 기존 공유 스트림 그대로
 
     @property
     def finished(self) -> bool:
@@ -69,14 +96,20 @@ class SeasonRunner:
     def step_day(self) -> list[GameResult]:
         """하루 진행 후 그날 결과 반환 (UI 진행 컨트롤 훅). run()과 동일 로직."""
         games = self.schedule[self.day]
+        day_seed = (_stable_seed(self._isolation_root, "day", self.day)
+                    if self.isolated else None)
         day_results: list[GameResult] = []
         outing: dict[str, int] = {}
-        for hi, ai in games:
+        for game_idx, (hi, ai) in enumerate(games):
             home, away = self.teams[hi], self.teams[ai]
             home.refresh_lineup()  # 부상 반영 라인업 재구성 (유저 팀은 타순 유지)
             away.refresh_lineup()
+            game_rng = self.rng
+            if self.isolated:
+                game_rng = random.Random(_stable_seed(
+                    day_seed, "game", game_idx, home.tid, away.tid))
             sim = GameSimulator(
-                home, away, self.rng,
+                home, away, game_rng,
                 home_unavailable=self.tracker.unavailable(home, self.day),
                 away_unavailable=self.tracker.unavailable(away, self.day),
                 home_pitcher_ctx=self.tracker.ctx(home, self.day),
@@ -91,8 +124,18 @@ class SeasonRunner:
             day_results.append(res)
             if self.keep_results:
                 self.results.append(res)
-        daily_injury_tick(self.rng, self.teams, outing)
-        daily_form_tick(self.rng, self.teams)
+        if self.isolated:
+            # 팀별, 시스템별 독립 스트림. 한 팀의 부상 발생으로 추가 난수가
+            # 소비돼도 다른 팀이나 같은 팀의 폼 스트림은 이동하지 않는다.
+            for t in self.teams:
+                daily_injury_tick(
+                    random.Random(_stable_seed(day_seed, "injury", t.tid)),
+                    [t], outing)
+                daily_form_tick(
+                    random.Random(_stable_seed(day_seed, "form", t.tid)), [t])
+        else:
+            daily_injury_tick(self.rng, self.teams, outing)
+            daily_form_tick(self.rng, self.teams)
         self.day += 1
         return day_results
 

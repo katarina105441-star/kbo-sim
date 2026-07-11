@@ -2,17 +2,19 @@
 from __future__ import annotations
 
 import argparse
-import os
 import shutil
 import stat
+import sys
 import tarfile
 import tempfile
 import zipfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from kbo.version import __version__
 
-ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_NAME = f"KBO-Manager-{__version__}"
 
 INCLUDE_PATHS = (

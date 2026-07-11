@@ -34,7 +34,6 @@ main { max-width: 1200px; margin: 16px auto; padding: 0 16px; }
          font-size: 13px; }
 .bigline { font-size: 20px; font-weight: 800; margin: 6px 0 10px; }
 
-/* ---- 테이블 (정보 밀도 우선, KBO 기록실 느낌) ---- */
 table { border-collapse: collapse; width: 100%; }
 th, td { padding: 5px 7px; text-align: center; border-bottom: 1px solid #edf0f5;
          white-space: nowrap; }
@@ -50,7 +49,6 @@ tr.click:hover { background: #eef4ff; cursor: pointer; }
 .inj { color: #d33; font-size: 12px; }
 .hot { color: #e8542f; } .cold { color: #1a67c9; }
 
-/* ---- 버튼 ---- */
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
 .btn-row.inline { display: inline-flex; margin: 0; }
 .btn-row button, .start-row button {
@@ -64,7 +62,6 @@ button:disabled { opacity: .45; cursor: default; }
 .news { list-style: none; }
 .news li { padding: 4px 0; border-bottom: 1px dashed #edf0f5; font-size: 13px; }
 
-/* ---- 팀 선택 ---- */
 .team-select { max-width: 860px; margin: 48px auto; padding: 0 16px; text-align: center; }
 .team-select h1 { margin-bottom: 6px; }
 .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 22px 0; }
@@ -78,7 +75,6 @@ button:disabled { opacity: .45; cursor: default; }
 .start-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
 .start-row input { border: 1px solid #c6d0e0; border-radius: 6px; padding: 7px; width: 110px; }
 
-/* ---- 일정/결과 ---- */
 .day-nav { font-size: 13px; font-weight: 400; }
 .day-nav button { border: 1px solid #c6d0e0; background: #fff; border-radius: 6px; padding: 3px 9px; }
 .game-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
@@ -88,7 +84,6 @@ button:disabled { opacity: .45; cursor: default; }
 .game-row.me { background: #fff6e8; border-color: #e8b96a; }
 .boxscore { margin-top: 14px; border-top: 2px solid #2c4a80; padding-top: 10px; }
 
-/* ---- 선수 모달 ---- */
 .modal-bg { position: fixed; inset: 0; background: rgba(12, 20, 38, .55);
             display: flex; align-items: center; justify-content: center; z-index: 20; }
 .modal { background: #fff; border-radius: 12px; padding: 22px 26px; width: min(680px, 92vw);
@@ -106,7 +101,6 @@ button:disabled { opacity: .45; cursor: default; }
 
 select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: inherit; }
 
-/* ---- 일정·결과 관전 버튼 ---- */
 .game-row { display: flex; align-items: center; gap: 8px; }
 .game-score { cursor: pointer; }
 .game-score:hover { text-decoration: underline; }
@@ -115,11 +109,10 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
 .watch-btn:hover { background: #cc4526; }
 .ghost2 { background: #fff; border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 10px; }
 
-/* ---- 관전 (2D 그라운드 뷰) ---- */
 .watch { position: fixed; inset: 0; background: #0d1626; z-index: 30;
          display: flex; flex-direction: column; color: #e8edf6; }
 .watch-top { display: flex; align-items: center; gap: 8px; padding: 10px 18px;
-             background: #10213f; font-size: 15px; }
+             min-height: 48px; background: #10213f; font-size: 15px; }
 .ghost.dark { border-color: #3a5584; }
 .watch-body { flex: 1; display: flex; gap: 14px; padding: 12px 18px; min-height: 0; }
 .watch-left { flex: 1.6; display: flex; flex-direction: column; min-width: 0; }
@@ -129,8 +122,21 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
              overflow-y: auto; font-size: 13.5px; line-height: 1.5; }
 .log-line { padding: 4px 2px; border-bottom: 1px dashed #223a63; }
 .log-line:last-child { color: #ffd977; font-weight: 700; }
+.watch-log-empty { color: #8295b4; padding: 8px 2px; }
 
-/* 스코어버그 (중계 화면풍) */
+.watch-gate { overflow: auto; }
+.watch-gate-card { width: min(560px, calc(100% - 32px)); margin: auto; padding: 28px;
+                   border: 1px solid #294268; border-radius: 12px; background: #10213f;
+                   box-shadow: 0 18px 45px rgba(0, 0, 0, .28); text-align: center; }
+.watch-gate-card h2 { margin: 12px 0 8px; font-size: 20px; }
+.watch-gate-card p { color: #9db0cf; line-height: 1.55; }
+.watch-gate-card .btn-row { justify-content: center; margin-top: 18px; }
+.watch-error-code { display: inline-block; padding: 4px 9px; border-radius: 12px;
+                    background: #542c2c; color: #ffb9aa; font-size: 11px; font-weight: 800; }
+.watch-spinner { width: 34px; height: 34px; margin: 0 auto; border: 3px solid #294268;
+                 border-top-color: #e8542f; border-radius: 50%; animation: watch-spin .8s linear infinite; }
+@keyframes watch-spin { to { transform: rotate(360deg); } }
+
 .scorebug { display: flex; align-items: center; gap: 18px; padding: 8px 18px;
             background: #16294a; border-bottom: 2px solid #e8542f; font-size: 15px; }
 .sb-team { font-weight: 700; letter-spacing: .5px; }
@@ -143,7 +149,6 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
 .dot.b.on { background: #4caf50; } .dot.s.on { background: #ffb02e; }
 .dot.o.on { background: #e8542f; }
 
-/* 매치업 카드 */
 .matchup { display: flex; gap: 12px; margin-top: 10px; }
 .pcard { flex: 1; background: #16294a; border-radius: 10px; padding: 10px 14px;
          font-size: 13.5px; }
@@ -153,14 +158,12 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
              border-radius: 10px; padding: 12px; text-align: center;
              font-size: 16px; font-weight: 800; }
 
-/* 재생 컨트롤 */
 .watch-controls { display: flex; gap: 8px; padding: 10px 18px; background: #10213f; }
 .watch-controls button { background: #16294a; border: 1px solid #2c4a80;
                          color: #e8edf6; border-radius: 8px; padding: 8px 14px; }
 .watch-controls button:hover { background: #223a63; }
 .watch-controls button.on { background: #e8542f; border-color: #e8542f; font-weight: 700; }
 
-/* 플레이 강조 연출 */
 .pop { animation: pop-in 1.7s ease-out forwards; pointer-events: none; }
 .pop.big { animation: pop-in-big 1.9s ease-out forwards; }
 @keyframes pop-in {
@@ -170,45 +173,27 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
   100% { opacity: 0; transform: translateY(-10px) scale(1); }
 }
 @keyframes pop-in-big {
-  0% { opacity: 0; transform: scale(.4); }
-  14% { opacity: 1; transform: scale(1.25); }
-  26% { transform: scale(1); }
-  78% { opacity: 1; }
-  100% { opacity: 0; transform: scale(1.05) translateY(-12px); }
+  0% { opacity: 0; transform: scale(.25); }
+  12% { opacity: 1; transform: scale(1.15); }
+  72% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.9); }
 }
-.runner-score { animation: score-flash 0.9s ease-out 2; }
-@keyframes score-flash {
-  0%, 100% { filter: none; }
-  50% { filter: drop-shadow(0 0 8px #ffd21e) brightness(1.5); }
-}
-.trail-fade { animation: trail-out 1.2s ease-out forwards; }
-@keyframes trail-out { from { opacity: 0.75; } to { opacity: 0; } }
-.catch-ring { animation: catch-pulse 0.6s ease-out forwards; transform-origin: center; }
-@keyframes catch-pulse {
-  0% { opacity: 1; transform: scale(.4); }
-  70% { opacity: .8; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.5); }
-}
-.hidden-score b { color: #b48ce0; }
-.hidden-score { cursor: default; }
+.trail-fade { animation: trail-fade .7s ease-out forwards; }
+@keyframes trail-fade { from { opacity: 1; } to { opacity: 0; } }
+.catch-ring { animation: ring-out .65s ease-out forwards; }
+@keyframes ring-out { from { opacity: 1; r: 5px; } to { opacity: 0; r: 17px; } }
+.runner-score { animation: runner-score .8s ease-out forwards; }
+@keyframes runner-score { 0% { opacity: 1; } 60% { transform: scale(1.6); } 100% { opacity: 0; } }
 
-/* ---- MVP-3 Part 1 라인업 관리 ---- */
-.lineup-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.lineup-head h2 { margin-bottom: 3px; }
-.lineup-grid { display: grid; grid-template-columns: minmax(680px, 1.45fr) minmax(360px, .8fr); gap: 16px; }
-@media (max-width: 1080px) { .lineup-grid { grid-template-columns: 1fr; } }
-.lineup-table select { max-width: 170px; }
-.mini { border: 1px solid #c6d0e0; background: #fff; border-radius: 5px; padding: 2px 7px; margin: 0 1px; }
-.warn-row { background: #fff8e4; }
-.slot-warn, .warn-text { color: #b06c00; }
-.role-row { display: grid; grid-template-columns: 55px minmax(180px, 1fr) 58px 28px 28px;
-            gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid #edf0f5; }
-.role-row select { width: 100%; }
-.closer-row { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: center; }
-.setup-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.setup-list label { display: grid; grid-template-columns: 18px 1fr; align-items: center;
-                    border: 1px solid #e1e6ee; border-radius: 7px; padding: 7px; }
-.setup-list small { grid-column: 2; color: #7c8aa0; }
-.notice { border-radius: 8px; padding: 9px 13px; margin-bottom: 12px; }
-.notice.ok { background: #eaf8ef; color: #176b36; border: 1px solid #b9dfc6; }
-.notice.bad { background: #fff2ef; color: #a43724; border: 1px solid #efc1b8; }
+@media (max-width: 760px) {
+  .watch-body { flex-direction: column; padding: 8px; }
+  .field { max-height: 48vh; }
+  .watch-log { max-height: 22vh; }
+  .watch-controls { overflow-x: auto; padding: 8px; }
+  .watch-controls button { white-space: nowrap; padding: 7px 10px; }
+  .scorebug { gap: 8px; padding: 6px 10px; font-size: 12px; }
+  .sb-team b { font-size: 16px; }
+  .watch-gate-card { padding: 22px 18px; }
+}
+
+/* additional application styles continue in imported feature stylesheets */

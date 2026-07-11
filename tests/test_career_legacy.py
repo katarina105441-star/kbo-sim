@@ -149,6 +149,12 @@ class TestCareerLegacy(unittest.TestCase):
         self.assertEqual(legacy_tier(55)["key"], "veteran")
         self.assertEqual(legacy_tier(10)["key"], "career")
 
+    def test_multiple_championships_can_reach_hall_of_fame(self):
+        session = self.make_session(seasons=15, championships=3)
+        summary = retire_manager(session)
+        self.assertTrue(summary["inducted"])
+        self.assertIn(summary["tier"]["key"], {"hall_of_fame", "legend"})
+
     def test_payload_contains_preview_and_final_summary(self):
         session = self.make_session(seasons=10, championships=1)
         before = career_legacy_payload(session)

@@ -24,10 +24,10 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install -r requirements.txt
-      - name: Run focused thirty-season check
+      - name: Run final four-seed thirty-season check
         run: |
           set +e
-          python scripts/career_balance_check.py --seeds 2 --seasons 30 > .github/career-balance-output.txt 2>&1
+          python scripts/career_balance_check.py --seeds 4 --seasons 30 --strict > .github/career-balance-output.txt 2>&1
           echo "exit_code=$?" >> .github/career-balance-output.txt
           exit 0
       - name: Commit diagnostics

@@ -64,18 +64,33 @@ button:disabled { opacity: .45; cursor: default; }
 .news { list-style: none; }
 .news li { padding: 4px 0; border-bottom: 1px dashed #edf0f5; font-size: 13px; }
 
-/* ---- 팀 선택 ---- */
-.team-select { max-width: 860px; margin: 48px auto; padding: 0 16px; text-align: center; }
-.team-select h1 { margin-bottom: 6px; }
-.team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 22px 0; }
-@media (max-width: 800px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+/* ---- 팀 선택 / 첫 실행 안내 ---- */
+.team-select { max-width: 1040px; margin: 34px auto 46px; padding: 0 16px; text-align: center; }
+.hero-panel { padding: 24px 18px 20px; border-radius: 16px; background: linear-gradient(135deg,#10213f,#243f70); color: #fff; box-shadow: 0 10px 30px rgba(16,33,63,.16); }
+.hero-panel .eyebrow { display: inline-block; margin-bottom: 7px; color: #ffd977; font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.hero-panel h1 { margin-bottom: 8px; font-size: 28px; }
+.hero-panel p { max-width: 720px; margin: 0 auto; color: #dbe6fb; line-height: 1.5; }
+.onboarding-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; margin: 16px 0; text-align: left; }
+.onboarding-card { background: #fff; border: 1px solid #dde3ec; border-radius: 12px; padding: 15px; }
+.onboarding-card h2 { font-size: 15px; margin-bottom: 10px; color: #243652; }
+.guide-step { display: grid; grid-template-columns: 120px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #e7edf5; }
+.guide-step:last-child { border-bottom: 0; }
+.guide-step b,.feature-row b { color: #213552; font-size: 12.5px; }
+.guide-step span,.feature-row span { color: #66758c; font-size: 12px; line-height: 1.45; }
+.feature-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; }
+.team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0 22px; }
+@media (max-width: 800px) {
+  .onboarding-grid { grid-template-columns: 1fr; }
+  .guide-step { grid-template-columns: 1fr; gap: 3px; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+}
 .team-card { background: #fff; border: 2px solid #dde3ec; border-radius: 10px;
              padding: 14px 8px; }
 .team-card:hover { border-color: #2c4a80; }
 .team-card.on { border-color: #e8542f; background: #fff6f2; }
 .team-tid { font-weight: 900; font-size: 18px; }
 .team-name { font-size: 13px; margin: 4px 0 2px; }
-.start-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
+.start-row { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; }
 .start-row input { border: 1px solid #c6d0e0; border-radius: 6px; padding: 7px; width: 110px; }
 
 /* ---- 일정/결과 ---- */
@@ -170,45 +185,15 @@ select { border: 1px solid #c6d0e0; border-radius: 6px; padding: 5px 8px; font: 
   100% { opacity: 0; transform: translateY(-10px) scale(1); }
 }
 @keyframes pop-in-big {
-  0% { opacity: 0; transform: scale(.4); }
-  14% { opacity: 1; transform: scale(1.25); }
-  26% { transform: scale(1); }
-  78% { opacity: 1; }
-  100% { opacity: 0; transform: scale(1.05) translateY(-12px); }
+  0% { opacity: 0; transform: translateY(10px) scale(.4); }
+  14% { opacity: 1; transform: translateY(0) scale(1.12); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px) scale(1); }
 }
-.runner-score { animation: score-flash 0.9s ease-out 2; }
-@keyframes score-flash {
-  0%, 100% { filter: none; }
-  50% { filter: drop-shadow(0 0 8px #ffd21e) brightness(1.5); }
-}
-.trail-fade { animation: trail-out 1.2s ease-out forwards; }
-@keyframes trail-out { from { opacity: 0.75; } to { opacity: 0; } }
-.catch-ring { animation: catch-pulse 0.6s ease-out forwards; transform-origin: center; }
-@keyframes catch-pulse {
-  0% { opacity: 1; transform: scale(.4); }
-  70% { opacity: .8; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.5); }
-}
-.hidden-score b { color: #b48ce0; }
-.hidden-score { cursor: default; }
 
-/* ---- MVP-3 Part 1 라인업 관리 ---- */
-.lineup-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.lineup-head h2 { margin-bottom: 3px; }
-.lineup-grid { display: grid; grid-template-columns: minmax(680px, 1.45fr) minmax(360px, .8fr); gap: 16px; }
-@media (max-width: 1080px) { .lineup-grid { grid-template-columns: 1fr; } }
-.lineup-table select { max-width: 170px; }
-.mini { border: 1px solid #c6d0e0; background: #fff; border-radius: 5px; padding: 2px 7px; margin: 0 1px; }
-.warn-row { background: #fff8e4; }
-.slot-warn, .warn-text { color: #b06c00; }
-.role-row { display: grid; grid-template-columns: 55px minmax(180px, 1fr) 58px 28px 28px;
-            gap: 6px; align-items: center; padding: 5px 0; border-bottom: 1px solid #edf0f5; }
-.role-row select { width: 100%; }
-.closer-row { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: center; }
-.setup-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.setup-list label { display: grid; grid-template-columns: 18px 1fr; align-items: center;
-                    border: 1px solid #e1e6ee; border-radius: 7px; padding: 7px; }
-.setup-list small { grid-column: 2; color: #7c8aa0; }
-.notice { border-radius: 8px; padding: 9px 13px; margin-bottom: 12px; }
-.notice.ok { background: #eaf8ef; color: #176b36; border: 1px solid #b9dfc6; }
-.notice.bad { background: #fff2ef; color: #a43724; border: 1px solid #efc1b8; }
+@media (max-width: 900px) {
+  .topbar { flex-wrap: wrap; }
+  .topbar nav { order: 3; width: 100%; overflow-x: auto; }
+  .watch-body { flex-direction: column; }
+  .watch-log { max-height: 28vh; }
+}

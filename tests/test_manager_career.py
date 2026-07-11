@@ -65,18 +65,54 @@ class TestManagerCareer(unittest.TestCase):
             "actual_rank": actual_rank,
         }
 
-    def test_low_confidence_triggers_dismissal_reason(self):
-        session = self.make_session(confidence=18)
+    def test_exhausted_confidence_triggers_dismissal_reason(self):
+        session = self.make_session(confidence=10)
         row = self.evaluation()
         session.front_office_history = [row]
         self.assertIn("신뢰도", dismissal_reason(session, row))
 
-    def test_three_failures_trigger_dismissal_below_40(self):
-        session = self.make_session(confidence=35)
+    def test_four_current_club_failures_trigger_dismissal(self):
+        session = self.make_session(confidence=24)
         session.front_office_history = [
-            self.evaluation(year=1), self.evaluation(year=2), self.evaluation(year=3)
+            self.evaluation(year=1), self.evaluation(year=2),
+            self.evaluation(year=3), self.evaluation(year=4),
         ]
-        self.assertIn("3년 연속", dismissal_reason(session, session.front_office_history[-1]))
+        session.year = 4
+        self.assertIn(
+            "4년 연속",
+            dismissal_reason(session, session.front_office_history[-1]),
+        )
+
+    def test_new_club_has_two_season_protection(self):
+        session = self.make_session(confidence=15)
+        session.manager_tenures = [
+            {"tid": "KIA", "team": "KIA", "start_year": 1,
+             "end_year": 2, "exit_reason": "해임"},
+            {"tid": "SAM", "team": "삼성", "start_year": 3,
+             "end_year": None, "exit_reason": None},
+        ]
+        row = self.evaluation(year=3)
+        session.front_office_history = [
+            self.evaluation(year=1), self.evaluation(year=2), row,
+        ]
+        session.year = 3
+        self.assertIsNone(dismissal_reason(session, row))
+
+    def test_previous_club_failures_do_not_carry_over(self):
+        session = self.make_session(confidence=15)
+        session.manager_tenures = [
+            {"tid": "KIA", "team": "KIA", "start_year": 1,
+             "end_year": 3, "exit_reason": "해임"},
+            {"tid": "SAM", "team": "삼성", "start_year": 4,
+             "end_year": None, "exit_reason": None},
+        ]
+        current = self.evaluation(year=4)
+        session.front_office_history = [
+            self.evaluation(year=1), self.evaluation(year=2),
+            self.evaluation(year=3), current,
+        ]
+        session.year = 4
+        self.assertIsNone(dismissal_reason(session, current))
 
     def test_success_improves_reputation_and_fan_support(self):
         session = self.make_session(confidence=70)
@@ -109,6 +145,12 @@ class TestManagerCareer(unittest.TestCase):
             generate_job_offers(first, first.user_tid),
             generate_job_offers(second, second.user_tid),
         )
+
+    def test_job_offer_confidence_has_reemployment_floor(self):
+        session = self.make_session(confidence=10)
+        session.manager_reputation = 0
+        offers = generate_job_offers(session, session.user_tid)
+        self.assertTrue(all(offer["initial_confidence"] >= 55 for offer in offers))
 
     def test_accept_offer_switches_team_and_records_move(self):
         session = self.make_session(confidence=10)

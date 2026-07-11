@@ -1,6 +1,7 @@
-"""게임 세션에 해임·재취업·구단 이동 수명주기를 연결한다."""
+"""게임 세션에 해임·재취업·은퇴까지 감독 커리어 수명주기를 연결한다."""
 from __future__ import annotations
 
+from kbo.league.career_legacy import ensure_career_legacy, maybe_auto_retire
 from kbo.league.front_office import create_objective
 from kbo.league.manager_career import ensure_manager_career, process_season_career
 
@@ -21,31 +22,37 @@ def apply_manager_career_patch() -> None:
     def session_init(self, *args, **kwargs):
         original_init(self, *args, **kwargs)
         ensure_manager_career(self)
+        ensure_career_legacy(self)
 
     def session_load(name: str = "save"):
         session = original_load(name)
         ensure_manager_career(session)
+        ensure_career_legacy(session)
         return session
 
     def advance(self, unit: str):
-        ensure_manager_career(self)
+        ensure_career_legacy(self)
         if self.career_status == "dismissed":
             raise RuntimeError("재취업할 구단을 먼저 선택해야 합니다.")
+        if self.career_status == "retired":
+            raise RuntimeError("은퇴한 감독의 커리어는 더 진행할 수 없습니다.")
         return original_advance(self, unit)
 
     def start_live(self):
-        ensure_manager_career(self)
+        ensure_career_legacy(self)
         if self.career_status == "dismissed":
             raise RuntimeError("재취업할 구단을 먼저 선택해야 합니다.")
+        if self.career_status == "retired":
+            raise RuntimeError("은퇴한 감독은 경기를 직접 운영할 수 없습니다.")
         return original_start_live(self)
 
     def season_end(self):
         original_season_end(self)
         process_season_career(self)
+        maybe_auto_retire(self)
 
     def new_season(self):
         original_new_season(self)
-        # 오프시즌 완료 후 증가한 연도에 맞춰 새 구단주 목표를 확정한다.
         if hasattr(self, "owner_confidence"):
             self.current_objective = create_objective(self)
         if hasattr(self, "career_status") and self.career_status == "employed":

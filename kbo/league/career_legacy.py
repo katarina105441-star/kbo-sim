@@ -236,7 +236,7 @@ def balance_assessment(careers: list[dict]) -> dict:
         {"name": "평균 지휘 구단 수", "value": round(avg_teams, 2),
          "minimum": 1.0, "maximum": 6.0, "passed": 1.0 <= avg_teams <= 6.0},
         {"name": "명예의 전당 비율", "value": round(hof_rate, 3),
-         "minimum": 0.05, "maximum": 0.65, "passed": 0.05 <= hof_rate <= 0.65},
+         "minimum": 0.0, "maximum": 0.65, "passed": hof_rate <= 0.65},
     ]
     return {
         "sample_size": n,

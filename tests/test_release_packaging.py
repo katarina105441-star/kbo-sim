@@ -20,14 +20,18 @@ class TestLauncherAndRelease(unittest.TestCase):
         self.assertEqual(PACKAGE_NAME, f"KBO-Manager-{__version__}")
 
     def test_choose_port_skips_busy_port(self):
-        busy_port = next((port for port in range(8000, 8010) if port_available(port)), None)
+        busy_port = next(
+            (port for port in range(8000, 8010)
+             if port_available(port) and port_available(port + 1)),
+            None,
+        )
         if busy_port is None:
-            self.skipTest("8000~8009 포트가 모두 사용 중입니다.")
+            self.skipTest("연속으로 비어 있는 테스트 포트가 없습니다.")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.bind(("127.0.0.1", busy_port))
             self.assertFalse(port_available(busy_port))
             chosen = choose_port(busy_port)
-            self.assertGreater(chosen, busy_port)
+            self.assertEqual(chosen, busy_port + 1)
             self.assertTrue(port_available(chosen))
 
     def test_release_builder_creates_both_archives(self):

@@ -1,0 +1,92 @@
+name: Build release package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run Python tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify backend import and health route
+        run: |
+          python - <<'PY'
+          from web.backend.main import app
+          paths = {route.path for route in app.routes}
+          assert "/api/health" in paths
+          assert "/api/meta" in paths
+          PY
+
+      - name: Build release archives
+        run: python scripts/build_release.py --output release
+
+      - name: Smoke-test archive contents
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          archive = next(Path("release").glob("*.zip"))
+          with zipfile.ZipFile(archive) as zf:
+              names = set(zf.namelist())
+          root = archive.stem + "/"
+          required = {
+              root + "게임 시작.bat",
+              root + "run_game.py",
+              root + "QUICKSTART.md",
+              root + "web/frontend/dist/index.html",
+              root + "web/backend/main.py",
+          }
+          missing = required - names
+          assert not missing, f"missing release files: {sorted(missing)}"
+          PY
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kbo-manager-release
+          path: release/*
+          if-no-files-found: error
+
+      - name: Publish GitHub release for version tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" release/* \
+            --title "KBO 매니저 ${GITHUB_REF_NAME}" \
+            --generate-notes

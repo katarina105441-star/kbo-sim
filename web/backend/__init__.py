@@ -1,6 +1,6 @@
 """웹 백엔드 초기화.
 
-실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성·구단 성향·프런트 평가·구단주 이벤트·감독 커리어 확장을 등록한다.
+실시간 경기 교체와 사용자 트레이드·FA·보상선수·드래프트·2군 육성·구단 성향·프런트 평가·구단주 이벤트·감독 커리어·릴리스 메타데이터 확장을 등록한다.
 """
 from fastapi import FastAPI
 
@@ -83,6 +83,7 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         from web.backend.front_office_api import router as front_office_router
         from web.backend.engagement_api import router as engagement_router
         from web.backend.manager_career_api import router as career_router
+        from web.backend.meta_api import router as meta_router
         self.include_router(substitution_router)
         self.include_router(trade_router)
         self.include_router(fa_router)
@@ -93,6 +94,7 @@ if not getattr(FastAPI, "_kbo_extension_router_patch", False):
         self.include_router(front_office_router)
         self.include_router(engagement_router)
         self.include_router(career_router)
+        self.include_router(meta_router)
 
     FastAPI.__init__ = _fastapi_init_with_extensions
     FastAPI._kbo_extension_router_patch = True

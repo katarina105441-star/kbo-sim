@@ -14,6 +14,8 @@ const put = (path, body) =>
               body: JSON.stringify(body || {}) })
 
 export const api = {
+  health: () => req('/api/health'),
+  meta: () => req('/api/meta'),
   teamsAll: () => req('/api/teams/all'),
   teamIdentities: () => req('/api/teams/identities'),
   frontOffice: () => req('/api/front-office'),

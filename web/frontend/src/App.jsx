@@ -10,6 +10,7 @@ import './team-identity.css'
 import './front-office.css'
 import './engagement.css'
 import './manager-career.css'
+import './onboarding.css'
 import TeamSelect from './screens/TeamSelect.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Standings from './screens/Standings.jsx'
@@ -21,12 +22,14 @@ import Offseason from './screens/Offseason.jsx'
 import PlayerModal from './screens/PlayerModal.jsx'
 import Watch from './screens/Watch.jsx'
 import LiveGame from './screens/LiveGame.jsx'
+import HelpModal from './components/HelpModal.jsx'
 
 const TABS = [
   ['dashboard', '대시보드'], ['standings', '순위표'], ['results', '일정·결과'],
   ['roster', '로스터'], ['lineup', '라인업 관리'], ['development', '2군·육성'],
   ['offseason', '오프시즌'],
 ]
+const GUIDE_KEY = 'kbo-manager-guide-v1'
 
 export default function App() {
   const [state, setState] = useState(null)
@@ -37,6 +40,14 @@ export default function App() {
   const [watch, setWatch] = useState(null)
   const [live, setLive] = useState(null)
   const [rev, setRev] = useState(0)
+  const [help, setHelp] = useState(false)
+  const [welcomeHelp, setWelcomeHelp] = useState(false)
+  const [meta, setMeta] = useState(null)
+
+  const notify = (message, duration = 2600) => {
+    setFlash(message)
+    window.setTimeout(() => setFlash(''), duration)
+  }
 
   const openOffseasonIfActive = async () => {
     const active = await Promise.all([
@@ -49,58 +60,83 @@ export default function App() {
   }
 
   useEffect(() => {
+    api.meta().then(setMeta).catch(() => {})
     api.state().then(async next => {
       setState(next)
       await openOffseasonIfActive()
     }).catch(() => {})
   }, [])
 
+  const closeHelp = () => {
+    setHelp(false)
+    setWelcomeHelp(false)
+    try { window.localStorage.setItem(GUIDE_KEY, 'seen') } catch (_) {}
+  }
+
   const refresh = () => api.state().then(setState)
-  const advance = async (unit) => {
+  const advance = async unit => {
     setBusy(true)
     try {
-      const r = await api.advance(unit)
-      setState(r.state)
+      const response = await api.advance(unit)
+      setState(response.state)
       if (unit === 'season_end') await openOffseasonIfActive()
-      setFlash(`${r.played_days}일 진행`)
-      setTimeout(() => setFlash(''), 2500)
+      notify(`${response.played_days}일 진행`)
     } catch (e) {
-      setFlash(e.message)
-      if (e.message.includes('트레이드') || e.message.includes('FA') || e.message.includes('보상선수') || e.message.includes('드래프트')) setTab('offseason')
-      setTimeout(() => setFlash(''), 3000)
+      notify(e.message, 3400)
+      if (e.message.includes('트레이드') || e.message.includes('FA') ||
+          e.message.includes('보상선수') || e.message.includes('드래프트')) setTab('offseason')
     } finally { setBusy(false) }
   }
+
   const startLive = async () => {
     setBusy(true)
     try {
-      const d = state.live_active ? await api.liveState() : await api.liveStart()
-      setLive(d)
+      const data = state.live_active ? await api.liveState() : await api.liveStart()
+      setLive(data)
       await refresh()
     } catch (e) {
-      setFlash(e.message)
-      setTimeout(() => setFlash(''), 3000)
+      notify(e.message, 3400)
     } finally { setBusy(false) }
   }
+
   const acceptCareerOffer = async nextState => {
     setLive(null)
     setState(nextState)
-    setFlash(`새 구단 ${nextState.my_team.name} 부임`)
+    notify(`새 구단 ${nextState.my_team.name} 부임`, 3200)
     await openOffseasonIfActive()
-    setTimeout(() => setFlash(''), 3000)
-  }
-  const save = async () => { await api.save(); setFlash('저장 완료'); setTimeout(() => setFlash(''), 2000) }
-  const load = async () => {
-    setLive(null)
-    setState(await api.load())
-    await openOffseasonIfActive()
-    setFlash('불러오기 완료')
-    setTimeout(() => setFlash(''), 2000)
   }
 
-  if (!state) return <TeamSelect onStart={async (tid, seed) => {
+  const save = async () => {
+    try {
+      await api.save()
+      notify('저장 완료')
+    } catch (e) {
+      notify(`저장 실패: ${e.message}`, 3600)
+    }
+  }
+
+  const load = async () => {
     setLive(null)
-    setState(await api.newGame(tid, seed))
-  }} onLoad={load} />
+    const next = await api.load()
+    setState(next)
+    await openOffseasonIfActive()
+    notify('불러오기 완료')
+  }
+
+  const startCareer = async (tid, seed) => {
+    setLive(null)
+    const next = await api.newGame(tid, seed)
+    setState(next)
+    setTab('dashboard')
+    let seen = false
+    try { seen = window.localStorage.getItem(GUIDE_KEY) === 'seen' } catch (_) {}
+    if (!seen) {
+      setWelcomeHelp(true)
+      setHelp(true)
+    }
+  }
+
+  if (!state) return <TeamSelect onStart={startCareer} onLoad={load} />
 
   return (
     <div className="app">
@@ -114,9 +150,10 @@ export default function App() {
           ))}
         </nav>
         <span className="spacer" />
-        {flash && <span className="flash">{flash}</span>}
+        {flash && <span className="flash" role="status">{flash}</span>}
+        <button className="ghost help-trigger" onClick={() => { setWelcomeHelp(false); setHelp(true) }}>도움말</button>
         <button className="ghost" onClick={save}>저장</button>
-        <button className="ghost" onClick={load}>불러오기</button>
+        <button className="ghost" onClick={() => load().catch(e => notify(`불러오기 실패: ${e.message}`, 3600))}>불러오기</button>
       </header>
       <main>
         {tab === 'dashboard' && <Dashboard state={state} busy={busy}
@@ -137,6 +174,8 @@ export default function App() {
       {live && <LiveGame initial={live}
                          onFinished={() => { setRev(r => r + 1); refresh() }}
                          onClose={() => { setLive(null); setRev(r => r + 1); refresh() }} />}
+      {help && <HelpModal welcome={welcomeHelp} version={meta?.version || ''} onClose={closeHelp} />}
+      <div className="version-stamp">v{meta?.version || '—'}</div>
     </div>
   )
 }

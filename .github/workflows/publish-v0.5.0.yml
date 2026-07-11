@@ -1,0 +1,106 @@
+name: Publish v0.5.0
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.head_ref == 'release/v0.5.0-publish'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Confirm tag is absent
+        run: |
+          if git ls-remote --exit-code --tags origin refs/tags/v0.5.0; then
+            echo 'v0.5.0 already exists.'
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run Python tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify backend and release metadata
+        run: |
+          python - <<'PY'
+          from web.backend.main import app
+          paths = {route.path for route in app.routes}
+          assert '/api/health' in paths
+          assert '/api/meta' in paths
+          PY
+
+      - name: Build release archives
+        run: python scripts/build_release.py --output release
+
+      - name: Smoke-test archive contents
+        run: |
+          python - <<'PY'
+          import tarfile
+          import zipfile
+          from pathlib import Path
+
+          zip_path = next(Path('release').glob('KBO-Manager-0.5.0.zip'))
+          tar_path = next(Path('release').glob('KBO-Manager-0.5.0.tar.gz'))
+          root = 'KBO-Manager-0.5.0/'
+          required = {
+              root + '게임 시작.bat',
+              root + 'start_kbo_manager.sh',
+              root + 'run_game.py',
+              root + 'QUICKSTART.md',
+              root + 'web/frontend/dist/index.html',
+              root + 'web/backend/main.py',
+          }
+          with zipfile.ZipFile(zip_path) as zf:
+              zip_names = set(zf.namelist())
+          with tarfile.open(tar_path, 'r:gz') as tf:
+              tar_names = {name.rstrip('/') for name in tf.getnames()}
+          assert not (required - zip_names), sorted(required - zip_names)
+          assert not ({name.rstrip('/') for name in required} - tar_names), sorted({name.rstrip('/') for name in required} - tar_names)
+          PY
+
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a v0.5.0 -m 'KBO Manager 0.5.0 — MVP-3 Complete' "$(git rev-parse HEAD)"
+          git push origin refs/tags/v0.5.0
+          gh release create v0.5.0 release/* \
+            --title 'KBO 매니저 v0.5.0 — MVP-3 Complete' \
+            --generate-notes \
+            --verify-tag

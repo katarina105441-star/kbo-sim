@@ -1,0 +1,60 @@
+name: Finalize career legacy
+
+on:
+  push:
+    branches:
+      - feat/career-retirement-hall-of-fame
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/career-retirement-hall-of-fame
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - name: Update documentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('README.md')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '- 감독 커리어: 실제 해임, 재취업 제안, 구단 이동, 팬 지지율·언론 압박\n'
+              '- 후속 범위: 장기 밸런스 검증과 명예의 전당·은퇴 등 커리어 결산',
+              '- 감독 커리어: 실제 해임, 재취업 제안, 구단 이동, 팬 지지율·언론 압박\n'
+              '- 커리어 결산: 10시즌 이후 자발 은퇴, 30시즌 자동 은퇴, 레거시 등급·명예의 전당\n'
+              '- 장기 검증: 4시드×30시즌에서 평균 해임 4.25회·지휘 구단 4.75개·우승 0.5회')
+          text = text.replace(
+              '4단계 감독 커리어 완료: 시즌 목표·프런트 평가·구단주 이벤트·업적·실제 해임·재취업·구단 이동·팬/미디어 반응 ✔\n'
+              '남은 확장: 장기 밸런스 검증·명예의 전당·감독 은퇴·커리어 최종 결산.',
+              '4단계 감독 커리어 완료: 시즌 목표·프런트 평가·이벤트·업적·해임·재취업·구단 이동·팬/미디어·은퇴·명예의 전당·최종 결산 ✔\n'
+              '장기 밸런스 검증 완료: `python scripts/career_balance_check.py --seeds 4 --seasons 30 --strict` ✔\n'
+              '다음 확장: 사용자 경험 정리, 첫 실행 안내, 배포·릴리스 패키징.')
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Build frontend dist
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Commit generated assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md web/frontend/dist
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+          else
+            git commit -m 'Update career legacy docs and frontend assets'
+            git push origin HEAD:feat/career-retirement-hall-of-fame
+          fi

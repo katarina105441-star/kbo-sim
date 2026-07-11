@@ -14,6 +14,15 @@ from scripts.build_release import PACKAGE_NAME, build_release
 
 
 class TestLauncherAndRelease(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._temp = tempfile.TemporaryDirectory()
+        cls.zip_path, cls.tar_path = build_release(Path(cls._temp.name))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._temp.cleanup()
+
     def test_version_metadata_is_release_ready(self):
         self.assertRegex(__version__, r"^\d+\.\d+\.\d+$")
         self.assertTrue(RELEASE_NAME)
@@ -35,41 +44,35 @@ class TestLauncherAndRelease(unittest.TestCase):
             self.assertTrue(port_available(chosen))
 
     def test_release_builder_creates_both_archives(self):
-        with tempfile.TemporaryDirectory() as temp:
-            zip_path, tar_path = build_release(Path(temp))
-            self.assertTrue(zip_path.is_file())
-            self.assertTrue(tar_path.is_file())
-            self.assertGreater(zip_path.stat().st_size, 0)
-            self.assertGreater(tar_path.stat().st_size, 0)
+        self.assertTrue(self.zip_path.is_file())
+        self.assertTrue(self.tar_path.is_file())
+        self.assertGreater(self.zip_path.stat().st_size, 0)
+        self.assertGreater(self.tar_path.stat().st_size, 0)
 
     def test_release_zip_contains_runtime_files_and_excludes_sources_not_needed(self):
-        with tempfile.TemporaryDirectory() as temp:
-            zip_path, _ = build_release(Path(temp))
-            root = f"{PACKAGE_NAME}/"
-            with zipfile.ZipFile(zip_path) as archive:
-                names = set(archive.namelist())
-            required = {
-                root + "게임 시작.bat",
-                root + "start_kbo_manager.sh",
-                root + "run_game.py",
-                root + "requirements.txt",
-                root + "QUICKSTART.md",
-                root + "web/backend/main.py",
-                root + "web/frontend/dist/index.html",
-                root + "kbo/version.py",
-            }
-            self.assertFalse(required - names)
-            self.assertFalse(any("node_modules" in name for name in names))
-            self.assertFalse(any("__pycache__" in name for name in names))
-            self.assertFalse(any(name.endswith(".pyc") for name in names))
+        root = f"{PACKAGE_NAME}/"
+        with zipfile.ZipFile(self.zip_path) as archive:
+            names = set(archive.namelist())
+        required = {
+            root + "게임 시작.bat",
+            root + "start_kbo_manager.sh",
+            root + "run_game.py",
+            root + "requirements.txt",
+            root + "QUICKSTART.md",
+            root + "web/backend/main.py",
+            root + "web/frontend/dist/index.html",
+            root + "kbo/version.py",
+        }
+        self.assertFalse(required - names)
+        self.assertFalse(any("node_modules" in name for name in names))
+        self.assertFalse(any("__pycache__" in name for name in names))
+        self.assertFalse(any(name.endswith(".pyc") for name in names))
 
     def test_release_tar_has_executable_shell_launcher(self):
-        with tempfile.TemporaryDirectory() as temp:
-            _, tar_path = build_release(Path(temp))
-            member_name = f"{PACKAGE_NAME}/start_kbo_manager.sh"
-            with tarfile.open(tar_path) as archive:
-                member = archive.getmember(member_name)
-            self.assertTrue(member.mode & 0o100)
+        member_name = f"{PACKAGE_NAME}/start_kbo_manager.sh"
+        with tarfile.open(self.tar_path) as archive:
+            member = archive.getmember(member_name)
+        self.assertTrue(member.mode & 0o100)
 
 
 if __name__ == "__main__":
